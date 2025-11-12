@@ -1,0 +1,120 @@
+{
+  "workflow_version": "1.2.0",
+  "timestamps": {
+    "started": "2025-11-10T14:51:00Z",
+    "last_updated": "2025-11-10T15:23:00Z",
+    "completed": "2025-11-10T15:23:00Z"
+  },
+  "mode": "initial_scan",
+  "scan_level": "deep",
+  "project_root": "/Users/vladimir.leletko/develop/planner/planner",
+  "output_folder": "/Users/vladimir.leletko/develop/planner/planner/docs",
+  "completed_steps": [
+    {
+      "step": "step_1",
+      "status": "completed",
+      "timestamp": "2025-11-10T14:56:30Z",
+      "summary": "Classified as monorepo with 4 parts"
+    },
+    {
+      "step": "step_2",
+      "status": "completed",
+      "timestamp": "2025-11-10T14:59:00Z",
+      "summary": "Found 2 existing docs"
+    },
+    {
+      "step": "step_3",
+      "status": "completed",
+      "timestamp": "2025-11-10T15:01:00Z",
+      "summary": "Tech stack: Next.js 16 on React 19, ORPC, Drizzle, PostgreSQL"
+    },
+    {
+      "step": "step_4",
+      "status": "completed",
+      "timestamp": "2025-11-10T15:05:00Z",
+      "summary": "Conditional analysis complete: APIs (2 endpoints), Data (4 tables), Components (16 components)"
+    },
+    {
+      "step": "step_5",
+      "status": "completed",
+      "timestamp": "2025-11-10T15:08:00Z",
+      "summary": "Source tree documented"
+    },
+    {
+      "step": "step_6",
+      "status": "completed",
+      "timestamp": "2025-11-10T15:10:00Z",
+      "summary": "Dev/deployment guides written"
+    },
+    {
+      "step": "step_8",
+      "status": "completed",
+      "timestamp": "2025-11-10T15:15:00Z",
+      "summary": "Architecture docs written for monorepo"
+    },
+    {
+      "step": "step_9",
+      "status": "completed",
+      "timestamp": "2025-11-10T15:18:00Z",
+      "summary": "All supporting docs written"
+    },
+    {
+      "step": "step_10",
+      "status": "completed",
+      "timestamp": "2025-11-10T15:20:00Z",
+      "summary": "Master index generated"
+    },
+    {
+      "step": "step_11",
+      "status": "completed",
+      "timestamp": "2025-11-10T15:22:00Z",
+      "summary": "Documentation streamlined - removed redundant tables and listings"
+    },
+    {
+      "step": "step_12",
+      "status": "completed",
+      "timestamp": "2025-11-10T15:23:00Z",
+      "summary": "Workflow complete"
+    }
+  ],
+  "current_step": "completed",
+  "findings": {
+    "project_classification": "Monorepo with 4 parts: web (Next.js), api (ORPC), db (Drizzle), auth (Better-Auth)",
+    "existing_docs": ["README.md", ".claude/CLAUDE.md"]
+  },
+  "project_types": [
+    {
+      "part_id": "web",
+      "project_type_id": "web",
+      "display_name": "Web Application"
+    },
+    {
+      "part_id": "api",
+      "project_type_id": "backend",
+      "display_name": "API Layer"
+    },
+    {
+      "part_id": "db",
+      "project_type_id": "backend",
+      "display_name": "Database"
+    },
+    {
+      "part_id": "auth",
+      "project_type_id": "backend",
+      "display_name": "Authentication"
+    }
+  ],
+  "outputs_generated": [
+    "project-scan-report.json",
+    "technology-stack.md",
+    "api-contracts.md",
+    "data-models.md",
+    "component-inventory.md",
+    "source-tree-analysis.md",
+    "development-guide.md",
+    "architecture.md",
+    "project-overview.md",
+    "index.md"
+  ],
+  "resume_instructions": "Continue from step 2: Discover existing documentation"
+}

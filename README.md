@@ -14,6 +14,12 @@ This project was created with [Better-T-Stack](https://github.com/AmanVarshney01
 - **Authentication** - Better-Auth
 - **Turborepo** - Optimized monorepo build system
 
+## Prerequisites
+
+This project requires:
+- **Bun 1.3.1** (exact version managed via `packageManager` field)
+- **PostgreSQL 16** (for database)
+
 ## Getting Started
 
 First, install the dependencies:
@@ -25,10 +31,19 @@ bun install
 
 This project uses PostgreSQL with Drizzle ORM.
 
-1. Make sure you have a PostgreSQL database set up.
-2. Update your `apps/web/.env` file with your PostgreSQL connection details.
+1. Copy the environment file and configure your settings:
+```bash
+cp apps/web/.env.example apps/web/.env
+```
 
-3. Apply the schema to your database:
+2. Update `apps/web/.env` with your PostgreSQL connection details and auth configuration.
+
+3. Start the PostgreSQL database (using Docker):
+```bash
+bun run db:start
+```
+
+4. Apply the schema to your database:
 ```bash
 bun run db:push
 ```
@@ -62,8 +77,24 @@ planner/
 
 ## Available Scripts
 
+### Development
 - `bun run dev`: Start all applications in development mode
-- `bun run build`: Build all applications
-- `bun run check-types`: Check TypeScript types across all apps
+- `bun run dev:web`: Start only the web application
+- `bun run dev:native`: Start only the native application
+
+### Building
+- `bun run build`: Build all applications for production
+
+### Code Quality
+- `bun run check`: Run Biome linter and formatter (with auto-fix)
+- `bun run check-types`: Check TypeScript types across all packages
+
+### Database
 - `bun run db:push`: Push schema changes to database
-- `bun run db:studio`: Open database studio UI
+- `bun run db:studio`: Open Drizzle Studio (database UI)
+- `bun run db:generate`: Generate database migrations
+- `bun run db:migrate`: Run database migrations
+- `bun run db:start`: Start PostgreSQL database (Docker)
+- `bun run db:watch`: Start PostgreSQL with logs
+- `bun run db:stop`: Stop PostgreSQL database
+- `bun run db:down`: Stop and remove PostgreSQL container

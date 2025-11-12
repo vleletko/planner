@@ -1,0 +1,121 @@
+# generated: 2025-11-11
+# project: planner
+# project_key: planner
+# tracking_system: file-system
+# story_location: "{project-root}/docs/stories"
+
+# STATUS DEFINITIONS:
+# ==================
+# Epic Status:
+#   - backlog: Epic exists in epic file but not contexted
+#   - contexted: Next epic tech context created by *epic-tech-context (required)
+#
+# Story Status:
+#   - backlog: Story only exists in epic file
+#   - drafted: Story file created in stories folder by *create-story
+#   - ready-for-dev: Draft approved and story context created by *story-ready
+#   - in-progress: Developer actively working on implementation by *dev-story
+#   - review: Implementation complete, ready for review by *code-review
+#   - done: Story completed by *story-done
+#
+# Retrospective Status:
+#   - optional: Can be completed but not required
+#   - completed: Retrospective has been done by *retrospective
+#
+# WORKFLOW NOTES:
+# ===============
+# - Epics should be 'contexted' before stories can be 'drafted'
+# - SM typically drafts next story ONLY after previous one is 'done' to incorporate learnings
+# - Dev moves story to 'review', dev reviews, then Dev moves to 'done'
+
+generated: 2025-11-11
+project: planner
+project_key: planner
+tracking_system: file-system
+story_location: "{project-root}/docs/stories"
+
+development_status:
+  epic-1: contexted
+  1-1-project-setup-and-infrastructure-initialization: done
+  1-2-database-setup-and-schema-foundation: done
+  1-3-authentication-system-integration: backlog
+  1-4-basic-ui-shell-and-theme-system: backlog
+  1-5-deployment-pipeline-and-environment-configuration: backlog
+  1-6-testing-infrastructure-and-e2e-setup: backlog
+  epic-1-retrospective: optional
+
+  epic-2: backlog
+  2-1-project-creation-and-basic-crud: backlog
+  2-2-project-access-control-and-permissions: backlog
+  2-3-user-invitation-system: backlog
+  2-4-ownership-transfer: backlog
+  2-5-project-deletion-with-safety-checks: backlog
+  epic-2-retrospective: optional
+
+  epic-3: backlog
+  3-1-status-management: backlog
+  3-2-card-type-management: backlog
+  3-3-field-definition-and-basic-types: backlog
+  3-4-field-requirement-configuration-per-status: backlog
+  3-5-visual-schema-editor-and-preview: backlog
+  epic-3-retrospective: optional
+
+  epic-4: backlog
+  4-1-rich-text-and-user-assignment-fields: backlog
+  4-2-file-attachment-field-type: backlog
+  4-3-synchronous-validation-rules: backlog
+  4-4-asynchronous-validation-ui-support: backlog
+  4-5-conditional-and-cross-field-validation: backlog
+  4-6-default-field-values: backlog
+  epic-4-retrospective: optional
+
+  epic-5: backlog
+  5-1-card-creation-with-field-validation: backlog
+  5-2-card-detail-view-and-editing: backlog
+  5-3-kanban-board-layout-and-rendering: backlog
+  5-4-drag-and-drop-card-movement: backlog
+  5-5-status-transition-dialog-with-validation: backlog
+  5-6-card-reordering-within-status: backlog
+  epic-5-retrospective: optional
+
+  epic-6: backlog
+  6-1-resource-type-framework: backlog
+  6-2-resource-instance-creation-and-management: backlog
+  6-3-resource-validation-implementation: backlog
+  6-4-resource-reference-field-type: backlog
+  6-5-resource-validation-in-card-transitions: backlog
+  6-6-resource-credentials-security: backlog
+  epic-6-retrospective: optional
+
+  epic-7: backlog
+  7-1-real-time-card-search: backlog
+  7-2-card-filtering-by-type-and-assignee: backlog
+  7-3-advanced-field-based-filtering: backlog
+  7-4-board-performance-optimization: backlog
+  7-5-saved-filter-presets: backlog
+  epic-7-retrospective: optional
+
+  epic-8: backlog
+  8-1-card-comments-with-markdown-support: backlog
+  8-2-mentions-in-comments: backlog
+  8-3-edit-and-delete-comments: backlog
+  8-4-activity-history-logging: backlog
+  8-5-activity-timeline-view: backlog
+  epic-8-retrospective: optional
+
+  epic-9: backlog
+  9-1-telegram-bot-setup-and-configuration: backlog
+  9-2-user-account-linking: backlog
+  9-3-notification-trigger-configuration: backlog
+  9-4-send-notifications-on-card-assignment: backlog
+  9-5-send-notifications-on-status-transitions: backlog
+  9-6-notification-delivery-monitoring: backlog
+  epic-9-retrospective: optional
+
+  epic-10: backlog
+  10-1-export-project-configuration-as-json: backlog
+  10-2-import-project-configuration-from-json: backlog
+  10-3-project-duplication: backlog
+  10-4-configuration-validation-and-health-check: backlog
+  10-5-configuration-templates-library: backlog
+  epic-10-retrospective: optional

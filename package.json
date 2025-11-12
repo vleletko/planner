@@ -30,6 +30,8 @@
     "db:studio": "turbo -F @planner/db db:studio",
     "db:generate": "turbo -F @planner/db db:generate",
     "db:migrate": "turbo -F @planner/db db:migrate",
+    "db:seed": "turbo -F @planner/db db:seed",
+    "db:reset": "./scripts/db-reset.sh",
     "db:start": "turbo -F @planner/db db:start",
     "db:watch": "turbo -F @planner/db db:watch",
     "db:stop": "turbo -F @planner/db db:stop",

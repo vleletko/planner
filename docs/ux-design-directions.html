@@ -1,0 +1,1842 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planner - Design Direction Showcase</title>
+    <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family:
+        Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f5f5f5;
+      line-height: 1.5;
+    }
+
+    /* Navigation Controls */
+    .controls {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: white;
+      border-bottom: 1px solid #e5e7eb;
+      padding: 1rem 2rem;
+      z-index: 1000;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .controls h1 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #111827;
+    }
+
+    .nav-buttons {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .nav-btn {
+      padding: 0.5rem 1rem;
+      background: #14b8a6;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: background 0.2s;
+    }
+
+    .nav-btn:hover {
+      background: #0d9488;
+    }
+
+    .nav-btn:disabled {
+      background: #d1d5db;
+      cursor: not-allowed;
+    }
+
+    .direction-counter {
+      font-size: 0.875rem;
+      color: #6b7280;
+      margin: 0 1rem;
+    }
+
+    /* Mockup Container */
+    .mockup-container {
+      margin-top: 80px;
+      padding: 2rem;
+    }
+
+    .direction {
+      display: none;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .direction.active {
+      display: block;
+    }
+
+    .direction-header {
+      background: white;
+      padding: 2rem;
+      border-radius: 12px;
+      margin-bottom: 2rem;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .direction-name {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #111827;
+      margin-bottom: 0.5rem;
+    }
+
+    .direction-personality {
+      font-size: 1.125rem;
+      color: #14b8a6;
+      margin-bottom: 1rem;
+    }
+
+    .direction-best-for {
+      font-size: 1rem;
+      color: #6b7280;
+      margin-bottom: 1.5rem;
+    }
+
+    .characteristics {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+
+    .characteristic {
+      padding: 1rem;
+      background: #f0fdfa;
+      border-radius: 8px;
+      border-left: 3px solid #14b8a6;
+    }
+
+    .characteristic-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #6b7280;
+      margin-bottom: 0.25rem;
+    }
+
+    .characteristic-value {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: #111827;
+    }
+
+    /* Mockup Styles */
+    .mockup {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+      margin-bottom: 2rem;
+    }
+
+    .mockup-label {
+      background: #f9fafb;
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid #e5e7eb;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: #6b7280;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* Common Theme Variables */
+    :root {
+      --primary: #14b8a6;
+      --primary-hover: #0d9488;
+      --secondary: #6b7280;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --error: #f43f5e;
+      --bg: #ffffff;
+      --bg-secondary: #f0fdfa;
+      --text: #111827;
+      --text-secondary: #6b7280;
+      --border: #d1d5db;
+    }
+
+    /* Kanban Board Mockup */
+    .kanban-board {
+      display: flex;
+      gap: 1.5rem;
+      padding: 1.5rem;
+      overflow-x: auto;
+      min-height: 600px;
+    }
+
+    .kanban-column {
+      flex: 0 0 280px;
+      background: #f9fafb;
+      border-radius: 8px;
+      padding: 1rem;
+    }
+
+    .column-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 2px solid #e5e7eb;
+    }
+
+    .column-title {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .column-count {
+      background: var(--bg-secondary);
+      color: var(--primary);
+      padding: 0.25rem 0.5rem;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .kanban-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.75rem;
+      margin-bottom: 0.75rem;
+      cursor: grab;
+      transition: all 0.2s;
+    }
+
+    .kanban-card:hover {
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      transform: translateY(-2px);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      margin-bottom: 0.5rem;
+    }
+
+    .card-title {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--text);
+      flex: 1;
+    }
+
+    .card-id {
+      background: var(--primary);
+      color: white;
+      padding: 0.125rem 0.375rem;
+      border-radius: 4px;
+      font-size: 0.625rem;
+      font-weight: 600;
+      font-family: "Monaco", monospace;
+    }
+
+    .card-meta {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 0.125rem 0.375rem;
+      border-radius: 4px;
+      font-size: 0.625rem;
+      font-weight: 500;
+    }
+
+    .badge-success {
+      background: rgba(16, 185, 129, 0.1);
+      color: #059669;
+    }
+
+    .badge-warning {
+      background: rgba(245, 158, 11, 0.1);
+      color: #d97706;
+    }
+
+    /* Dialog/Modal Mockup */
+    .dialog-overlay {
+      background: rgba(0, 0, 0, 0.5);
+      padding: 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 500px;
+    }
+
+    .dialog {
+      background: white;
+      border-radius: 12px;
+      max-width: 500px;
+      width: 100%;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+    }
+
+    .dialog-header {
+      padding: 1.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .dialog-title {
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .dialog-subtitle {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      margin-top: 0.25rem;
+    }
+
+    .dialog-content {
+      padding: 1.5rem;
+    }
+
+    .form-group {
+      margin-bottom: 1rem;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--text);
+      margin-bottom: 0.5rem;
+    }
+
+    .form-label.required::after {
+      content: "*";
+      color: var(--error);
+      margin-left: 0.25rem;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 0.5rem 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 0.875rem;
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+
+    textarea.form-input {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.1);
+    }
+
+    .form-input.error {
+      border-color: var(--error);
+    }
+
+    .form-error {
+      color: var(--error);
+      font-size: 0.75rem;
+      margin-top: 0.25rem;
+    }
+
+    .form-help {
+      color: var(--text-secondary);
+      font-size: 0.75rem;
+      margin-top: 0.25rem;
+    }
+
+    .validation-status {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem;
+      border-radius: 6px;
+      font-size: 0.875rem;
+      margin-top: 0.5rem;
+    }
+
+    .validation-status.success {
+      background: rgba(16, 185, 129, 0.1);
+      color: #059669;
+    }
+
+    .validation-status.error {
+      background: rgba(239, 68, 68, 0.1);
+      color: #991b1b;
+    }
+
+    .dialog-footer {
+      padding: 1.5rem;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.75rem;
+    }
+
+    .btn {
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-hover);
+    }
+
+    .btn-secondary {
+      background: white;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+      background: #f9fafb;
+    }
+
+    /* Direction-specific styles */
+
+    /* Direction 1: Spacious & Clear */
+    .direction-1 .kanban-board {
+      gap: 2rem;
+      padding: 2rem;
+    }
+
+    .direction-1 .kanban-column {
+      flex: 0 0 320px;
+      padding: 1.5rem;
+    }
+
+    .direction-1 .kanban-card {
+      padding: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    /* Direction 2: Dense & Efficient */
+    .direction-2 .kanban-board {
+      gap: 1rem;
+      padding: 1rem;
+    }
+
+    .direction-2 .kanban-column {
+      flex: 0 0 240px;
+      padding: 0.75rem;
+    }
+
+    .direction-2 .kanban-card {
+      padding: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .direction-2 .card-title {
+      font-size: 0.75rem;
+    }
+
+    /* Direction 3: Sidebar Navigation */
+    .direction-3 .kanban-wrapper {
+      display: flex;
+    }
+
+    .direction-3 .sidebar {
+      width: 240px;
+      background: #f9fafb;
+      padding: 1.5rem;
+      border-right: 1px solid var(--border);
+    }
+
+    .direction-3 .main-content {
+      flex: 1;
+    }
+
+    /* Direction 4: Minimalist */
+    .direction-4 .kanban-column {
+      background: transparent;
+    }
+
+    .direction-4 .kanban-card {
+      border: 1px solid #e5e7eb;
+      box-shadow: none;
+    }
+
+    .direction-4 .column-header {
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    /* Direction 5: High Contrast */
+    .direction-5 .kanban-column {
+      background: #f0fdfa;
+      border: 2px solid #99f6e4;
+    }
+
+    .direction-5 .kanban-card {
+      border: 2px solid var(--border);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    /* Direction 6: Card-Heavy */
+    .direction-6 .kanban-card {
+      background: linear-gradient(to bottom, white, #fafafa);
+      border: 1px solid #e5e7eb;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    </style>
+  </head>
+  <body>
+    <div class="controls">
+      <h1>Planner Design Direction Showcase</h1>
+      <div style="display: flex; align-items: center;">
+        <button class="nav-btn" id="prevBtn" onclick="prevDirection()">
+          ← Previous
+        </button>
+        <span class="direction-counter">
+          <span id="currentDirection">1</span>of <span id="totalDirections"
+            >6</span
+          >
+        </span>
+        <button class="nav-btn" id="nextBtn" onclick="nextDirection()">
+          Next →
+        </button>
+      </div>
+    </div>
+
+    <div class="mockup-container">
+      <!-- Direction 1: Spacious & Clear -->
+      <div class="direction direction-1 active" data-index="1">
+        <div class="direction-header">
+          <div class="direction-name">1. Spacious & Clear</div>
+          <div class="direction-personality">
+            Breathing Room, Clarity, Confident
+          </div>
+          <div class="direction-best-for">
+            Best for: Teams prioritizing visual clarity and reduced cognitive
+            load
+          </div>
+
+          <div class="characteristics">
+            <div class="characteristic">
+              <div class="characteristic-label">Layout</div>
+              <div class="characteristic-value">
+                Wide columns, generous spacing
+              </div>
+            </div>
+            <div class="characteristic">
+              <div class="characteristic-label">Density</div>
+              <div class="characteristic-value">
+                Spacious (lots of white space)
+              </div>
+            </div>
+            <div class="characteristic">
+              <div class="characteristic-label">Navigation</div>
+              <div class="characteristic-value">Top bar, minimal chrome</div>
+            </div>
+            <div class="characteristic">
+              <div class="characteristic-label">Card Emphasis</div>
+              <div class="characteristic-value">Large, prominent cards</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mockup">
+          <div class="mockup-label">Kanban Board View</div>
+          <div class="kanban-board">
+            <div class="kanban-column">
+              <div class="column-header">
+                <div class="column-title">Backlog</div>
+                <div class="column-count">3</div>
+              </div>
+              <div class="kanban-card">
+                <div class="card-header">
+                  <div class="card-title">
+                    Implement drag-and-drop validation
+                  </div>
+                  <div class="card-id">TASK-123</div>
+                </div>
+                <div class="card-meta">
+                  <span class="badge badge-success">✓ Valid</span>
+                  <span>Vladimir K.</span>
+                </div>
+              </div>
+              <div class="kanban-card">
+                <div class="card-header">
+                  <div class="card-title">Add resource validation UI</div>
+                  <div class="card-id">TASK-124</div>
+                </div>
+                <div class="card-meta">
+                  <span class="badge badge-warning">⚠ Incomplete</span>
+                </div>
+              </div>
+              <div class="kanban-card">
+                <div class="card-header">
+                  <div class="card-title">
+                    Configure workflow field requirements
+                  </div>
+                  <div class="card-id">TASK-125</div>
+                </div>
+                <div class="card-meta">
+                  <span class="badge badge-success">✓ Valid</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="kanban-column">
+              <div class="column-header">
+                <div class="column-title">In Progress</div>
+                <div class="column-count">2</div>
+              </div>
+              <div class="kanban-card">
+                <div class="card-header">
+                  <div class="card-title">
+                    Build transition dialog component
+                  </div>
+                  <div class="card-id">TASK-126</div>
+                </div>
+                <div class="card-meta">
+                  <span class="badge badge-success">✓ Valid</span>
+                  <span>Anna M.</span>
+                </div>
+              </div>
+              <div class="kanban-card">
+                <div class="card-header">
+                  <div class="card-title">Test SSH resource validation</div>
+                  <div class="card-id">TASK-127</div>
+                </div>
+                <div class="card-meta">
+                  <span class="badge badge-success">✓ Valid</span>
+                  <span>John D.</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="kanban-column">
+              <div class="column-header">
+                <div class="column-title">Review</div>
+                <div class="column-count">1</div>
+              </div>
+              <div class="kanban-card">
+                <div class="card-header">
+                  <div class="card-title">
+                    Implement real-time validation feedback
+                  </div>
+                  <div class="card-id">TASK-128</div>
+                </div>
+                <div class="card-meta">
+                  <span class="badge badge-success">✓ Valid</span>
+                  <span>Sarah L.</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="kanban-column">
+              <div class="column-header">
+                <div class="column-title">Done</div>
+                <div class="column-count">4</div>
+              </div>
+              <div class="kanban-card">
+                <div class="card-header">
+                  <div class="card-title">Setup project schema editor</div>
+                  <div class="card-id">TASK-120</div>
+                </div>
+                <div class="card-meta">
+                  <span class="badge badge-success">✓ Valid</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mockup">
+          <div class="mockup-label">Transition Validation Dialog</div>
+          <div class="dialog-overlay">
+            <div class="dialog">
+              <div class="dialog-header">
+                <div class="dialog-title">
+                  Complete these fields to move to "In Progress"
+                </div>
+                <div class="dialog-subtitle">
+                  TASK-124: Add resource validation UI
+                </div>
+              </div>
+              <div class="dialog-content">
+                <div class="form-group">
+                  <label class="form-label required">Description</label>
+                  <input
+                    type="text"
+                    class="form-input error"
+                    placeholder="Enter description"
+                  >
+                  <div class="form-error">
+                    This field is required for "In Progress" status
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label required">Deployment Resource</label>
+                  <input
+                    type="text"
+                    class="form-input"
+                    value="Production Server"
+                    readonly
+                  >
+                  <div class="validation-status error">
+                    <span>✗</span>
+                    <span
+                      >Resource validation failed: SSH connection timeout</span
+                    >
+                  </div>
+                </div>
+              </div>
+              <div class="dialog-footer">
+                <button class="btn btn-secondary">Cancel</button>
+                <button class="btn btn-primary" disabled>
+                  Move to In Progress
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Direction 2: Dense & Efficient -->
+      <div class="direction direction-2" data-index="2">
+        <div class="direction-header">
+          <div class="direction-name">2. Dense & Efficient</div>
+          <div class="direction-personality">
+            Information-Rich, Compact, Productive
+          </div>
+          <div class="direction-best-for">
+            Best for: Power users who need to see many cards at once
+          </div>
+
+          <div class="characteristics">
+            <div class="characteristic">
+              <div class="characteristic-label">Layout</div>
+              <div class="characteristic-value">
+                Narrow columns, tight spacing
+              </div>
+            </div>
+            <div class="characteristic">
+              <div class="characteristic-label">Density</div>
+              <div class="characteristic-value">
+                Dense (maximum information)
+              </div>
+            </div>
+            <div class="characteristic">
+              <div class="characteristic-label">Navigation</div>
+              <div class="characteristic-value">Compact top bar</div>
+            </div>
+            <div class="characteristic">
+              <div class="characteristic-label">Card Emphasis</div>
+              <div class="characteristic-value">Small, scannable cards</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mockup">
+          <div class="mockup-label">Kanban Board View - Dense Layout</div>
+          <div class="kanban-board">
+            <div class="kanban-column">
+              <div class="column-header">
+                <div class="column-title">Backlog</div>
+                <div class="column-count">5</div>
+              </div>
+              <div class="kanban-card">
+                <div class="card-header">
+                  <div class="card-title">
+                    Implement drag-and-drop validation
+                  </div>
+                  <div class="card-id">T-123</div>
+                </div>
+                <div class="card-meta">
+                  <span class="badge badge-success">✓</span>
+                </div>
+              </div>
+              <div class="kanban-card">
+                <div class="card-header">
+                  <div class="card-title">Add resource validation UI</div>
+                  <div class="card-id">T-124</div>
+                </div>
+                <div class="card-meta">
+                  <span class="badge badge-warning">⚠</span>
+                </div>
+              </div>
+              <div class="kanban-card">
+                <div class="card-header">
+                  <div class="card-title">Configure workflow</div>
+                  <div class="card-id">T-125</div>
+                </div>
+                <div class="card-meta">
+                  <span class="badge badge-success">✓</span>
+                </div>
+              </div>
+              <div class="kanban-card">
+                <div class="card-header">
+                  <div class="card-title">Setup validation rules</div>
+                  <div class="card-id">T-129</div>
+                </div>
+                <div class="card-meta">
+                  <span class="badge badge-success">✓</span>
+                </div>
+              </div>
+              <div class="kanban-card">
+                <div class="card-header">
+                  <div class="card-title">Test async validation</div>
+                  <div class="card-id">T-130</div>
+                </div>
+                <div class="card-meta">
+                  <span class="badge badge-warning">⚠</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="kanban-column">
+              <div class="column-header">
+                <div class="column-title">In Progress</div>
+                <div class="column-count">3</div>
+              </div>
+              <div class="kanban-card">
+                <div class="card-header">
+                  <div class="card-title">Build transition dialog</div>
+                  <div class="card-id">T-126</div>
+                </div>
+                <div class="card-meta">
+                  <span class="badge badge-success">✓</span>
+                </div>
+              </div>
+              <div class="kanban-card">
+                <div class="card-header">
+                  <div class="card-title">Test SSH resource validation</div>
+                  <div class="card-id">T-127</div>
+                </div>
+                <div class="card-meta">
+                  <span class="badge badge-success">✓</span>
+                </div>
+              </div>
+              <div class="kanban-card">
+                <div class="card-header">
+                  <div class="card-title">Implement field config</div>
+                  <div class="card-id">T-131</div>
+                </div>
+                <div class="card-meta">
+                  <span class="badge badge-success">✓</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="kanban-column">
+              <div class="column-header">
+                <div class="column-title">Review</div>
+                <div class="column-count">2</div>
+              </div>
+              <div class="kanban-card">
+                <div class="card-header">
+                  <div class="card-title">Real-time validation</div>
+                  <div class="card-id">T-128</div>
+                </div>
+                <div class="card-meta">
+                  <span class="badge badge-success">✓</span>
+                </div>
+              </div>
+              <div class="kanban-card">
+                <div class="card-header">
+                  <div class="card-title">Error messages</div>
+                  <div class="card-id">T-132</div>
+                </div>
+                <div class="card-meta">
+                  <span class="badge badge-success">✓</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="kanban-column">
+              <div class="column-header">
+                <div class="column-title">Done</div>
+                <div class="column-count">6</div>
+              </div>
+              <div class="kanban-card">
+                <div class="card-header">
+                  <div class="card-title">Setup project schema</div>
+                  <div class="card-id">T-120</div>
+                </div>
+                <div class="card-meta">
+                  <span class="badge badge-success">✓</span>
+                </div>
+              </div>
+              <div class="kanban-card">
+                <div class="card-header">
+                  <div class="card-title">Create card types</div>
+                  <div class="card-id">T-121</div>
+                </div>
+                <div class="card-meta">
+                  <span class="badge badge-success">✓</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Additional directions would be added here following the same pattern -->
+      <!-- For brevity, showing structure for directions 3-6 -->
+
+      <div class="direction direction-3" data-index="3">
+        <div class="direction-header">
+          <div class="direction-name">3. Balanced Standard (Recommended)</div>
+          <div class="direction-personality">
+            Familiar, Practical, Well-Structured, Information-Rich
+          </div>
+          <div class="direction-best-for">
+            Best for: Most teams - balance of clarity, efficiency, and complete
+            card information
+          </div>
+
+          <div class="characteristics">
+            <div class="characteristic">
+              <div class="characteristic-label">Layout</div>
+              <div class="characteristic-value">
+                Standard columns, comfortable spacing
+              </div>
+            </div>
+            <div class="characteristic">
+              <div class="characteristic-label">Density</div>
+              <div class="characteristic-value">
+                Balanced with rich card details
+              </div>
+            </div>
+            <div class="characteristic">
+              <div class="characteristic-label">Navigation</div>
+              <div class="characteristic-value">
+                Full toolbar with filters & search
+              </div>
+            </div>
+            <div class="characteristic">
+              <div class="characteristic-label">Card Info</div>
+              <div class="characteristic-value">
+                Title, Resource, Project, Assignee, Status
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mockup">
+          <div class="mockup-label">Application Toolbar</div>
+          <div
+            style="background: white; padding: 1rem 1.5rem; border-bottom: 1px solid #e5e7eb;"
+          >
+            <div
+              style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;"
+            >
+              <div style="display: flex; gap: 1rem; align-items: center;">
+                <div
+                  style="font-size: 1.25rem; font-weight: 700; color: var(--primary);"
+                >
+                  Planner
+                </div>
+                <div style="font-size: 0.875rem; color: var(--text-secondary);">
+                  /
+                </div>
+                <select
+                  style="padding: 0.5rem 0.75rem; border: 1px solid var(--border); border-radius: 6px; font-size: 0.875rem; background: white;"
+                >
+                  <option>Web Platform Project</option>
+                  <option>Mobile App</option>
+                  <option>Infrastructure</option>
+                </select>
+              </div>
+              <div style="display: flex; gap: 0.75rem; align-items: center;">
+                <input
+                  type="text"
+                  placeholder="Search cards..."
+                  style="padding: 0.5rem 0.75rem; border: 1px solid var(--border); border-radius: 6px; font-size: 0.875rem; width: 250px;"
+                >
+                <button class="btn btn-primary">+ New Card</button>
+                <div
+                  style="width: 32px; height: 32px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 0.875rem;"
+                >
+                  VK
+                </div>
+              </div>
+            </div>
+            <div style="display: flex; gap: 0.75rem; align-items: center;">
+              <div
+                style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em;"
+              >
+                Filters:
+              </div>
+              <button
+                style="padding: 0.375rem 0.75rem; background: var(--bg-secondary); border: 1px solid var(--primary); border-radius: 6px; font-size: 0.75rem; color: var(--primary); cursor: pointer;"
+              >
+                All Card Types
+              </button>
+              <button
+                style="padding: 0.375rem 0.75rem; background: white; border: 1px solid var(--border); border-radius: 6px; font-size: 0.75rem; color: var(--text); cursor: pointer;"
+              >
+                Assignee: Any
+              </button>
+              <button
+                style="padding: 0.375rem 0.75rem; background: white; border: 1px solid var(--border); border-radius: 6px; font-size: 0.75rem; color: var(--text); cursor: pointer;"
+              >
+                Resource: Any
+              </button>
+              <button
+                style="padding: 0.375rem 0.75rem; background: white; border: 1px solid var(--border); border-radius: 6px; font-size: 0.75rem; color: var(--text-secondary); cursor: pointer;"
+              >
+                Clear All
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="mockup">
+          <div class="mockup-label">
+            Kanban Board View - Rich Card Information
+          </div>
+          <div class="kanban-board">
+            <div class="kanban-column">
+              <div class="column-header">
+                <div class="column-title">Backlog</div>
+                <div class="column-count">3</div>
+              </div>
+              <div class="kanban-card">
+                <div class="card-header">
+                  <div class="card-title">
+                    Implement drag-and-drop validation
+                  </div>
+                  <div class="card-id">TASK-123</div>
+                </div>
+                <div class="card-meta">
+                  <span class="badge badge-success">✓ Valid</span>
+                </div>
+                <div
+                  style="margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid #f3f4f6; font-size: 0.75rem;"
+                >
+                  <div
+                    style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;"
+                  >
+                    <span style="color: var(--text-secondary);">📦</span>
+                    <span style="color: var(--text-secondary);">Resource:</span>
+                    <span style="color: var(--text); font-weight: 500;"
+                      >Production Web Server</span
+                    >
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <div
+                      style="width: 20px; height: 20px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 0.625rem;"
+                    >
+                      VK
+                    </div>
+                    <span style="color: var(--text);">Vladimir K.</span>
+                  </div>
+                </div>
+              </div>
+              <div class="kanban-card">
+                <div class="card-header">
+                  <div class="card-title">Add resource validation UI</div>
+                  <div class="card-id">TASK-124</div>
+                </div>
+                <div class="card-meta">
+                  <span class="badge badge-warning">⚠ Incomplete</span>
+                </div>
+                <div
+                  style="margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid #f3f4f6; font-size: 0.75rem;"
+                >
+                  <div
+                    style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;"
+                  >
+                    <span style="color: var(--text-secondary);">📦</span>
+                    <span style="color: var(--text-secondary);">Resource:</span>
+                    <span style="color: var(--error); font-weight: 500;"
+                      >Staging API (Invalid)</span
+                    >
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <div
+                      style="width: 20px; height: 20px; background: #e5e7eb; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--text-secondary); font-weight: 600; font-size: 0.625rem;"
+                    >
+                      ?
+                    </div>
+                    <span style="color: var(--text-secondary);"
+                      >Unassigned</span
+                    >
+                  </div>
+                </div>
+              </div>
+              <div class="kanban-card">
+                <div class="card-header">
+                  <div class="card-title">
+                    Configure workflow field requirements
+                  </div>
+                  <div class="card-id">TASK-125</div>
+                </div>
+                <div class="card-meta">
+                  <span class="badge badge-success">✓ Valid</span>
+                </div>
+                <div
+                  style="margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid #f3f4f6; font-size: 0.75rem;"
+                >
+                  <div
+                    style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;"
+                  >
+                    <span style="color: var(--text-secondary);">📦</span>
+                    <span style="color: var(--text-secondary);">Resource:</span>
+                    <span style="color: var(--text); font-weight: 500;"
+                      >Dev Database</span
+                    >
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <div
+                      style="width: 20px; height: 20px; background: #f59e0b; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 0.625rem;"
+                    >
+                      AM
+                    </div>
+                    <span style="color: var(--text);">Anna M.</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="kanban-column">
+              <div class="column-header">
+                <div class="column-title">In Progress</div>
+                <div class="column-count">2</div>
+              </div>
+              <div class="kanban-card">
+                <div class="card-header">
+                  <div class="card-title">
+                    Build transition dialog component
+                  </div>
+                  <div class="card-id">TASK-126</div>
+                </div>
+                <div class="card-meta">
+                  <span class="badge badge-success">✓ Valid</span>
+                </div>
+                <div
+                  style="margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid #f3f4f6; font-size: 0.75rem;"
+                >
+                  <div
+                    style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;"
+                  >
+                    <span style="color: var(--text-secondary);">📦</span>
+                    <span style="color: var(--text-secondary);">Resource:</span>
+                    <span style="color: var(--text); font-weight: 500;"
+                      >Prod API Endpoint</span
+                    >
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <div
+                      style="width: 20px; height: 20px; background: #f59e0b; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 0.625rem;"
+                    >
+                      AM
+                    </div>
+                    <span style="color: var(--text);">Anna M.</span>
+                  </div>
+                </div>
+              </div>
+              <div class="kanban-card">
+                <div class="card-header">
+                  <div class="card-title">Test SSH resource validation</div>
+                  <div class="card-id">TASK-127</div>
+                </div>
+                <div class="card-meta">
+                  <span class="badge badge-success">✓ Valid</span>
+                </div>
+                <div
+                  style="margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid #f3f4f6; font-size: 0.75rem;"
+                >
+                  <div
+                    style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;"
+                  >
+                    <span style="color: var(--text-secondary);">📦</span>
+                    <span style="color: var(--text-secondary);">Resource:</span>
+                    <span style="color: var(--text); font-weight: 500;"
+                      >SSH Server Test</span
+                    >
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <div
+                      style="width: 20px; height: 20px; background: #6366f1; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 0.625rem;"
+                    >
+                      JD
+                    </div>
+                    <span style="color: var(--text);">John D.</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="kanban-column">
+              <div class="column-header">
+                <div class="column-title">Review</div>
+                <div class="column-count">1</div>
+              </div>
+              <div class="kanban-card">
+                <div class="card-header">
+                  <div class="card-title">
+                    Implement real-time validation feedback
+                  </div>
+                  <div class="card-id">TASK-128</div>
+                </div>
+                <div class="card-meta">
+                  <span class="badge badge-success">✓ Valid</span>
+                </div>
+                <div
+                  style="margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid #f3f4f6; font-size: 0.75rem;"
+                >
+                  <div
+                    style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;"
+                  >
+                    <span style="color: var(--text-secondary);">📦</span>
+                    <span style="color: var(--text-secondary);">Resource:</span>
+                    <span style="color: var(--text); font-weight: 500;"
+                      >Dev Environment</span
+                    >
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <div
+                      style="width: 20px; height: 20px; background: #ec4899; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 0.625rem;"
+                    >
+                      SL
+                    </div>
+                    <span style="color: var(--text);">Sarah L.</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="kanban-column">
+              <div class="column-header">
+                <div class="column-title">Done</div>
+                <div class="column-count">4</div>
+              </div>
+              <div class="kanban-card">
+                <div class="card-header">
+                  <div class="card-title">Setup project schema editor</div>
+                  <div class="card-id">TASK-120</div>
+                </div>
+                <div class="card-meta">
+                  <span class="badge badge-success">✓ Valid</span>
+                </div>
+                <div
+                  style="margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid #f3f4f6; font-size: 0.75rem;"
+                >
+                  <div
+                    style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;"
+                  >
+                    <span style="color: var(--text-secondary);">📦</span>
+                    <span style="color: var(--text-secondary);">Resource:</span>
+                    <span style="color: var(--text); font-weight: 500;"
+                      >Admin Portal</span
+                    >
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <div
+                      style="width: 20px; height: 20px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 0.625rem;"
+                    >
+                      VK
+                    </div>
+                    <span style="color: var(--text);">Vladimir K.</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mockup">
+          <div class="mockup-label">Transition Validation Dialog</div>
+          <div class="dialog-overlay">
+            <div class="dialog">
+              <div class="dialog-header">
+                <div class="dialog-title">
+                  Complete these fields to move to "In Progress"
+                </div>
+                <div class="dialog-subtitle">
+                  TASK-124: Add resource validation UI
+                </div>
+              </div>
+              <div class="dialog-content">
+                <div class="form-group">
+                  <label class="form-label required">Description</label>
+                  <textarea
+                    class="form-input"
+                    rows="3"
+                    placeholder="Enter description"
+                  ></textarea>
+                  <div class="form-error">
+                    This field is required for "In Progress" status
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label required">Deployment Resource</label>
+                  <input
+                    type="text"
+                    class="form-input"
+                    value="Staging API"
+                    readonly
+                  >
+                  <div class="validation-status error">
+                    <span>✗</span>
+                    <span
+                      >Resource validation failed: API endpoint unreachable
+                      (timeout)</span
+                    >
+                  </div>
+                  <div class="form-help">
+                    Fix the resource validation or select a different resource
+                    to proceed.
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label required">Assignee</label>
+                  <select class="form-input">
+                    <option value="">Select assignee...</option>
+                    <option>Vladimir K.</option>
+                    <option selected>Anna M.</option>
+                    <option>John D.</option>
+                    <option>Sarah L.</option>
+                  </select>
+                </div>
+              </div>
+              <div class="dialog-footer">
+                <button class="btn btn-secondary">Cancel</button>
+                <button class="btn btn-primary" disabled>
+                  Move to In Progress
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Direction 4: Minimalist -->
+      <div class="direction direction-4" data-index="4">
+        <div class="direction-header">
+          <div class="direction-name">4. Minimalist</div>
+          <div class="direction-personality">
+            Clean, Distraction-Free, Essential
+          </div>
+          <div class="direction-best-for">
+            Best for: Teams who want maximum focus with minimal visual noise
+          </div>
+
+          <div class="characteristics">
+            <div class="characteristic">
+              <div class="characteristic-label">Layout</div>
+              <div class="characteristic-value">
+                Clean lines, no background noise
+              </div>
+            </div>
+            <div class="characteristic">
+              <div class="characteristic-label">Density</div>
+              <div class="characteristic-value">
+                Minimal (only essential information)
+              </div>
+            </div>
+            <div class="characteristic">
+              <div class="characteristic-label">Navigation</div>
+              <div class="characteristic-value">Minimalist top bar</div>
+            </div>
+            <div class="characteristic">
+              <div class="characteristic-label">Card Style</div>
+              <div class="characteristic-value">
+                Flat design, subtle borders
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mockup">
+          <div class="mockup-label">Kanban Board View - Minimalist Design</div>
+          <div class="kanban-board">
+            <div class="kanban-column">
+              <div class="column-header">
+                <div class="column-title">Backlog</div>
+                <div class="column-count">3</div>
+              </div>
+              <div class="kanban-card">
+                <div class="card-header">
+                  <div class="card-title">
+                    Implement drag-and-drop validation
+                  </div>
+                  <div class="card-id">TASK-123</div>
+                </div>
+                <div class="card-meta">
+                  <span class="badge badge-success">✓</span>
+                </div>
+              </div>
+              <div class="kanban-card">
+                <div class="card-header">
+                  <div class="card-title">Add resource validation UI</div>
+                  <div class="card-id">TASK-124</div>
+                </div>
+                <div class="card-meta">
+                  <span class="badge badge-warning">⚠</span>
+                </div>
+              </div>
+              <div class="kanban-card">
+                <div class="card-header">
+                  <div class="card-title">
+                    Configure workflow field requirements
+                  </div>
+                  <div class="card-id">TASK-125</div>
+                </div>
+                <div class="card-meta">
+                  <span class="badge badge-success">✓</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="kanban-column">
+              <div class="column-header">
+                <div class="column-title">In Progress</div>
+                <div class="column-count">2</div>
+              </div>
+              <div class="kanban-card">
+                <div class="card-header">
+                  <div class="card-title">
+                    Build transition dialog component
+                  </div>
+                  <div class="card-id">TASK-126</div>
+                </div>
+                <div class="card-meta">
+                  <span class="badge badge-success">✓</span>
+                </div>
+              </div>
+              <div class="kanban-card">
+                <div class="card-header">
+                  <div class="card-title">Test SSH resource validation</div>
+                  <div class="card-id">TASK-127</div>
+                </div>
+                <div class="card-meta">
+                  <span class="badge badge-success">✓</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="kanban-column">
+              <div class="column-header">
+                <div class="column-title">Review</div>
+                <div class="column-count">1</div>
+              </div>
+              <div class="kanban-card">
+                <div class="card-header">
+                  <div class="card-title">
+                    Implement real-time validation feedback
+                  </div>
+                  <div class="card-id">TASK-128</div>
+                </div>
+                <div class="card-meta">
+                  <span class="badge badge-success">✓</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="kanban-column">
+              <div class="column-header">
+                <div class="column-title">Done</div>
+                <div class="column-count">4</div>
+              </div>
+              <div class="kanban-card">
+                <div class="card-header">
+                  <div class="card-title">Setup project schema editor</div>
+                  <div class="card-id">TASK-120</div>
+                </div>
+                <div class="card-meta">
+                  <span class="badge badge-success">✓</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Direction 5: High Contrast -->
+      <div class="direction direction-5" data-index="5">
+        <div class="direction-header">
+          <div class="direction-name">5. High Contrast</div>
+          <div class="direction-personality">
+            Bold, Accessible, Defined Boundaries
+          </div>
+          <div class="direction-best-for">
+            Best for: High accessibility needs, visual clarity, bright
+            environments
+          </div>
+
+          <div class="characteristics">
+            <div class="characteristic">
+              <div class="characteristic-label">Layout</div>
+              <div class="characteristic-value">
+                Strong borders, clear separation
+              </div>
+            </div>
+            <div class="characteristic">
+              <div class="characteristic-label">Density</div>
+              <div class="characteristic-value">
+                Standard with enhanced visibility
+              </div>
+            </div>
+            <div class="characteristic">
+              <div class="characteristic-label">Accessibility</div>
+              <div class="characteristic-value">WCAG AAA contrast ratios</div>
+            </div>
+            <div class="characteristic">
+              <div class="characteristic-label">Card Style</div>
+              <div class="characteristic-value">
+                Prominent borders, strong shadows
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mockup">
+          <div class="mockup-label">Kanban Board View - High Contrast</div>
+          <div class="kanban-board">
+            <div class="kanban-column">
+              <div class="column-header">
+                <div class="column-title">Backlog</div>
+                <div class="column-count">3</div>
+              </div>
+              <div class="kanban-card">
+                <div class="card-header">
+                  <div class="card-title">
+                    Implement drag-and-drop validation
+                  </div>
+                  <div class="card-id">TASK-123</div>
+                </div>
+                <div class="card-meta">
+                  <span class="badge badge-success">✓ Valid</span>
+                  <span>Vladimir K.</span>
+                </div>
+              </div>
+              <div class="kanban-card">
+                <div class="card-header">
+                  <div class="card-title">Add resource validation UI</div>
+                  <div class="card-id">TASK-124</div>
+                </div>
+                <div class="card-meta">
+                  <span class="badge badge-warning">⚠ Incomplete</span>
+                </div>
+              </div>
+              <div class="kanban-card">
+                <div class="card-header">
+                  <div class="card-title">
+                    Configure workflow field requirements
+                  </div>
+                  <div class="card-id">TASK-125</div>
+                </div>
+                <div class="card-meta">
+                  <span class="badge badge-success">✓ Valid</span>
+                  <span>Anna M.</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="kanban-column">
+              <div class="column-header">
+                <div class="column-title">In Progress</div>
+                <div class="column-count">2</div>
+              </div>
+              <div class="kanban-card">
+                <div class="card-header">
+                  <div class="card-title">
+                    Build transition dialog component
+                  </div>
+                  <div class="card-id">TASK-126</div>
+                </div>
+                <div class="card-meta">
+                  <span class="badge badge-success">✓ Valid</span>
+                  <span>Anna M.</span>
+                </div>
+              </div>
+              <div class="kanban-card">
+                <div class="card-header">
+                  <div class="card-title">Test SSH resource validation</div>
+                  <div class="card-id">TASK-127</div>
+                </div>
+                <div class="card-meta">
+                  <span class="badge badge-success">✓ Valid</span>
+                  <span>John D.</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="kanban-column">
+              <div class="column-header">
+                <div class="column-title">Review</div>
+                <div class="column-count">1</div>
+              </div>
+              <div class="kanban-card">
+                <div class="card-header">
+                  <div class="card-title">
+                    Implement real-time validation feedback
+                  </div>
+                  <div class="card-id">TASK-128</div>
+                </div>
+                <div class="card-meta">
+                  <span class="badge badge-success">✓ Valid</span>
+                  <span>Sarah L.</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="kanban-column">
+              <div class="column-header">
+                <div class="column-title">Done</div>
+                <div class="column-count">4</div>
+              </div>
+              <div class="kanban-card">
+                <div class="card-header">
+                  <div class="card-title">Setup project schema editor</div>
+                  <div class="card-id">TASK-120</div>
+                </div>
+                <div class="card-meta">
+                  <span class="badge badge-success">✓ Valid</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Direction 6: Card-Heavy -->
+      <div class="direction direction-6" data-index="6">
+        <div class="direction-header">
+          <div class="direction-name">6. Card-Heavy</div>
+          <div class="direction-personality">
+            Material, Depth, Layered, Tactile
+          </div>
+          <div class="direction-best-for">
+            Best for: Teams who prefer rich visual feedback and material design
+            aesthetics
+          </div>
+
+          <div class="characteristics">
+            <div class="characteristic">
+              <div class="characteristic-label">Layout</div>
+              <div class="characteristic-value">
+                Emphasis on cards, material depth
+              </div>
+            </div>
+            <div class="characteristic">
+              <div class="characteristic-label">Density</div>
+              <div class="characteristic-value">
+                Standard with enhanced card presence
+              </div>
+            </div>
+            <div class="characteristic">
+              <div class="characteristic-label">Visual Style</div>
+              <div class="characteristic-value">
+                Gradients, shadows, elevation
+              </div>
+            </div>
+            <div class="characteristic">
+              <div class="characteristic-label">Card Style</div>
+              <div class="characteristic-value">
+                Prominent shadows, subtle gradients
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mockup">
+          <div class="mockup-label">
+            Kanban Board View - Material Card Design
+          </div>
+          <div class="kanban-board">
+            <div class="kanban-column">
+              <div class="column-header">
+                <div class="column-title">Backlog</div>
+                <div class="column-count">3</div>
+              </div>
+              <div class="kanban-card">
+                <div class="card-header">
+                  <div class="card-title">
+                    Implement drag-and-drop validation
+                  </div>
+                  <div class="card-id">TASK-123</div>
+                </div>
+                <div class="card-meta">
+                  <span class="badge badge-success">✓ Valid</span>
+                  <span>Vladimir K.</span>
+                </div>
+              </div>
+              <div class="kanban-card">
+                <div class="card-header">
+                  <div class="card-title">Add resource validation UI</div>
+                  <div class="card-id">TASK-124</div>
+                </div>
+                <div class="card-meta">
+                  <span class="badge badge-warning">⚠ Incomplete</span>
+                </div>
+              </div>
+              <div class="kanban-card">
+                <div class="card-header">
+                  <div class="card-title">
+                    Configure workflow field requirements
+                  </div>
+                  <div class="card-id">TASK-125</div>
+                </div>
+                <div class="card-meta">
+                  <span class="badge badge-success">✓ Valid</span>
+                  <span>Anna M.</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="kanban-column">
+              <div class="column-header">
+                <div class="column-title">In Progress</div>
+                <div class="column-count">2</div>
+              </div>
+              <div class="kanban-card">
+                <div class="card-header">
+                  <div class="card-title">
+                    Build transition dialog component
+                  </div>
+                  <div class="card-id">TASK-126</div>
+                </div>
+                <div class="card-meta">
+                  <span class="badge badge-success">✓ Valid</span>
+                  <span>Anna M.</span>
+                </div>
+              </div>
+              <div class="kanban-card">
+                <div class="card-header">
+                  <div class="card-title">Test SSH resource validation</div>
+                  <div class="card-id">TASK-127</div>
+                </div>
+                <div class="card-meta">
+                  <span class="badge badge-success">✓ Valid</span>
+                  <span>John D.</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="kanban-column">
+              <div class="column-header">
+                <div class="column-title">Review</div>
+                <div class="column-count">1</div>
+              </div>
+              <div class="kanban-card">
+                <div class="card-header">
+                  <div class="card-title">
+                    Implement real-time validation feedback
+                  </div>
+                  <div class="card-id">TASK-128</div>
+                </div>
+                <div class="card-meta">
+                  <span class="badge badge-success">✓ Valid</span>
+                  <span>Sarah L.</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="kanban-column">
+              <div class="column-header">
+                <div class="column-title">Done</div>
+                <div class="column-count">4</div>
+              </div>
+              <div class="kanban-card">
+                <div class="card-header">
+                  <div class="card-title">Setup project schema editor</div>
+                  <div class="card-id">TASK-120</div>
+                </div>
+                <div class="card-meta">
+                  <span class="badge badge-success">✓ Valid</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+    "use strict";
+    let currentIndex = 1;
+    const totalDirections = 6; // Update this when adding more directions
+
+    document.getElementById("totalDirections").textContent = totalDirections;
+
+    function showDirection(index) {
+      for (const dir of document.querySelectorAll(".direction")) {
+        dir.classList.remove("active");
+      }
+
+      const direction = document.querySelector(
+        `.direction[data-index="${index}"]`
+      );
+      if (direction) {
+        direction.classList.add("active");
+        currentIndex = index;
+        document.getElementById("currentDirection").textContent = index;
+
+        // Update button states
+        document.getElementById("prevBtn").disabled = index === 1;
+        document.getElementById("nextBtn").disabled = index === totalDirections;
+      }
+    }
+
+    function nextDirection() {
+      if (currentIndex < totalDirections) {
+        showDirection(currentIndex + 1);
+      }
+    }
+
+    function prevDirection() {
+      if (currentIndex > 1) {
+        showDirection(currentIndex - 1);
+      }
+    }
+
+    // Keyboard navigation
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowRight") {
+        nextDirection();
+      } else if (e.key === "ArrowLeft") {
+        prevDirection();
+      }
+    });
+
+    // Initialize
+    showDirection(1);
+    </script>
+  </body>
+</html>
