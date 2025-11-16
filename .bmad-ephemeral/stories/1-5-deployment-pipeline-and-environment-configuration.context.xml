@@ -1,0 +1,191 @@
+<story-context id=".bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>1</epicId>
+    <storyId>5</storyId>
+    <title>Deployment Pipeline and Environment Configuration</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-16</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>.bmad-ephemeral/stories/1-5-deployment-pipeline-and-environment-configuration.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>a developer</asA>
+    <iWant>automated build and deployment pipeline</iWant>
+    <soThat>we can deploy to production reliably and consistently</soThat>
+    <tasks>
+      <phase name="Phase 1: Basic CI Pipeline">
+        <task status="pending">RESEARCH: GitHub Actions patterns for Bun monorepos</task>
+        <task status="pending">RESEARCH: Lint/typecheck/test/build workflow</task>
+        <task status="pending">RESEARCH: Caching strategies for faster CI runs</task>
+        <task status="pending">MANDATORY PAUSE: Document and present Phase 1 research findings</task>
+        <task status="pending">Implementation tasks (to be added after user approval)</task>
+      </phase>
+      <phase name="Phase 2: Docker Integration">
+        <task status="pending">RESEARCH: Next.js 16 Dockerfile best practices</task>
+        <task status="pending">RESEARCH: Multi-stage Docker builds</task>
+        <task status="pending">RESEARCH: Docker registry integration with Dokploy</task>
+        <task status="pending">RESEARCH: Docker layer caching in GitHub Actions</task>
+        <task status="pending">MANDATORY PAUSE: Document and present Phase 2 research findings</task>
+        <task status="pending">Implementation tasks (to be added after user approval)</task>
+      </phase>
+      <phase name="Phase 3: Dokploy Preview Deployments">
+        <task status="pending">RESEARCH: Dokploy preview environments feature</task>
+        <task status="pending">RESEARCH: Dokploy preview environment lifecycle</task>
+        <task status="pending">RESEARCH: Dokploy GitHub Actions integration</task>
+        <task status="pending">RESEARCH: Dokploy preview environment database options</task>
+        <task status="pending">RESEARCH: Dokploy environment variables management</task>
+        <task status="pending">RESEARCH: Running integration tests on preview deployments</task>
+        <task status="pending">MANDATORY PAUSE: Document and present Phase 3 research findings</task>
+        <task status="pending">Implementation tasks (to be added after user approval)</task>
+      </phase>
+      <phase name="Phase 4: Dokploy Production Deployment">
+        <task status="pending">RESEARCH: Dokploy production deployment configuration</task>
+        <task status="pending">RESEARCH: Dokploy zero-downtime deployment features</task>
+        <task status="pending">RESEARCH: Dokploy health check configuration</task>
+        <task status="pending">RESEARCH: Dokploy rollback capabilities</task>
+        <task status="pending">MANDATORY PAUSE: Document and present Phase 4 research findings</task>
+        <task status="pending">Implementation tasks (to be added after user approval)</task>
+      </phase>
+      <phase name="Phase 5: Dependency Management (Optional)">
+        <task status="pending">RESEARCH: Dependabot vs Renovate comparison</task>
+        <task status="pending">RESEARCH: Auto-merge strategies for patch updates</task>
+        <task status="pending">RESEARCH: Security vulnerability scanning</task>
+        <task status="pending">MANDATORY PAUSE: Document and present Phase 5 research findings</task>
+        <task status="pending">Implementation tasks (to be added after user approval)</task>
+      </phase>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="AC1">CI/CD pipeline runs on all PRs and branch pushes</criterion>
+    <criterion id="AC2">Linting stage enforces code quality (bun run check)</criterion>
+    <criterion id="AC3">Type checking stage validates TypeScript</criterion>
+    <criterion id="AC4">Production build creates Docker image (Next.js standalone mode)</criterion>
+    <criterion id="AC5">Environment configuration supports dev/staging/prod</criterion>
+    <criterion id="AC6">Environment variable validation runs at startup</criterion>
+    <criterion id="AC7">Docker image is optimized (multi-stage, &lt;500MB)</criterion>
+    <criterion id="AC8">Preview deployments work for PRs via Dokploy</criterion>
+    <criterion id="AC9">Integration tests run on preview deployments</criterion>
+    <criterion id="AC10">Production deployment works from main branch via Dokploy</criterion>
+    <criterion id="AC11">Deployment process is documented in README</criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/epics/epic-1-foundation-project-infrastructure.md</path>
+        <title>Epic 1: Foundation &amp; Project Infrastructure</title>
+        <section>Story 1.5: Deployment Pipeline and Environment Configuration</section>
+        <snippet>CI/CD pipeline with linting (Ultracite/Biome), type checking, unit tests, production build, and deployment. Environment configuration for dev/staging/prod with secrets management. Production build optimized with code minification, tree shaking, image optimization.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Architecture</title>
+        <section>Core Technologies</section>
+        <snippet>Next.js 16.0.0 with App Router and standalone output mode for Docker. Turborepo 2.5.4 monorepo build orchestration. Bun 1.3.1 package manager. TypeScript strict mode. Ultracite 6.3.2 + Biome 2.3.4 for linting.</snippet>
+      </doc>
+      <doc>
+        <path>docs/PRD.md</path>
+        <title>Product Requirements Document</title>
+        <section>Project Classification</section>
+        <snippet>Built on: Next.js 16, React 19, ORPC, PostgreSQL, Drizzle ORM, Better-Auth. Internal process management tool for workflow validation.</snippet>
+      </doc>
+      <doc>
+        <path>.bmad-ephemeral/stories/tech-spec-epic-1.md</path>
+        <title>Epic Technical Specification: Foundation &amp; Project Infrastructure</title>
+        <section>System Architecture Alignment</section>
+        <snippet>Monorepo structure with Next.js 16 frontend, ORPC backend API, Better-Auth authentication, Drizzle ORM database layer. Deployment architecture for self-hosted environment.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>package.json</path>
+        <kind>config</kind>
+        <symbol>scripts</symbol>
+        <lines>23-39</lines>
+        <reason>Existing build scripts: check (biome), build (turbo), check-types (turbo), dev. These scripts will be used in CI pipeline.</reason>
+      </artifact>
+      <artifact>
+        <path>turbo.json</path>
+        <kind>config</kind>
+        <symbol>tasks</symbol>
+        <lines>4-16</lines>
+        <reason>Turborepo task definitions for build, lint, check-types with dependency orchestration. Pipeline will use these tasks.</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <node>
+        <package name="turbo" version="^2.5.4" scope="dev">Monorepo build orchestration - used in CI for parallel task execution</package>
+        <package name="@biomejs/biome" version="2.3.4" scope="dev">Fast Rust-based linter and formatter</package>
+        <package name="ultracite" version="6.3.2" scope="dev">Zero-config Biome preset enforcing strict code quality</package>
+        <package name="next" version="16.0.0" scope="prod">React framework with App Router and standalone output mode for Docker</package>
+        <package name="better-auth" version="^1.3.28" scope="prod">Session-based authentication system</package>
+        <package name="zod" version="^4.1.11" scope="prod">Schema validation (can be used for environment variable validation)</package>
+      </node>
+      <runtime>
+        <package name="bun" version="1.3.1">Package manager and JavaScript runtime</package>
+        <package name="node" version="^22.13.11">Node.js runtime for development tools</package>
+      </runtime>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint>CI pipeline must run on all PRs and branch pushes (not just main)</constraint>
+    <constraint>Self-hosted deployment via Dokploy (NOT Vercel or other cloud platforms)</constraint>
+    <constraint>Docker-based deployment with Next.js standalone output mode</constraint>
+    <constraint>Research-first pattern: each phase requires research, documentation, user approval before implementation</constraint>
+    <constraint>All code must pass 'bun run check' with 0 errors</constraint>
+    <constraint>TypeScript strict mode enforced across all packages</constraint>
+    <constraint>Multi-stage Docker builds for minimal image size (&lt;500MB target)</constraint>
+    <constraint>Preview deployments must support integration testing</constraint>
+    <constraint>Zero-downtime production deployments (Dokploy feature to verify in research)</constraint>
+    <constraint>Environment variable validation must fail fast with clear errors</constraint>
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>Existing Build Scripts</name>
+      <kind>npm scripts</kind>
+      <signature>
+        bun run check - Biome linting and formatting
+        bun run build - Turborepo build orchestration
+        bun run check-types - TypeScript type checking via Turbo
+        bun run dev - Development server via Turbo
+      </signature>
+      <path>package.json</path>
+    </interface>
+    <interface>
+      <name>Turborepo Task Pipeline</name>
+      <kind>build configuration</kind>
+      <signature>
+        build: depends on ^build, outputs dist/**
+        lint: depends on ^lint
+        check-types: depends on ^check-types
+      </signature>
+      <path>turbo.json</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      Manual testing required for this infrastructure story. Phase verification will include creating test PRs with intentional errors (lint, type, build failures) to verify pipeline fails correctly. Preview deployment testing will verify deployment creation, updates, and cleanup. Production deployment testing will verify zero-downtime deployment and rollback capabilities. Story 1.6 will establish comprehensive testing infrastructure with Bun test runner and Playwright E2E tests.
+    </standards>
+    <locations>
+      No existing test infrastructure yet. Story 1.6 will add:
+      - Unit tests: packages/*/src/**/*.test.ts
+      - E2E tests: apps/e2e/ (dedicated Playwright application)
+    </locations>
+    <ideas>
+      <idea ac="AC1">Create test PR - verify CI triggers on push</idea>
+      <idea ac="AC2">Create PR with lint error - verify pipeline fails at lint stage</idea>
+      <idea ac="AC3">Create PR with type error - verify pipeline fails at typecheck stage</idea>
+      <idea ac="AC4">Verify Docker image builds successfully and is pushed to registry</idea>
+      <idea ac="AC7">Verify Docker image size is under 500MB</idea>
+      <idea ac="AC8">Create PR - verify Dokploy preview deployment is created with unique URL</idea>
+      <idea ac="AC9">Verify integration tests execute against preview URL</idea>
+      <idea ac="AC10">Merge to main - verify production deployment triggers</idea>
+      <idea ac="AC11">Review README deployment section for completeness</idea>
+    </ideas>
+  </tests>
+</story-context>

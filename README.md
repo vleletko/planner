@@ -89,6 +89,39 @@ planner/
 - `bun run check`: Run Biome linter and formatter (with auto-fix)
 - `bun run check-types`: Check TypeScript types across all packages
 
+## CI/CD Pipeline
+
+This project uses GitHub Actions for automated quality checks and builds.
+
+### Automated Checks
+
+Every pull request and push to `main` automatically runs:
+
+1. **Lint** - Biome code quality checks (`bun run check`)
+2. **Type Check** - TypeScript validation (`bun run check-types`)
+3. **Build** - Production build verification (`bun run build`)
+
+### Running Checks Locally
+
+Before pushing code, run the same checks locally:
+
+```bash
+bun run check         # Lint and format
+bun run check-types   # Type check
+bun run build         # Build
+```
+
+### Pipeline Features
+
+- **Fast Execution**: Bun and Turborepo caching for sub-2-minute runs
+- **Fail Fast**: Stops at first error (lint → typecheck → build sequence)
+- **Concurrency Control**: Automatically cancels outdated runs when new commits are pushed
+- **Caching**: Both Bun dependencies and Turborepo outputs are cached
+
+### Workflow Configuration
+
+See `.github/workflows/ci.yml` for full configuration details.
+
 ### Database
 - `bun run db:push`: Push schema changes to database
 - `bun run db:studio`: Open Drizzle Studio (database UI)
