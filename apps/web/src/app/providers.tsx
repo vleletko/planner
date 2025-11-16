@@ -24,10 +24,13 @@ export default function Providers({ children }: { children: React.ReactNode }) {
       <QueryClientProvider client={queryClient}>
         <AuthUIProvider
           authClient={authClient}
-          Link={Link}
-          // Cast to Route for typedRoutes compatibility
-          // See: https://nextjs.org/docs/app/api-reference/config/typescript#statically-typed-links
-          // "For non-literal strings, cast to Route"
+          // Wrapper for typedRoutes compatibility
+          // See: https://github.com/daveyplate/better-auth-ui/issues/140#issuecomment-2208878371
+          Link={(props) => (
+            <Link className={props.className} href={props.href as Route}>
+              {props.children}
+            </Link>
+          )}
           navigate={(href) => router.push(href as Route)}
           onSessionChange={() => router.refresh()}
           replace={(href) => router.replace(href as Route)}

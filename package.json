@@ -21,12 +21,14 @@
     }
   },
   "scripts": {
-    "check": "biome check --write .",
+    "check": "biome check .",
+    "check:fix": "biome check --write .",
     "dev": "turbo dev",
     "build": "turbo build",
     "check-types": "turbo check-types",
     "dev:native": "turbo -F native dev",
     "dev:web": "turbo -F web dev",
+    "clear": "rm -rf .turbo apps/*/.next",
     "db:push": "turbo -F @planner/db db:push",
     "db:studio": "turbo -F @planner/db db:studio",
     "db:generate": "turbo -F @planner/db db:generate",
