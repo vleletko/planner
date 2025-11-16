@@ -2,7 +2,7 @@ import { auth } from "@planner/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
-export default async function Home() {
+export default async function ReportsPage() {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
@@ -11,6 +11,10 @@ export default async function Home() {
     redirect("/auth/sign-in");
   }
 
-  // Redirect authenticated users to dashboard
-  redirect("/dashboard");
+  return (
+    <div>
+      <h1>Reports</h1>
+      <p>Reports page - Coming soon</p>
+    </div>
+  );
 }

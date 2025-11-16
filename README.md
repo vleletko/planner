@@ -94,7 +94,64 @@ planner/
 - `bun run db:studio`: Open Drizzle Studio (database UI)
 - `bun run db:generate`: Generate database migrations
 - `bun run db:migrate`: Run database migrations
+- `bun run db:seed`: Seed database with test users
+- `bun run db:reset`: Complete database reset (drop → recreate → migrate → seed)
 - `bun run db:start`: Start PostgreSQL database (Docker)
 - `bun run db:watch`: Start PostgreSQL with logs
 - `bun run db:stop`: Stop PostgreSQL database
 - `bun run db:down`: Stop and remove PostgreSQL container
+
+## Authentication
+
+This project uses **Better-Auth 1.3.28** for session-based authentication with email/password credentials.
+
+### Quick Start
+
+1. **Environment Variables** (already configured in `apps/web/.env`):
+   ```env
+   BETTER_AUTH_SECRET=8cJgPXHZ41VuZOo7AhrlTZE0ZeZWeNSj
+   BETTER_AUTH_URL=http://localhost:3001
+   CORS_ORIGIN=http://localhost:3001
+   DATABASE_URL=postgresql://postgres:postgres@localhost:5432/planner
+   ```
+
+2. **Seed Test Users**:
+   ```bash
+   bun run db:seed
+   ```
+
+3. **Available Test Accounts**:
+   - ✅ `test@example.com` / `TestPassword123!` (verified)
+   - ✅ `admin@example.com` / `AdminPassword123!` (verified)
+   - ✅ `demo@example.com` / `DemoPassword123!` (verified)
+   - ❌ `unverified@example.com` / `UnverifiedPassword123!` (unverified)
+
+### Key Features
+
+- **Session Management**: httpOnly cookies with 7-day expiration
+- **Security**: XSS protection (httpOnly), CSRF protection (sameSite=lax), password hashing (scrypt)
+- **Protected Routes**: Automatic redirect to `/login` for unauthenticated users
+- **Form Validation**: Inline validation with clear error messages
+- **API Endpoints**: Auto-generated at `/api/auth/*` (sign-up, sign-in, sign-out, session)
+
+### Testing Authentication
+
+For comprehensive manual testing procedures, see:
+- **Testing Guide**: `docs/authentication-testing-guide.md`
+- **Story File**: `.bmad-ephemeral/stories/1-3-authentication-system-integration.md`
+
+Quick test flow:
+1. Navigate to http://localhost:3001/login
+2. Sign up with new email or sign in with test account
+3. Verify redirect to `/dashboard`
+4. Test protected routes, logout, and session persistence
+
+### Architecture
+
+- **Auth Configuration**: `packages/auth/src/index.ts`
+- **Auth Client**: `apps/web/src/lib/auth-client.ts`
+- **ORPC Context**: `packages/api/src/context.ts`
+- **Login Page**: `apps/web/src/app/login/page.tsx`
+- **Protected Routes**: Use `auth.api.getSession()` in server components
+
+For more details, see `docs/architecture.md#Authentication-Flow`.

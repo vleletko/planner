@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -23,20 +25,47 @@ export default function UserMenu() {
   if (!session) {
     return (
       <Button asChild variant="outline">
-        <Link href="/login">Sign In</Link>
+        <Link href="/auth/sign-in">Sign In</Link>
       </Button>
     );
   }
 
+  // Get user initials for avatar
+  const getInitials = (name: string | null) => {
+    if (!name) {
+      return "?";
+    }
+    const parts = name.trim().split(" ");
+    if (parts.length >= 2) {
+      const lastPart = parts.at(-1);
+      return `${parts[0][0]}${lastPart?.[0] ?? ""}`.toUpperCase();
+    }
+    return name.substring(0, 2).toUpperCase();
+  };
+
+  const initials = getInitials(session.user.name);
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline">{session.user.name}</Button>
+        <Button
+          aria-label="User menu"
+          className="gap-2 rounded-full pr-1 pl-1 sm:pl-4"
+          variant="outline"
+        >
+          <span className="hidden sm:inline">{session.user.name}</span>
+          <div className="flex size-7 items-center justify-center rounded-full bg-gradient-to-br from-primary to-primary/80 font-semibold text-primary-foreground text-xs">
+            {initials}
+          </div>
+        </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="bg-card">
+      <DropdownMenuContent align="end" className="w-56 bg-card">
         <DropdownMenuLabel>My Account</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem>{session.user.email}</DropdownMenuItem>
+        <DropdownMenuItem className="text-muted-foreground text-sm">
+          {session.user.email}
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
           <Button
             className="w-full"
@@ -49,6 +78,7 @@ export default function UserMenu() {
                 },
               });
             }}
+            size="sm"
             variant="destructive"
           >
             Sign Out

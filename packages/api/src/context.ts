@@ -1,7 +1,14 @@
 import { auth } from "@planner/auth";
-import type { NextRequest } from "next/server";
 
-export async function createContext(req: NextRequest) {
+/**
+ * Minimal request interface for context creation.
+ * Compatible with NextRequest and other request types.
+ */
+export type RequestLike = {
+  headers: Headers;
+};
+
+export async function createContext(req: RequestLike) {
   const session = await auth.api.getSession({
     headers: req.headers,
   });
