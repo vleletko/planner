@@ -1,0 +1,401 @@
+<story-context id=".bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>1</epicId>
+    <storyId>4</storyId>
+    <title>Basic UI Shell and Theme System</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-13</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>.bmad-ephemeral/stories/1-4-basic-ui-shell-and-theme-system.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>a user</asA>
+    <iWant>a consistent, accessible UI with theme support</iWant>
+    <soThat>I have a pleasant experience using the application</soThat>
+    <tasks>- [ ] **Task -1: UX Design Exploration** (CRITICAL FIRST STEP - DO THIS BEFORE CODE ANALYSIS)
+  - [ ] **Call UX Designer Agent** to draft UI shell options
+  - [ ] Provide UX Design Specification as reference: Check for docs/ux-design-specification.md or similar
+  - [ ] Provide context: Design doc direction (Balanced Teal theme, clean functional toolbar, Section 4.1 Design Direction)
+  - [ ] Ask for multiple options: Top navigation? Left sidebar? Both? Different layouts?
+  - [ ] Request mockups/wireframes for each option showing:
+    - Header/navigation structure
+    - User menu placement
+    - Theme toggle placement
+    - Branding/logo location
+    - Search bar location (if applicable)
+    - Primary action button location ("+New Card")
+    - Responsive behavior (mobile vs desktop)
+  - [ ] Review options with user and get decision on preferred shell structure
+  - [ ] Document chosen approach in Dev Notes section
+  - [ ] Use chosen design as blueprint for implementation
+
+- [ ] **Task 0: Analyze existing codebase implementation** (AFTER UX DESIGN DECISION)
+  - [ ] Analyze existing header component structure (`apps/web/src/components/header.tsx`)
+  - [ ] Compare existing structure with chosen UX design from Task -1
+  - [ ] Analyze existing theme system implementation (`theme-provider.tsx`, `mode-toggle.tsx`)
+  - [ ] Check design token implementation in apps/web/src/index.css and tailwind.config.ts
+  - [ ] Identify which design tokens are implemented vs using defaults
+  - [ ] Check if layout structure (max-width 1280px container) is implemented
+  - [ ] List missing components that need to be created based on chosen UX design
+  - [ ] Document findings: What exists? What's missing? What needs fixing? What matches chosen design vs needs changes?
+
+- [ ] **Task 1: Implement/complete application header** (AC: #1, #2)
+  - [ ] Based on Task 0 analysis: Implement or complete header component
+  - [ ] Ensure header includes: Planner logo/branding, navigation, user menu
+  - [ ] Integrate header in root layout (`apps/web/src/app/layout.tsx`)
+  - [ ] Implement fixed positioning and scroll behavior
+  - [ ] Connect user menu to Better-Auth session data (name, email, image)
+  - [ ] Implement logout functionality if not present
+  - [ ] Test: Navigate to /dashboard and verify header displays correctly
+  - [ ] Test: Verify user menu displays correct session user data
+
+- [ ] **Task 2: Implement/complete design token system** (AC: #8)
+  - [ ] **CRITICAL**: Review shadcn/ui's existing CSS variable system first
+  - [ ] Read `apps/web/src/index.css` completely to understand token architecture
+  - [ ] **Understand the integration**: CSS Variables (OKLCH) → Tailwind Config → Utility Classes → Components
+  - [ ] Verify Tailwind config references CSS variables correctly
+  - [ ] Note: Tailwind 4 uses **OKLCH color format**, not HSL
+  - [ ] Based on Task 0 analysis: Customize shadcn CSS variable VALUES to match design direction
+  - [ ] Customize color token VALUES in apps/web/src/index.css (--primary, --secondary, --background, --foreground OKLCH values)
+  - [ ] Verify light/dark mode both have proper CSS variable values defined
+  - [ ] Customize typography tokens (extend shadcn's system or Tailwind config)
+  - [ ] Verify/customize spacing tokens (shadcn uses Tailwind's default spacing scale)
+  - [ ] Verify/customize border radius token (shadcn provides --radius variable)
+  - [ ] Verify/customize shadow tokens (may need to add if not in shadcn defaults)
+  - [ ] Add transition tokens if needed: --transition-fade (200ms)
+  - [ ] Test: Verify Tailwind utilities (bg-primary, text-background) use CSS variables
+  - [ ] Test: Verify shadcn components still work correctly with customizations
+  - [ ] Test: Verify theme toggle switches CSS variable values and updates everything
+  - [ ] Test: Inspect components and verify design direction is achieved
+
+- [ ] **Task 3: Implement/complete theme system** (AC: #3, #4)
+  - [ ] Based on Task 0 analysis: Implement or complete theme provider
+  - [ ] Ensure theme provider wraps application in root layout
+  - [ ] Implement or complete mode-toggle component
+  - [ ] Ensure theme toggle button is accessible from header or user menu
+  - [ ] Implement localStorage persistence for theme preference
+  - [ ] Implement smooth 200ms theme transitions (no jarring flash)
+  - [ ] Test: Click theme toggle and verify smooth transition
+  - [ ] Test: Verify theme colors update across all UI components
+  - [ ] Test: Refresh browser and verify theme persists from localStorage
+  - [ ] Test: Close/reopen browser and verify theme persistence
+
+- [ ] **Task 4: Implement/complete responsive layout** (AC: #5)
+  - [ ] Review root layout in `apps/web/src/app/layout.tsx`
+  - [ ] Verify layout uses max-width 1280px container
+  - [ ] Test: View application on desktop viewport (1440px, 1920px)
+  - [ ] Test: Verify header displays full navigation on desktop
+  - [ ] Test: View application on mobile viewport (375px, 768px)
+  - [ ] Test: Verify header adapts with mobile-friendly navigation
+  - [ ] Test: Verify all interactive elements remain accessible on mobile
+
+- [ ] **Task 5: Implement/complete accessibility features** (AC: #6, #7)
+  - [ ] Based on Task 0 analysis: Implement missing accessibility features
+  - [ ] Ensure proper keyboard navigation (Tab order follows visual layout)
+  - [ ] Implement/verify focus indicators meeting WCAG 2.1 AA contrast (3:1 minimum)
+  - [ ] Test: Tab through all interactive elements and verify focus order
+  - [ ] Test: Activate buttons with Enter/Space keys
+  - [ ] Test: Close menus with Escape key
+  - [ ] Add aria-labels to all interactive elements
+  - [ ] Add aria-label to theme toggle ("Toggle theme" or "Switch to dark mode")
+  - [ ] Add aria-label to user menu button ("User menu" or similar)
+  - [ ] Ensure semantic HTML: <header>, <nav> elements used correctly
+  - [ ] Inspect header with browser accessibility tools (Chrome DevTools Lighthouse, axe)
+  - [ ] Fix any accessibility issues found
+
+- [ ] **Task 6: Manual testing and documentation** (AC: All)
+  - [ ] Create manual testing checklist for UI shell verification
+  - [ ] Test all acceptance criteria systematically
+  - [ ] Document any issues or deviations found
+  - [ ] Test theme switching in both light and dark modes
+  - [ ] Test cross-browser compatibility (Chrome, Firefox, Safari)
+  - [ ] Update README with UI shell testing instructions
+  - [ ] Add comments to theme configuration explaining design tokens</tasks>
+  </story>
+
+  <acceptanceCriteria>1. **Application header is visible and functional**
+   - Given I am logged in
+   - When I navigate to /dashboard
+   - Then I see a header with Planner logo/branding
+   - And I see navigation elements
+   - And I see a user menu with my name and avatar
+   - And the header is fixed at the top on scroll
+
+2. **User menu displays correct information**
+   - Given I am logged in as a user with name "Test User"
+   - When I click on the user menu in the header
+   - Then I see my name "Test User" displayed
+   - And I see my email displayed
+   - And I see logout option
+   - And I can close the menu by clicking outside or pressing Escape
+
+3. **Theme toggle switches modes smoothly**
+   - Given I am on any page after logging in
+   - When I click the theme toggle button
+   - Then the theme switches between light and dark mode
+   - And the transition is smooth (200ms fade, no jarring flash)
+   - And all UI components reflect the new theme colors
+   - And theme icons update appropriately (sun/moon)
+
+4. **Theme preference persists across sessions**
+   - Given I have selected dark mode
+   - When I refresh the browser
+   - Then the application remains in dark mode
+   - And when I close and reopen the browser
+   - Then the application still uses dark mode
+
+5. **Responsive layout works on mobile and desktop**
+   - Given I am logged in
+   - When I view the application on desktop (>1024px width)
+   - Then the header displays full navigation and user menu
+   - And the layout uses max-width 1280px container
+   - And when I view on mobile (<768px width)
+   - Then the header adapts with mobile-friendly navigation
+   - And all interactive elements remain accessible
+
+6. **Keyboard navigation is fully functional**
+   - Given I am on the dashboard page
+   - When I press Tab key repeatedly
+   - Then focus moves through all interactive elements in logical order
+   - And focus indicators are clearly visible (WCAG 2.1 AA compliant)
+   - And I can activate elements with Enter or Space keys
+   - And I can close menus with Escape key
+
+7. **ARIA labels are present on interactive elements**
+   - Given I inspect the header and navigation with accessibility tools
+   - Then all buttons have descriptive aria-labels or accessible names
+   - And the theme toggle has proper aria-label ("Toggle theme" or similar)
+   - And the user menu button has proper aria-label
+   - And navigation regions use semantic HTML (<header>, <nav>)
+
+8. **Design specification is followed**
+   - Given I inspect the UI in browser DevTools
+   - Then typography uses var(--font-sans) font family
+   - And primary actions use var(--color-primary) background
+   - And secondary actions use var(--color-secondary) color
+   - And spacing follows var(--spacing-*) token system
+   - And border radius: var(--radius-sm) on buttons, var(--radius-md) on cards
+   - And shadows use var(--shadow-sm/md/lg/xl) as appropriate
+   - And layout container has max-width 1280px</acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Architecture</title>
+        <section>Technology Stack Details > Frontend Stack</section>
+        <snippet>Framework: Next.js 16.0.0 (App Router), UI Library: React 19.0.0, Styling: TailwindCSS + shadcn/ui components. Theme provider with light/dark mode support and localStorage persistence.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Architecture</title>
+        <section>Code Quality Standards</section>
+        <snippet>TypeScript strict mode, Biome via Ultracite preset, explicit types for clarity, modern JavaScript/TypeScript patterns, React 19 best practices. WCAG 2.1 AA accessibility compliance required.</snippet>
+      </doc>
+      <doc>
+        <path>docs/epics/epic-1-foundation-project-infrastructure.md</path>
+        <title>Epic 1: Foundation & Project Infrastructure</title>
+        <section>Story 1.4: Basic UI Shell and Theme System</section>
+        <snippet>Application header with logo and navigation, user menu with profile and logout, theme toggle for light/dark mode, responsive layout, keyboard navigation support, ARIA labels, semantic HTML structure. Design follows clean functional toolbar pattern with max-width 1280px container.</snippet>
+      </doc>
+      <doc>
+        <path>docs/epics/epic-1-foundation-project-infrastructure.md</path>
+        <title>Epic 1: Foundation & Project Infrastructure</title>
+        <section>Story 1.4: Design Token References</section>
+        <snippet>Primary color: var(--color-primary), Secondary: var(--color-secondary), Typography: var(--font-sans), Spacing: var(--spacing-*), Border radius: var(--radius-sm/md), Shadows: var(--shadow-sm/md/lg/xl). Theme transitions: var(--transition-fade) for smooth 200ms transitions.</snippet>
+      </doc>
+      <doc>
+        <path>docs/ux-design-specification.md</path>
+        <title>UX Design Specification</title>
+        <section>3.1 Color System - Balanced Teal Theme</section>
+        <snippet>Primary: #14b8a6 (Teal-500), Secondary: #6b7280 (Gray-500), Success: #10b981, Warning: #f59e0b, Error: #f43f5e. Neutral backgrounds: White (#ffffff) and Teal-50 (#f0fdfa) for hover states. Modern, helpful, balanced theme conveying growth and clarity.</snippet>
+      </doc>
+      <doc>
+        <path>docs/ux-design-specification.md</path>
+        <title>UX Design Specification</title>
+        <section>4.1 Design Direction - Application Frame</section>
+        <snippet>Header Toolbar: Clean, functional header with Planner branding, project selector dropdown, global search, "+ New Card" primary action, user avatar. Fixed header with scrollable board content, max-width 1280px container. Inter font family throughout with Lucide icons.</snippet>
+      </doc>
+      <doc>
+        <path>docs/ux-design-specification.md</path>
+        <title>UX Design Specification</title>
+        <section>1.1 Design System Foundation</section>
+        <snippet>shadcn/ui (New York style) + Tailwind CSS. Built on Radix UI primitives (WCAG 2.1 AA compliant). 50+ accessible components. CSS variable-based theming. Lucide icons integrated. Animation libraries: @dnd-kit for drag-and-drop, anime.js for smooth animations.</snippet>
+      </doc>
+      <doc>
+        <path>docs/PRD.md</path>
+        <title>Product Requirements Document</title>
+        <section>Access Control</section>
+        <snippet>Project Owner: Configure settings, invite users, full card permissions. Admin: Access all projects system-wide. Project Member: Create/edit/move cards, view settings read-only. Authentication via Better-Auth system.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>apps/web/src/components/header.tsx</path>
+        <kind>component</kind>
+        <symbol>Header</symbol>
+        <lines>1-30</lines>
+        <reason>Existing header component with navigation links, mode toggle, and user menu. Simple structure needs enhancement for design compliance (branding, search, primary action button, fixed positioning).</reason>
+      </artifact>
+      <artifact>
+        <path>apps/web/src/components/user-menu.tsx</path>
+        <kind>component</kind>
+        <symbol>UserMenu</symbol>
+        <lines>1-60</lines>
+        <reason>Existing user menu component displaying session user name, email, and logout. Uses Better-Auth session. Needs enhancement for avatar display and improved accessibility labels.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/web/src/components/mode-toggle.tsx</path>
+        <kind>component</kind>
+        <symbol>ModeToggle</symbol>
+        <lines>1-38</lines>
+        <reason>Theme toggle component using next-themes with Sun/Moon icons. Includes light/dark/system options. Already has sr-only label "Toggle theme" for accessibility. May need transition timing verification.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/web/src/components/theme-provider.tsx</path>
+        <kind>component</kind>
+        <symbol>ThemeProvider</symbol>
+        <lines>1-11</lines>
+        <reason>Theme provider wrapping next-themes ThemeProvider. Already integrated. Need to verify localStorage persistence configuration and ensure suppressHydrationWarning is set.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/web/src/app/layout.tsx</path>
+        <kind>layout</kind>
+        <symbol>RootLayout</symbol>
+        <lines>1-41</lines>
+        <reason>Root layout with Header component integrated. Uses Geist fonts. Grid layout with auto-sized header and 1fr content. Need to verify max-width container, theme provider configuration, and responsive behavior.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/web/src/index.css</path>
+        <kind>stylesheet</kind>
+        <symbol>CSS Variables</symbol>
+        <lines>21-126</lines>
+        <reason>CSS variables for theming using OKLCH color format. Defines --radius, --background, --foreground, --primary, --secondary, and other shadcn/ui variables. Light and dark mode variables defined. Need to customize color values to match Balanced Teal theme (#14b8a6) instead of current grayscale palette.</reason>
+      </artifact>
+      <artifact>
+        <path>apps/web/src/components/providers.tsx</path>
+        <kind>component</kind>
+        <symbol>Providers</symbol>
+        <lines>unknown</lines>
+        <reason>Providers component wrapping application. Need to verify ThemeProvider is included with correct props (attribute="class", defaultTheme="system", enableSystem, storageKey="planner-theme").</reason>
+      </artifact>
+      <artifact>
+        <path>.claude/CLAUDE.md</path>
+        <kind>documentation</kind>
+        <symbol>Ultracite Code Standards</symbol>
+        <lines>1-end</lines>
+        <reason>Project code quality standards. All code must pass `bun run check` with Ultracite/Biome. TypeScript strict mode, explicit types, modern patterns, accessibility best practices. Critical for maintaining code quality.</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <node>
+        <package>next</package>
+        <version>16.0.0</version>
+        <purpose>Framework for React application with App Router</purpose>
+      </node>
+      <package>react</package>
+      <version>19.0.0</version>
+      <purpose>UI library for components</purpose>
+      </node>
+      <package>next-themes</package>
+      <version>unknown</version>
+      <purpose>Theme management with localStorage persistence</purpose>
+      </node>
+      <package>tailwindcss</package>
+      <version>latest</version>
+      <purpose>CSS framework for styling</purpose>
+      </node>
+      <package>shadcn/ui</package>
+      <version>latest</version>
+      <purpose>Accessible component primitives (50+ components)</purpose>
+      </node>
+      <package>lucide-react</package>
+      <version>latest</version>
+      <purpose>Icon library (Sun, Moon, and other UI icons)</purpose>
+      </node>
+      <package>better-auth</package>
+      <version>1.3.28</version>
+      <purpose>Authentication system for session management</purpose>
+      </node>
+      <package>ultracite</package>
+      <version>6.3.2</version>
+      <purpose>Biome-based linting and formatting preset</purpose>
+      </node>
+      <package>@biomejs/biome</package>
+      <version>2.3.4</version>
+      <purpose>Fast linter and formatter</purpose>
+      </node>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint>All code must pass `bun run check` (Ultracite/Biome) with 0 errors before completion</constraint>
+    <constraint>TypeScript strict mode enforced - explicit types required for function parameters and returns</constraint>
+    <constraint>Design tokens must use shadcn/ui's existing CSS variable system - customize VALUES not structure</constraint>
+    <constraint>Color format: OKLCH (Tailwind 4 standard) not HSL - see apps/web/src/index.css for examples</constraint>
+    <constraint>Theme system: Modify CSS variables in apps/web/src/index.css for both light and dark modes</constraint>
+    <constraint>Accessibility: WCAG 2.1 AA compliance required - keyboard navigation, ARIA labels, focus indicators (3:1 contrast), semantic HTML</constraint>
+    <constraint>Responsive layout: Mobile-first approach, test on 375px (mobile), 768px (tablet), 1440px (desktop) viewports</constraint>
+    <constraint>Theme transitions: 200ms smooth fade transitions, no jarring flash of unstyled content</constraint>
+    <constraint>Header positioning: Fixed at top, scrollable content below, max-width 1280px container</constraint>
+    <constraint>Font family: Inter (already configured in layout) throughout application per design spec</constraint>
+    <constraint>Component library: Use shadcn/ui components exclusively - don't create custom primitives</constraint>
+    <constraint>Session integration: User menu must display Better-Auth session data (name, email from session.user)</constraint>
+    <constraint>No new files unless absolutely necessary - prefer editing existing components</constraint>
+    <constraint>Manual testing required - Story 1.6 will add automated E2E testing infrastructure</constraint>
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>Better-Auth Session</name>
+      <kind>Session Object</kind>
+      <signature>session: { user: { id: string, email: string, name: string | null, image: string | null }, session: { id: string, expiresAt: Date } }</signature>
+      <path>packages/auth/src/index.ts</path>
+      <usage>User menu component accesses session.user.name and session.user.email for display. Logout via authClient.signOut().</usage>
+    </interface>
+    <interface>
+      <name>useTheme Hook</name>
+      <kind>React Hook</kind>
+      <signature>const { theme, setTheme, systemTheme } = useTheme()</signature>
+      <path>next-themes package</path>
+      <usage>Mode toggle component uses setTheme('light' | 'dark' | 'system') to change theme. Theme persisted to localStorage automatically.</usage>
+    </interface>
+    <interface>
+      <name>ThemeProvider Props</name>
+      <kind>Component Props</kind>
+      <signature>ThemeProvider({ attribute?: string, defaultTheme?: string, enableSystem?: boolean, storageKey?: string, children: ReactNode })</signature>
+      <path>next-themes package</path>
+      <usage>Root layout wraps app with ThemeProvider. Configure: attribute="class", defaultTheme="system", enableSystem=true, storageKey="planner-theme".</usage>
+    </interface>
+    <interface>
+      <name>CSS Variables (Design Tokens)</name>
+      <kind>CSS Custom Properties</kind>
+      <signature>--primary, --secondary, --background, --foreground, --radius, --border, --muted, --accent, --destructive (OKLCH values)</signature>
+      <path>apps/web/src/index.css</path>
+      <usage>Tailwind utilities reference these variables. Customize OKLCH values to match Balanced Teal theme. Both :root and .dark selectors must be updated.</usage>
+    </interface>
+    <interface>
+      <name>shadcn/ui Components</name>
+      <kind>React Components</kind>
+      <signature>Button, DropdownMenu, DropdownMenuItem, Skeleton, and 50+ other accessible primitives</signature>
+      <path>apps/web/src/components/ui/*</path>
+      <usage>Use for all UI elements. Components automatically consume CSS variables for theming. Examples: Button variant="outline", DropdownMenu with trigger and content.</usage>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>Manual browser testing required for Story 1.4. Story 1.6 will establish automated testing infrastructure with Bun test runner and Playwright E2E. For now, validation is manual: Chrome DevTools for CSS inspection, Lighthouse for accessibility audit, responsive mode for viewport testing, DevTools Accessibility panel for ARIA verification.</standards>
+    <locations>Testing infrastructure will be added in Story 1.6. Current story uses manual browser testing procedures. Future tests will be located in: apps/e2e/ for Playwright E2E tests, component co-located *.test.tsx files for unit tests.</locations>
+    <ideas>
+      <idea ac="AC1">Manual test: Navigate to /dashboard after login. Verify header visible with Planner branding, navigation links, user menu, theme toggle. Test fixed positioning by scrolling page content.</idea>
+      <idea ac="AC2">Manual test: Click user menu button. Verify dropdown shows session.user.name and session.user.email. Test logout button redirects to home. Test Escape key closes menu.</idea>
+      <idea ac="AC3">Manual test: Click theme toggle in header. Verify smooth 200ms transition between light/dark modes. Check all UI components update colors. Verify Sun/Moon icon switches appropriately.</idea>
+      <idea ac="AC4">Manual test: Set dark mode, refresh browser. Verify dark mode persists. Close browser completely and reopen. Verify theme still dark. Check localStorage key "planner-theme" contains correct value.</idea>
+      <idea ac="AC5">Manual test: Open Chrome DevTools responsive mode. Test 375px mobile width - verify header adapts, navigation accessible, interactive elements reachable. Test 1440px desktop - verify max-width 1280px container, full navigation visible.</idea>
+      <idea ac="AC6">Manual test: Use keyboard only (no mouse). Tab through header elements - verify logical focus order (logo → navigation → search → new card button → theme toggle → user menu). Test Enter/Space activates buttons, Escape closes menus.</idea>
+      <idea ac="AC7">Manual test: Open Chrome DevTools Accessibility panel. Verify all interactive elements have descriptive names. Check theme toggle has aria-label "Toggle theme". Check user menu button has accessible name. Verify semantic HTML (header, nav elements).</idea>
+      <idea ac="AC8">Manual test: Open DevTools Elements panel. Inspect computed styles. Verify typography uses Inter font family (--font-sans or Geist fallback). Verify primary buttons use var(--color-primary). Verify spacing follows 4px base unit. Verify border radius on buttons (--radius-sm), cards (--radius-md). Verify max-width 1280px on main container.</idea>
+    </ideas>
+  </tests>
+</story-context>

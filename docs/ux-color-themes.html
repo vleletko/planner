@@ -1,0 +1,1409 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planner - Color Theme Explorer</title>
+    <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family:
+        -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
+        Arial, sans-serif;
+      background: #f5f5f5;
+      padding: 2rem;
+      line-height: 1.6;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+
+    .header h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .header p {
+      font-size: 1.125rem;
+      color: #666;
+    }
+
+    .theme-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(600px, 1fr));
+      gap: 2rem;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .theme-card {
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .theme-header {
+      padding: 1.5rem;
+      border-bottom: 1px solid #e5e5e5;
+    }
+
+    .theme-name {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .theme-personality {
+      font-size: 0.95rem;
+      color: #666;
+      margin-bottom: 0.25rem;
+    }
+
+    .theme-best-for {
+      font-size: 0.875rem;
+      color: #888;
+      font-style: italic;
+    }
+
+    .theme-content {
+      padding: 1.5rem;
+    }
+
+    .section-title {
+      font-size: 0.875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #666;
+      margin-bottom: 1rem;
+    }
+
+    .color-palette {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .color-swatch {
+      text-align: center;
+    }
+
+    .color-box {
+      width: 100%;
+      height: 80px;
+      border-radius: 8px;
+      margin-bottom: 0.5rem;
+      border: 1px solid rgba(0, 0, 0, 0.1);
+    }
+
+    .color-name {
+      font-size: 0.75rem;
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+    }
+
+    .color-hex {
+      font-size: 0.7rem;
+      color: #888;
+      font-family: "Monaco", "Courier New", monospace;
+    }
+
+    .components-preview {
+      margin-bottom: 2rem;
+    }
+
+    /* Theme-specific styles will be applied via CSS variables */
+    .theme-scope {
+      --primary: #0066cc;
+      --primary-hover: #0052a3;
+      --secondary: #6b7280;
+      --secondary-hover: #4b5563;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --error: #ef4444;
+      --bg: #ffffff;
+      --bg-secondary: #f9fafb;
+      --text: #111827;
+      --text-secondary: #6b7280;
+      --border: #e5e7eb;
+    }
+
+    .btn {
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-block;
+      margin: 0.25rem;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-hover);
+    }
+
+    .btn-secondary {
+      background: var(--secondary);
+      color: white;
+    }
+
+    .btn-secondary:hover {
+      background: var(--secondary-hover);
+    }
+
+    .btn-outline {
+      background: transparent;
+      color: var(--primary);
+      border: 1px solid var(--primary);
+    }
+
+    .btn-outline:hover {
+      background: var(--primary);
+      color: white;
+    }
+
+    .btn-destructive {
+      background: var(--error);
+      color: white;
+    }
+
+    .btn-destructive:hover {
+      background: #dc2626;
+    }
+
+    .input-group {
+      margin-bottom: 1rem;
+    }
+
+    .label {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+      color: var(--text);
+    }
+
+    .input {
+      width: 100%;
+      padding: 0.5rem 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 0.875rem;
+      transition: border-color 0.2s;
+    }
+
+    .input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+    }
+
+    .input.error {
+      border-color: var(--error);
+    }
+
+    .input.error:focus {
+      box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+    }
+
+    .card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .card-title {
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: var(--text);
+    }
+
+    .card-text {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+    }
+
+    .alert {
+      padding: 0.75rem 1rem;
+      border-radius: 6px;
+      font-size: 0.875rem;
+      margin-bottom: 1rem;
+    }
+
+    .alert-success {
+      background: rgba(16, 185, 129, 0.1);
+      color: #065f46;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .alert-error {
+      background: rgba(239, 68, 68, 0.1);
+      color: #991b1b;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .alert-warning {
+      background: rgba(245, 158, 11, 0.1);
+      color: #92400e;
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+
+    .kanban-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.75rem;
+      margin-bottom: 0.5rem;
+      cursor: grab;
+      transition: all 0.2s;
+    }
+
+    .kanban-card:hover {
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      transform: translateY(-2px);
+    }
+
+    .kanban-card-title {
+      font-size: 0.875rem;
+      font-weight: 500;
+      margin-bottom: 0.25rem;
+      color: var(--text);
+    }
+
+    .kanban-card-meta {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      margin-right: 0.25rem;
+    }
+
+    .badge-primary {
+      background: var(--primary);
+      color: white;
+    }
+
+    .badge-success {
+      background: var(--success);
+      color: white;
+    }
+
+    .badge-warning {
+      background: var(--warning);
+      color: white;
+    }
+
+    /* Theme 1: Enterprise Blue */
+    .theme-1 {
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --secondary: #64748b;
+      --secondary-hover: #475569;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --error: #ef4444;
+      --bg: #ffffff;
+      --bg-secondary: #f8fafc;
+      --text: #0f172a;
+      --text-secondary: #64748b;
+      --border: #e2e8f0;
+    }
+
+    /* Theme 2: Modern Neutral */
+    .theme-2 {
+      --primary: #18181b;
+      --primary-hover: #27272a;
+      --secondary: #71717a;
+      --secondary-hover: #52525b;
+      --success: #22c55e;
+      --warning: #eab308;
+      --error: #f43f5e;
+      --bg: #ffffff;
+      --bg-secondary: #fafafa;
+      --text: #09090b;
+      --text-secondary: #71717a;
+      --border: #e4e4e7;
+    }
+
+    /* Theme 3: Confident Slate */
+    .theme-3 {
+      --primary: #0ea5e9;
+      --primary-hover: #0284c7;
+      --secondary: #475569;
+      --secondary-hover: #334155;
+      --success: #14b8a6;
+      --warning: #f97316;
+      --error: #ef4444;
+      --bg: #f8fafc;
+      --bg-secondary: #f1f5f9;
+      --text: #0f172a;
+      --text-secondary: #475569;
+      --border: #cbd5e1;
+    }
+
+    /* Theme 4: Balanced Teal */
+    .theme-4 {
+      --primary: #14b8a6;
+      --primary-hover: #0d9488;
+      --secondary: #6b7280;
+      --secondary-hover: #4b5563;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --error: #f43f5e;
+      --bg: #ffffff;
+      --bg-secondary: #f0fdfa;
+      --text: #111827;
+      --text-secondary: #6b7280;
+      --border: #d1d5db;
+    }
+
+    /* Theme 5: Deep Teal */
+    .theme-5 {
+      --primary: #0d9488;
+      --primary-hover: #0f766e;
+      --secondary: #64748b;
+      --secondary-hover: #475569;
+      --success: #059669;
+      --warning: #d97706;
+      --error: #dc2626;
+      --bg: #ffffff;
+      --bg-secondary: #f0fdfa;
+      --text: #0f172a;
+      --text-secondary: #64748b;
+      --border: #cbd5e1;
+    }
+
+    /* Theme 6: Cyan Fresh */
+    .theme-6 {
+      --primary: #06b6d4;
+      --primary-hover: #0891b2;
+      --secondary: #71717a;
+      --secondary-hover: #52525b;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --error: #f43f5e;
+      --bg: #ffffff;
+      --bg-secondary: #ecfeff;
+      --text: #09090b;
+      --text-secondary: #71717a;
+      --border: #e4e4e7;
+    }
+
+    /* Theme 7: Ocean Blue */
+    .theme-7 {
+      --primary: #0891b2;
+      --primary-hover: #0e7490;
+      --secondary: #475569;
+      --secondary-hover: #334155;
+      --success: #14b8a6;
+      --warning: #fb923c;
+      --error: #ef4444;
+      --bg: #f8fafc;
+      --bg-secondary: #f0f9ff;
+      --text: #0f172a;
+      --text-secondary: #475569;
+      --border: #cbd5e1;
+    }
+
+    /* Theme 8: Mint Green */
+    .theme-8 {
+      --primary: #10b981;
+      --primary-hover: #059669;
+      --secondary: #6b7280;
+      --secondary-hover: #4b5563;
+      --success: #22c55e;
+      --warning: #f59e0b;
+      --error: #f43f5e;
+      --bg: #ffffff;
+      --bg-secondary: #f0fdf4;
+      --text: #111827;
+      --text-secondary: #6b7280;
+      --border: #d1d5db;
+    }
+
+    .comparison-mode {
+      margin-top: 3rem;
+      padding: 2rem;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .comparison-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+    }
+
+    @media (max-width: 1400px) {
+      .comparison-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    .comparison-item {
+      padding: 1rem;
+      border-radius: 8px;
+      border: 2px solid transparent;
+    }
+
+    @media (max-width: 1200px) {
+      .comparison-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 768px) {
+      .theme-grid {
+        grid-template-columns: 1fr;
+      }
+      .comparison-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <h1>Planner Color Theme Explorer</h1>
+      <p>
+        Explore 8 theme directions designed for control, confidence, and clarity
+      </p>
+      <p style="font-size: 0.95rem; margin-top: 0.5rem; color: #888;">
+        Themes 1-4: Diverse approaches | Themes 5-8: Modern & balanced
+        variations
+      </p>
+    </div>
+
+    <div class="theme-grid">
+      <!-- Theme 1: Enterprise Blue -->
+      <div class="theme-card">
+        <div class="theme-header">
+          <div class="theme-name">1. Enterprise Blue</div>
+          <div class="theme-personality">
+            Professional, Trustworthy, Structured
+          </div>
+          <div class="theme-best-for">
+            Best for: Enterprise teams, corporate environments, serious
+            workflows
+          </div>
+        </div>
+        <div class="theme-content theme-scope theme-1">
+          <div class="section-title">Color Palette</div>
+          <div class="color-palette">
+            <div class="color-swatch">
+              <div class="color-box" style="background: #2563eb;"></div>
+              <div class="color-name">Primary</div>
+              <div class="color-hex">#2563eb</div>
+            </div>
+            <div class="color-swatch">
+              <div class="color-box" style="background: #64748b;"></div>
+              <div class="color-name">Secondary</div>
+              <div class="color-hex">#64748b</div>
+            </div>
+            <div class="color-swatch">
+              <div class="color-box" style="background: #10b981;"></div>
+              <div class="color-name">Success</div>
+              <div class="color-hex">#10b981</div>
+            </div>
+            <div class="color-swatch">
+              <div class="color-box" style="background: #f59e0b;"></div>
+              <div class="color-name">Warning</div>
+              <div class="color-hex">#f59e0b</div>
+            </div>
+            <div class="color-swatch">
+              <div class="color-box" style="background: #ef4444;"></div>
+              <div class="color-name">Error</div>
+              <div class="color-hex">#ef4444</div>
+            </div>
+            <div class="color-swatch">
+              <div class="color-box" style="background: #f8fafc;"></div>
+              <div class="color-name">Background</div>
+              <div class="color-hex">#f8fafc</div>
+            </div>
+          </div>
+
+          <div class="section-title">Buttons</div>
+          <div style="margin-bottom: 1.5rem;">
+            <button class="btn btn-primary">Primary Action</button>
+            <button class="btn btn-secondary">Secondary</button>
+            <button class="btn btn-outline">Outline</button>
+            <button class="btn btn-destructive">Delete</button>
+          </div>
+
+          <div class="section-title">Form Inputs</div>
+          <div class="input-group">
+            <label class="label">Project Name</label>
+            <input
+              type="text"
+              class="input"
+              placeholder="Enter project name"
+              value="My Project"
+            >
+          </div>
+          <div class="input-group">
+            <label class="label">Description</label>
+            <input
+              type="text"
+              class="input error"
+              placeholder="Required field"
+              value=""
+            >
+            <div
+              style="color: var(--error); font-size: 0.75rem; margin-top: 0.25rem;"
+            >
+              This field is required
+            </div>
+          </div>
+
+          <div class="section-title">Kanban Card</div>
+          <div class="kanban-card">
+            <div class="kanban-card-title">
+              Implement drag-and-drop validation
+            </div>
+            <div class="kanban-card-meta">
+              <span class="badge badge-primary">TASK-123</span>
+              <span class="badge badge-success">Valid</span>
+            </div>
+          </div>
+
+          <div class="section-title">Alerts</div>
+          <div class="alert alert-success">
+            ✓ Card moved successfully to "In Progress"
+          </div>
+          <div class="alert alert-error">
+            ✗ Missing required field: Description
+          </div>
+          <div class="alert alert-warning">⚠ Resource validation pending</div>
+        </div>
+      </div>
+
+      <!-- Theme 2: Modern Neutral -->
+      <div class="theme-card">
+        <div class="theme-header">
+          <div class="theme-name">2. Modern Neutral</div>
+          <div class="theme-personality">Clean, Minimal, Sophisticated</div>
+          <div class="theme-best-for">
+            Best for: Contemporary SaaS, design-conscious teams, modern
+            workflows
+          </div>
+        </div>
+        <div class="theme-content theme-scope theme-2">
+          <div class="section-title">Color Palette</div>
+          <div class="color-palette">
+            <div class="color-swatch">
+              <div class="color-box" style="background: #18181b;"></div>
+              <div class="color-name">Primary</div>
+              <div class="color-hex">#18181b</div>
+            </div>
+            <div class="color-swatch">
+              <div class="color-box" style="background: #71717a;"></div>
+              <div class="color-name">Secondary</div>
+              <div class="color-hex">#71717a</div>
+            </div>
+            <div class="color-swatch">
+              <div class="color-box" style="background: #22c55e;"></div>
+              <div class="color-name">Success</div>
+              <div class="color-hex">#22c55e</div>
+            </div>
+            <div class="color-swatch">
+              <div class="color-box" style="background: #eab308;"></div>
+              <div class="color-name">Warning</div>
+              <div class="color-hex">#eab308</div>
+            </div>
+            <div class="color-swatch">
+              <div class="color-box" style="background: #f43f5e;"></div>
+              <div class="color-name">Error</div>
+              <div class="color-hex">#f43f5e</div>
+            </div>
+            <div class="color-swatch">
+              <div class="color-box" style="background: #fafafa;"></div>
+              <div class="color-name">Background</div>
+              <div class="color-hex">#fafafa</div>
+            </div>
+          </div>
+
+          <div class="section-title">Buttons</div>
+          <div style="margin-bottom: 1.5rem;">
+            <button class="btn btn-primary">Primary Action</button>
+            <button class="btn btn-secondary">Secondary</button>
+            <button class="btn btn-outline">Outline</button>
+            <button class="btn btn-destructive">Delete</button>
+          </div>
+
+          <div class="section-title">Form Inputs</div>
+          <div class="input-group">
+            <label class="label">Project Name</label>
+            <input
+              type="text"
+              class="input"
+              placeholder="Enter project name"
+              value="My Project"
+            >
+          </div>
+          <div class="input-group">
+            <label class="label">Description</label>
+            <input
+              type="text"
+              class="input error"
+              placeholder="Required field"
+              value=""
+            >
+            <div
+              style="color: var(--error); font-size: 0.75rem; margin-top: 0.25rem;"
+            >
+              This field is required
+            </div>
+          </div>
+
+          <div class="section-title">Kanban Card</div>
+          <div class="kanban-card">
+            <div class="kanban-card-title">
+              Implement drag-and-drop validation
+            </div>
+            <div class="kanban-card-meta">
+              <span class="badge badge-primary">TASK-123</span>
+              <span class="badge badge-success">Valid</span>
+            </div>
+          </div>
+
+          <div class="section-title">Alerts</div>
+          <div class="alert alert-success">
+            ✓ Card moved successfully to "In Progress"
+          </div>
+          <div class="alert alert-error">
+            ✗ Missing required field: Description
+          </div>
+          <div class="alert alert-warning">⚠ Resource validation pending</div>
+        </div>
+      </div>
+
+      <!-- Theme 3: Confident Slate -->
+      <div class="theme-card">
+        <div class="theme-header">
+          <div class="theme-name">3. Confident Slate</div>
+          <div class="theme-personality">Serious, Controlled, Premium</div>
+          <div class="theme-best-for">
+            Best for: Command center feel, technical teams, precision workflows
+          </div>
+        </div>
+        <div class="theme-content theme-scope theme-3">
+          <div class="section-title">Color Palette</div>
+          <div class="color-palette">
+            <div class="color-swatch">
+              <div class="color-box" style="background: #0ea5e9;"></div>
+              <div class="color-name">Primary</div>
+              <div class="color-hex">#0ea5e9</div>
+            </div>
+            <div class="color-swatch">
+              <div class="color-box" style="background: #475569;"></div>
+              <div class="color-name">Secondary</div>
+              <div class="color-hex">#475569</div>
+            </div>
+            <div class="color-swatch">
+              <div class="color-box" style="background: #14b8a6;"></div>
+              <div class="color-name">Success</div>
+              <div class="color-hex">#14b8a6</div>
+            </div>
+            <div class="color-swatch">
+              <div class="color-box" style="background: #f97316;"></div>
+              <div class="color-name">Warning</div>
+              <div class="color-hex">#f97316</div>
+            </div>
+            <div class="color-swatch">
+              <div class="color-box" style="background: #ef4444;"></div>
+              <div class="color-name">Error</div>
+              <div class="color-hex">#ef4444</div>
+            </div>
+            <div class="color-swatch">
+              <div class="color-box" style="background: #f1f5f9;"></div>
+              <div class="color-name">Background</div>
+              <div class="color-hex">#f1f5f9</div>
+            </div>
+          </div>
+
+          <div class="section-title">Buttons</div>
+          <div style="margin-bottom: 1.5rem;">
+            <button class="btn btn-primary">Primary Action</button>
+            <button class="btn btn-secondary">Secondary</button>
+            <button class="btn btn-outline">Outline</button>
+            <button class="btn btn-destructive">Delete</button>
+          </div>
+
+          <div class="section-title">Form Inputs</div>
+          <div class="input-group">
+            <label class="label">Project Name</label>
+            <input
+              type="text"
+              class="input"
+              placeholder="Enter project name"
+              value="My Project"
+            >
+          </div>
+          <div class="input-group">
+            <label class="label">Description</label>
+            <input
+              type="text"
+              class="input error"
+              placeholder="Required field"
+              value=""
+            >
+            <div
+              style="color: var(--error); font-size: 0.75rem; margin-top: 0.25rem;"
+            >
+              This field is required
+            </div>
+          </div>
+
+          <div class="section-title">Kanban Card</div>
+          <div class="kanban-card">
+            <div class="kanban-card-title">
+              Implement drag-and-drop validation
+            </div>
+            <div class="kanban-card-meta">
+              <span class="badge badge-primary">TASK-123</span>
+              <span class="badge badge-success">Valid</span>
+            </div>
+          </div>
+
+          <div class="section-title">Alerts</div>
+          <div class="alert alert-success">
+            ✓ Card moved successfully to "In Progress"
+          </div>
+          <div class="alert alert-error">
+            ✗ Missing required field: Description
+          </div>
+          <div class="alert alert-warning">⚠ Resource validation pending</div>
+        </div>
+      </div>
+
+      <!-- Theme 4: Balanced Teal -->
+      <div class="theme-card">
+        <div class="theme-header">
+          <div class="theme-name">4. Balanced Teal</div>
+          <div class="theme-personality">Modern, Helpful, Balanced</div>
+          <div class="theme-best-for">
+            Best for: Friendly professionalism, collaborative teams,
+            growth-focused
+          </div>
+        </div>
+        <div class="theme-content theme-scope theme-4">
+          <div class="section-title">Color Palette</div>
+          <div class="color-palette">
+            <div class="color-swatch">
+              <div class="color-box" style="background: #14b8a6;"></div>
+              <div class="color-name">Primary</div>
+              <div class="color-hex">#14b8a6</div>
+            </div>
+            <div class="color-swatch">
+              <div class="color-box" style="background: #6b7280;"></div>
+              <div class="color-name">Secondary</div>
+              <div class="color-hex">#6b7280</div>
+            </div>
+            <div class="color-swatch">
+              <div class="color-box" style="background: #10b981;"></div>
+              <div class="color-name">Success</div>
+              <div class="color-hex">#10b981</div>
+            </div>
+            <div class="color-swatch">
+              <div class="color-box" style="background: #f59e0b;"></div>
+              <div class="color-name">Warning</div>
+              <div class="color-hex">#f59e0b</div>
+            </div>
+            <div class="color-swatch">
+              <div class="color-box" style="background: #f43f5e;"></div>
+              <div class="color-name">Error</div>
+              <div class="color-hex">#f43f5e</div>
+            </div>
+            <div class="color-swatch">
+              <div class="color-box" style="background: #f0fdfa;"></div>
+              <div class="color-name">Background</div>
+              <div class="color-hex">#f0fdfa</div>
+            </div>
+          </div>
+
+          <div class="section-title">Buttons</div>
+          <div style="margin-bottom: 1.5rem;">
+            <button class="btn btn-primary">Primary Action</button>
+            <button class="btn btn-secondary">Secondary</button>
+            <button class="btn btn-outline">Outline</button>
+            <button class="btn btn-destructive">Delete</button>
+          </div>
+
+          <div class="section-title">Form Inputs</div>
+          <div class="input-group">
+            <label class="label">Project Name</label>
+            <input
+              type="text"
+              class="input"
+              placeholder="Enter project name"
+              value="My Project"
+            >
+          </div>
+          <div class="input-group">
+            <label class="label">Description</label>
+            <input
+              type="text"
+              class="input error"
+              placeholder="Required field"
+              value=""
+            >
+            <div
+              style="color: var(--error); font-size: 0.75rem; margin-top: 0.25rem;"
+            >
+              This field is required
+            </div>
+          </div>
+
+          <div class="section-title">Kanban Card</div>
+          <div class="kanban-card">
+            <div class="kanban-card-title">
+              Implement drag-and-drop validation
+            </div>
+            <div class="kanban-card-meta">
+              <span class="badge badge-primary">TASK-123</span>
+              <span class="badge badge-success">Valid</span>
+            </div>
+          </div>
+
+          <div class="section-title">Alerts</div>
+          <div class="alert alert-success">
+            ✓ Card moved successfully to "In Progress"
+          </div>
+          <div class="alert alert-error">
+            ✗ Missing required field: Description
+          </div>
+          <div class="alert alert-warning">⚠ Resource validation pending</div>
+        </div>
+      </div>
+
+      <!-- Theme 5: Deep Teal -->
+      <div class="theme-card">
+        <div class="theme-header">
+          <div class="theme-name">5. Deep Teal</div>
+          <div class="theme-personality">Rich, Mature, Grounded</div>
+          <div class="theme-best-for">
+            Best for: Established teams, serious workflows, depth and
+            reliability
+          </div>
+        </div>
+        <div class="theme-content theme-scope theme-5">
+          <div class="section-title">Color Palette</div>
+          <div class="color-palette">
+            <div class="color-swatch">
+              <div class="color-box" style="background: #0d9488;"></div>
+              <div class="color-name">Primary</div>
+              <div class="color-hex">#0d9488</div>
+            </div>
+            <div class="color-swatch">
+              <div class="color-box" style="background: #64748b;"></div>
+              <div class="color-name">Secondary</div>
+              <div class="color-hex">#64748b</div>
+            </div>
+            <div class="color-swatch">
+              <div class="color-box" style="background: #059669;"></div>
+              <div class="color-name">Success</div>
+              <div class="color-hex">#059669</div>
+            </div>
+            <div class="color-swatch">
+              <div class="color-box" style="background: #d97706;"></div>
+              <div class="color-name">Warning</div>
+              <div class="color-hex">#d97706</div>
+            </div>
+            <div class="color-swatch">
+              <div class="color-box" style="background: #dc2626;"></div>
+              <div class="color-name">Error</div>
+              <div class="color-hex">#dc2626</div>
+            </div>
+            <div class="color-swatch">
+              <div class="color-box" style="background: #f0fdfa;"></div>
+              <div class="color-name">Background</div>
+              <div class="color-hex">#f0fdfa</div>
+            </div>
+          </div>
+
+          <div class="section-title">Buttons</div>
+          <div style="margin-bottom: 1.5rem;">
+            <button class="btn btn-primary">Primary Action</button>
+            <button class="btn btn-secondary">Secondary</button>
+            <button class="btn btn-outline">Outline</button>
+            <button class="btn btn-destructive">Delete</button>
+          </div>
+
+          <div class="section-title">Form Inputs</div>
+          <div class="input-group">
+            <label class="label">Project Name</label>
+            <input
+              type="text"
+              class="input"
+              placeholder="Enter project name"
+              value="My Project"
+            >
+          </div>
+          <div class="input-group">
+            <label class="label">Description</label>
+            <input
+              type="text"
+              class="input error"
+              placeholder="Required field"
+              value=""
+            >
+            <div
+              style="color: var(--error); font-size: 0.75rem; margin-top: 0.25rem;"
+            >
+              This field is required
+            </div>
+          </div>
+
+          <div class="section-title">Kanban Card</div>
+          <div class="kanban-card">
+            <div class="kanban-card-title">
+              Implement drag-and-drop validation
+            </div>
+            <div class="kanban-card-meta">
+              <span class="badge badge-primary">TASK-123</span>
+              <span class="badge badge-success">Valid</span>
+            </div>
+          </div>
+
+          <div class="section-title">Alerts</div>
+          <div class="alert alert-success">
+            ✓ Card moved successfully to "In Progress"
+          </div>
+          <div class="alert alert-error">
+            ✗ Missing required field: Description
+          </div>
+          <div class="alert alert-warning">⚠ Resource validation pending</div>
+        </div>
+      </div>
+
+      <!-- Theme 6: Cyan Fresh -->
+      <div class="theme-card">
+        <div class="theme-header">
+          <div class="theme-name">6. Cyan Fresh</div>
+          <div class="theme-personality">Energetic, Clear, Modern</div>
+          <div class="theme-best-for">
+            Best for: Dynamic teams, fast-paced workflows, clarity and energy
+          </div>
+        </div>
+        <div class="theme-content theme-scope theme-6">
+          <div class="section-title">Color Palette</div>
+          <div class="color-palette">
+            <div class="color-swatch">
+              <div class="color-box" style="background: #06b6d4;"></div>
+              <div class="color-name">Primary</div>
+              <div class="color-hex">#06b6d4</div>
+            </div>
+            <div class="color-swatch">
+              <div class="color-box" style="background: #71717a;"></div>
+              <div class="color-name">Secondary</div>
+              <div class="color-hex">#71717a</div>
+            </div>
+            <div class="color-swatch">
+              <div class="color-box" style="background: #10b981;"></div>
+              <div class="color-name">Success</div>
+              <div class="color-hex">#10b981</div>
+            </div>
+            <div class="color-swatch">
+              <div class="color-box" style="background: #f59e0b;"></div>
+              <div class="color-name">Warning</div>
+              <div class="color-hex">#f59e0b</div>
+            </div>
+            <div class="color-swatch">
+              <div class="color-box" style="background: #f43f5e;"></div>
+              <div class="color-name">Error</div>
+              <div class="color-hex">#f43f5e</div>
+            </div>
+            <div class="color-swatch">
+              <div class="color-box" style="background: #ecfeff;"></div>
+              <div class="color-name">Background</div>
+              <div class="color-hex">#ecfeff</div>
+            </div>
+          </div>
+
+          <div class="section-title">Buttons</div>
+          <div style="margin-bottom: 1.5rem;">
+            <button class="btn btn-primary">Primary Action</button>
+            <button class="btn btn-secondary">Secondary</button>
+            <button class="btn btn-outline">Outline</button>
+            <button class="btn btn-destructive">Delete</button>
+          </div>
+
+          <div class="section-title">Form Inputs</div>
+          <div class="input-group">
+            <label class="label">Project Name</label>
+            <input
+              type="text"
+              class="input"
+              placeholder="Enter project name"
+              value="My Project"
+            >
+          </div>
+          <div class="input-group">
+            <label class="label">Description</label>
+            <input
+              type="text"
+              class="input error"
+              placeholder="Required field"
+              value=""
+            >
+            <div
+              style="color: var(--error); font-size: 0.75rem; margin-top: 0.25rem;"
+            >
+              This field is required
+            </div>
+          </div>
+
+          <div class="section-title">Kanban Card</div>
+          <div class="kanban-card">
+            <div class="kanban-card-title">
+              Implement drag-and-drop validation
+            </div>
+            <div class="kanban-card-meta">
+              <span class="badge badge-primary">TASK-123</span>
+              <span class="badge badge-success">Valid</span>
+            </div>
+          </div>
+
+          <div class="section-title">Alerts</div>
+          <div class="alert alert-success">
+            ✓ Card moved successfully to "In Progress"
+          </div>
+          <div class="alert alert-error">
+            ✗ Missing required field: Description
+          </div>
+          <div class="alert alert-warning">⚠ Resource validation pending</div>
+        </div>
+      </div>
+
+      <!-- Theme 7: Ocean Blue -->
+      <div class="theme-card">
+        <div class="theme-header">
+          <div class="theme-name">7. Ocean Blue</div>
+          <div class="theme-personality">Trustworthy, Calm, Professional</div>
+          <div class="theme-best-for">
+            Best for: Balanced trust and modernity, cross-functional teams
+          </div>
+        </div>
+        <div class="theme-content theme-scope theme-7">
+          <div class="section-title">Color Palette</div>
+          <div class="color-palette">
+            <div class="color-swatch">
+              <div class="color-box" style="background: #0891b2;"></div>
+              <div class="color-name">Primary</div>
+              <div class="color-hex">#0891b2</div>
+            </div>
+            <div class="color-swatch">
+              <div class="color-box" style="background: #475569;"></div>
+              <div class="color-name">Secondary</div>
+              <div class="color-hex">#475569</div>
+            </div>
+            <div class="color-swatch">
+              <div class="color-box" style="background: #14b8a6;"></div>
+              <div class="color-name">Success</div>
+              <div class="color-hex">#14b8a6</div>
+            </div>
+            <div class="color-swatch">
+              <div class="color-box" style="background: #fb923c;"></div>
+              <div class="color-name">Warning</div>
+              <div class="color-hex">#fb923c</div>
+            </div>
+            <div class="color-swatch">
+              <div class="color-box" style="background: #ef4444;"></div>
+              <div class="color-name">Error</div>
+              <div class="color-hex">#ef4444</div>
+            </div>
+            <div class="color-swatch">
+              <div class="color-box" style="background: #f0f9ff;"></div>
+              <div class="color-name">Background</div>
+              <div class="color-hex">#f0f9ff</div>
+            </div>
+          </div>
+
+          <div class="section-title">Buttons</div>
+          <div style="margin-bottom: 1.5rem;">
+            <button class="btn btn-primary">Primary Action</button>
+            <button class="btn btn-secondary">Secondary</button>
+            <button class="btn btn-outline">Outline</button>
+            <button class="btn btn-destructive">Delete</button>
+          </div>
+
+          <div class="section-title">Form Inputs</div>
+          <div class="input-group">
+            <label class="label">Project Name</label>
+            <input
+              type="text"
+              class="input"
+              placeholder="Enter project name"
+              value="My Project"
+            >
+          </div>
+          <div class="input-group">
+            <label class="label">Description</label>
+            <input
+              type="text"
+              class="input error"
+              placeholder="Required field"
+              value=""
+            >
+            <div
+              style="color: var(--error); font-size: 0.75rem; margin-top: 0.25rem;"
+            >
+              This field is required
+            </div>
+          </div>
+
+          <div class="section-title">Kanban Card</div>
+          <div class="kanban-card">
+            <div class="kanban-card-title">
+              Implement drag-and-drop validation
+            </div>
+            <div class="kanban-card-meta">
+              <span class="badge badge-primary">TASK-123</span>
+              <span class="badge badge-success">Valid</span>
+            </div>
+          </div>
+
+          <div class="section-title">Alerts</div>
+          <div class="alert alert-success">
+            ✓ Card moved successfully to "In Progress"
+          </div>
+          <div class="alert alert-error">
+            ✗ Missing required field: Description
+          </div>
+          <div class="alert alert-warning">⚠ Resource validation pending</div>
+        </div>
+      </div>
+
+      <!-- Theme 8: Mint Green -->
+      <div class="theme-card">
+        <div class="theme-header">
+          <div class="theme-name">8. Mint Green</div>
+          <div class="theme-personality">Gentle, Growth-Oriented, Positive</div>
+          <div class="theme-best-for">
+            Best for: Supportive teams, growth culture, calm productivity
+          </div>
+        </div>
+        <div class="theme-content theme-scope theme-8">
+          <div class="section-title">Color Palette</div>
+          <div class="color-palette">
+            <div class="color-swatch">
+              <div class="color-box" style="background: #10b981;"></div>
+              <div class="color-name">Primary</div>
+              <div class="color-hex">#10b981</div>
+            </div>
+            <div class="color-swatch">
+              <div class="color-box" style="background: #6b7280;"></div>
+              <div class="color-name">Secondary</div>
+              <div class="color-hex">#6b7280</div>
+            </div>
+            <div class="color-swatch">
+              <div class="color-box" style="background: #22c55e;"></div>
+              <div class="color-name">Success</div>
+              <div class="color-hex">#22c55e</div>
+            </div>
+            <div class="color-swatch">
+              <div class="color-box" style="background: #f59e0b;"></div>
+              <div class="color-name">Warning</div>
+              <div class="color-hex">#f59e0b</div>
+            </div>
+            <div class="color-swatch">
+              <div class="color-box" style="background: #f43f5e;"></div>
+              <div class="color-name">Error</div>
+              <div class="color-hex">#f43f5e</div>
+            </div>
+            <div class="color-swatch">
+              <div class="color-box" style="background: #f0fdf4;"></div>
+              <div class="color-name">Background</div>
+              <div class="color-hex">#f0fdf4</div>
+            </div>
+          </div>
+
+          <div class="section-title">Buttons</div>
+          <div style="margin-bottom: 1.5rem;">
+            <button class="btn btn-primary">Primary Action</button>
+            <button class="btn btn-secondary">Secondary</button>
+            <button class="btn btn-outline">Outline</button>
+            <button class="btn btn-destructive">Delete</button>
+          </div>
+
+          <div class="section-title">Form Inputs</div>
+          <div class="input-group">
+            <label class="label">Project Name</label>
+            <input
+              type="text"
+              class="input"
+              placeholder="Enter project name"
+              value="My Project"
+            >
+          </div>
+          <div class="input-group">
+            <label class="label">Description</label>
+            <input
+              type="text"
+              class="input error"
+              placeholder="Required field"
+              value=""
+            >
+            <div
+              style="color: var(--error); font-size: 0.75rem; margin-top: 0.25rem;"
+            >
+              This field is required
+            </div>
+          </div>
+
+          <div class="section-title">Kanban Card</div>
+          <div class="kanban-card">
+            <div class="kanban-card-title">
+              Implement drag-and-drop validation
+            </div>
+            <div class="kanban-card-meta">
+              <span class="badge badge-primary">TASK-123</span>
+              <span class="badge badge-success">Valid</span>
+            </div>
+          </div>
+
+          <div class="section-title">Alerts</div>
+          <div class="alert alert-success">
+            ✓ Card moved successfully to "In Progress"
+          </div>
+          <div class="alert alert-error">
+            ✗ Missing required field: Description
+          </div>
+          <div class="alert alert-warning">⚠ Resource validation pending</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="comparison-mode">
+      <h2 style="margin-bottom: 1rem;">Side-by-Side Comparison</h2>
+      <p style="color: #666; margin-bottom: 1.5rem;">
+        Compare all themes at once to see which visual style resonates with your
+        vision
+      </p>
+
+      <div class="comparison-grid">
+        <div
+          class="comparison-item theme-scope theme-1"
+          style="border-color: #2563eb;"
+        >
+          <h3 style="font-size: 1rem; margin-bottom: 0.5rem;">
+            1. Enterprise Blue
+          </h3>
+          <button class="btn btn-primary">Action</button>
+          <div class="kanban-card" style="margin-top: 0.5rem;">
+            <div class="kanban-card-title">Sample Card</div>
+          </div>
+        </div>
+        <div
+          class="comparison-item theme-scope theme-2"
+          style="border-color: #18181b;"
+        >
+          <h3 style="font-size: 1rem; margin-bottom: 0.5rem;">
+            2. Modern Neutral
+          </h3>
+          <button class="btn btn-primary">Action</button>
+          <div class="kanban-card" style="margin-top: 0.5rem;">
+            <div class="kanban-card-title">Sample Card</div>
+          </div>
+        </div>
+        <div
+          class="comparison-item theme-scope theme-3"
+          style="border-color: #0ea5e9;"
+        >
+          <h3 style="font-size: 1rem; margin-bottom: 0.5rem;">
+            3. Confident Slate
+          </h3>
+          <button class="btn btn-primary">Action</button>
+          <div class="kanban-card" style="margin-top: 0.5rem;">
+            <div class="kanban-card-title">Sample Card</div>
+          </div>
+        </div>
+        <div
+          class="comparison-item theme-scope theme-4"
+          style="border-color: #14b8a6;"
+        >
+          <h3 style="font-size: 1rem; margin-bottom: 0.5rem;">
+            4. Balanced Teal
+          </h3>
+          <button class="btn btn-primary">Action</button>
+          <div class="kanban-card" style="margin-top: 0.5rem;">
+            <div class="kanban-card-title">Sample Card</div>
+          </div>
+        </div>
+        <div
+          class="comparison-item theme-scope theme-5"
+          style="border-color: #0d9488;"
+        >
+          <h3 style="font-size: 1rem; margin-bottom: 0.5rem;">5. Deep Teal</h3>
+          <button class="btn btn-primary">Action</button>
+          <div class="kanban-card" style="margin-top: 0.5rem;">
+            <div class="kanban-card-title">Sample Card</div>
+          </div>
+        </div>
+        <div
+          class="comparison-item theme-scope theme-6"
+          style="border-color: #06b6d4;"
+        >
+          <h3 style="font-size: 1rem; margin-bottom: 0.5rem;">6. Cyan Fresh</h3>
+          <button class="btn btn-primary">Action</button>
+          <div class="kanban-card" style="margin-top: 0.5rem;">
+            <div class="kanban-card-title">Sample Card</div>
+          </div>
+        </div>
+        <div
+          class="comparison-item theme-scope theme-7"
+          style="border-color: #0891b2;"
+        >
+          <h3 style="font-size: 1rem; margin-bottom: 0.5rem;">7. Ocean Blue</h3>
+          <button class="btn btn-primary">Action</button>
+          <div class="kanban-card" style="margin-top: 0.5rem;">
+            <div class="kanban-card-title">Sample Card</div>
+          </div>
+        </div>
+        <div
+          class="comparison-item theme-scope theme-8"
+          style="border-color: #10b981;"
+        >
+          <h3 style="font-size: 1rem; margin-bottom: 0.5rem;">8. Mint Green</h3>
+          <button class="btn btn-primary">Action</button>
+          <div class="kanban-card" style="margin-top: 0.5rem;">
+            <div class="kanban-card-title">Sample Card</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="text-align: center; margin-top: 3rem; color: #666;">
+      <p>Generated for Planner UX Design Specification</p>
+      <p style="font-size: 0.875rem;">
+        These themes are optimized for control, confidence, and clarity
+      </p>
+    </div>
+  </body>
+</html>

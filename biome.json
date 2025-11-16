@@ -19,11 +19,21 @@
       "!**/.alchemy",
       "!**/.svelte-kit",
       "!**/wrangler.jsonc",
-      "!**/.source"
+      "!**/.source",
+      "!**/docs/ux-mockups"
     ]
   },
-  "extends": [
-    "ultracite/core",
-    "ultracite/next"
+  "extends": ["ultracite/core", "ultracite/next"],
+  "overrides": [
+    {
+      "includes": ["**/components/ui/**"],
+      "linter": {
+        "rules": {
+          "performance": {
+            "noNamespaceImport": "off"
+          }
+        }
+      }
+    }
   ]
 }

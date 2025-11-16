@@ -15,6 +15,7 @@
       "@orpc/openapi": "^1.10.0",
       "@orpc/zod": "^1.10.0",
       "better-auth": "^1.3.28",
+      "@daveyplate/better-auth-ui": "^3.2.9",
       "dotenv": "^17.2.2",
       "tsdown": "^0.15.5"
     }
@@ -30,12 +31,15 @@
     "db:studio": "turbo -F @planner/db db:studio",
     "db:generate": "turbo -F @planner/db db:generate",
     "db:migrate": "turbo -F @planner/db db:migrate",
+    "db:seed": "turbo -F @planner/db db:seed",
+    "db:reset": "./scripts/db-reset.sh",
     "db:start": "turbo -F @planner/db db:start",
     "db:watch": "turbo -F @planner/db db:watch",
     "db:stop": "turbo -F @planner/db db:stop",
     "db:down": "turbo -F @planner/db db:down"
   },
   "dependencies": {
+    "@daveyplate/better-auth-ui": "^3.2.9",
     "dotenv": "^17.2.2",
     "zod": "^4.1.11"
   },
