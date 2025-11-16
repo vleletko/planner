@@ -34,7 +34,7 @@ jobs:
             ${{ runner.os }}-bun-
 
       - name: Cache Turborepo
-        uses: rharkor/caching-for-turbo@v1.5
+        uses: rharkor/caching-for-turbo@v2.3.2
 
       - name: Install dependencies
         run: bun install --frozen-lockfile
