@@ -46,4 +46,6 @@ jobs:
         run: bun run check-types
 
       - name: Build
+        env:
+          DATABASE_URL: postgresql://localhost:5432/dummy
         run: bun run build
