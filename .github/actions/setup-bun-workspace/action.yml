@@ -14,7 +14,6 @@ runs:
       uses: oven-sh/setup-bun@v2
       with:
         bun-version: ${{ inputs.bun-version }}
-      shell: bash
 
     - name: Cache Bun dependencies
       uses: actions/cache@v4
@@ -23,11 +22,9 @@ runs:
         key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb') }}
         restore-keys: |
           ${{ runner.os }}-bun-
-      shell: bash
 
     - name: Cache Turborepo
       uses: rharkor/caching-for-turbo@v2.3.2
-      shell: bash
 
     - name: Install dependencies
       run: bun install --frozen-lockfile
