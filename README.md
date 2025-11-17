@@ -126,6 +126,8 @@ See `.github/workflows/ci.yml` for full configuration details.
 
 This project uses Docker for containerized deployments with Next.js standalone output for optimized production images.
 
+<!-- Cache test: 2025-11-17 -->
+
 ### Building Docker Images
 
 **Prerequisites:**
