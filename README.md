@@ -122,6 +122,80 @@ bun run build         # Build
 
 See `.github/workflows/ci.yml` for full configuration details.
 
+## Docker Deployment
+
+This project uses Docker for containerized deployments with Next.js standalone output for optimized production images.
+
+### Building Docker Images
+
+**Prerequisites:**
+- Docker installed locally
+- Application built with `bun run build` (creates `.next/standalone/` directory)
+
+**Local Build:**
+```bash
+# Build the application first
+bun run build
+
+# Build Docker image
+docker build -t planner:local apps/web
+
+# Run container
+docker run -p 3000:3000 --env-file apps/web/.env planner:local
+```
+
+**Image Details:**
+- Base image: `oven/bun:1.3.1-slim` (~40MB)
+- Expected size: <200MB (with standalone output)
+- Non-root user: `nextjs` (UID 1001)
+- Port: 3000
+
+### CI/CD Docker Builds
+
+Docker images are automatically built and pushed to GitHub Container Registry (GHCR) on every commit:
+
+**Tagging Strategy:**
+- **Preview Deployments (PRs)**: `ghcr.io/<owner>/<repo>:pr-<number>`
+- **Rollback/Audit**: `ghcr.io/<owner>/<repo>:sha-<git-sha>`
+
+**Process:**
+1. CI runs lint, typecheck, and build (with Turborepo cache)
+2. Docker job reuses build artifacts (fast - instant Turbo cache hit)
+3. Docker packages pre-built `.next/standalone/` into runtime image
+4. Image pushed to GHCR with appropriate tags
+
+**Performance:**
+- First build: ~3-5 min (cold caches)
+- Subsequent builds: ~1-2 min (warm caches)
+- Docker packaging: ~10-20 sec (reuses CI build)
+
+### Environment Variables
+
+See `apps/web/.env.example` for all required environment variables.
+
+**Required for Production:**
+- `DATABASE_URL` - PostgreSQL connection string
+- `BETTER_AUTH_SECRET` - Session signing secret (generate with: `openssl rand -base64 32`)
+- `BETTER_AUTH_URL` - Application base URL (e.g., `https://your-domain.com`)
+- `CORS_ORIGIN` - CORS origin (should match BETTER_AUTH_URL)
+
+### Troubleshooting
+
+**Image too large (>200MB):**
+- Verify standalone output is enabled in `next.config.ts`
+- Check `.dockerignore` excludes `node_modules`, `.next`, etc.
+- Ensure using `oven/bun:1.3.1-slim` base image
+
+**Build fails in Docker:**
+- Ensure `bun run build` succeeds locally first
+- Verify `.next/standalone/` directory exists
+- Check file permissions (should be owned by nextjs:nodejs)
+
+**Container fails to start:**
+- Verify environment variables are set correctly
+- Check `docker logs <container-id>` for errors
+- Ensure DATABASE_URL is accessible from container
+
 ### Database
 - `bun run db:push`: Push schema changes to database
 - `bun run db:studio`: Open Drizzle Studio (database UI)
