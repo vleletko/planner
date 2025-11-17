@@ -5,9 +5,10 @@ node_modules
 
 # Build artifacts
 # Note: We need .next/standalone and .next/static for Docker build
-.next/*
-!.next/standalone
-!.next/static
+# Exclude specific .next subdirectories instead of using negation
+.next/cache
+.next/server
+.next/trace
 .turbo
 dist
 build
