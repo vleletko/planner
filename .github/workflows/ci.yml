@@ -57,7 +57,10 @@ jobs:
 
       - name: Debug - List build artifacts
         run: |
-          echo "Checking for .next directory in apps/web:"
+          echo "Checking workspace directory:"
+          pwd
+          echo ""
+          echo "Checking apps/web/.next contents:"
           ls -la apps/web/.next/ || echo ".next directory not found"
           echo ""
           echo "Checking for standalone output:"
