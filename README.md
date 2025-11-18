@@ -448,3 +448,4 @@ Quick test flow:
 - **Protected Routes**: Use `auth.api.getSession()` in server components
 
 For more details, see `docs/architecture.md#Authentication-Flow`.
+# Test Preview Deployment Lifecycle v2
