@@ -131,7 +131,7 @@ jobs:
           PREVIEW_URL="https://pr-${{ github.event.pull_request.number }}.${APP_BASE_DOMAIN}"
 
           for i in {1..30}; do
-            if curl -sf "$PREVIEW_URL/health" > /dev/null 2>&1; then
+            if curl -sf "$PREVIEW_URL/api/health" > /dev/null 2>&1; then
               echo "✅ Preview ready!"
               break
             fi
@@ -139,7 +139,7 @@ jobs:
             sleep 10
           done
 
-          curl -sf "$PREVIEW_URL/health" || exit 1
+          curl -sf "$PREVIEW_URL/api/health" || exit 1
           echo "✅ Health check passed"
 
       - name: Comment PR with preview URL
