@@ -210,6 +210,190 @@ See `apps/web/.env.example` for all required environment variables.
 - `bun run db:stop`: Stop PostgreSQL database
 - `bun run db:down`: Stop and remove PostgreSQL container
 
+## Preview Deployments
+
+This project uses **Dokploy** for automated preview deployments on every pull request.
+
+### Overview
+
+Every PR automatically:
+1. ✅ Creates isolated preview environment with unique URL
+2. ✅ Deploys latest Docker image from GHCR (no rebuild)
+3. ✅ Runs smoke tests to verify deployment health
+4. ✅ Posts preview URL in PR comments
+5. ✅ Updates preview on every commit
+6. ✅ Cleans up when PR is closed/merged
+
+**Architecture:** Reuses existing `docker-build` job output - **NO REBUILD** required. Preview deployment pulls pre-built image from GHCR with tag `pr-<number>`.
+
+### Prerequisites
+
+**1. Dokploy Instance:**
+- Dokploy server running and accessible
+- Project created in Dokploy UI
+- API token generated (Settings → Profile → API/CLI)
+
+**2. DNS Configuration:**
+- Wildcard A record: `*.preview.example.com` → Dokploy server IP
+- DNS propagation verified: `dig pr-1.preview.example.com`
+
+**3. Dokploy Project Secrets:**
+
+Configure in Dokploy UI → Project → Variables:
+```env
+DB_PASSWORD=<secure-random-password>
+BETTER_AUTH_SECRET=<auth-secret>
+```
+
+**4. GitHub Repository Secrets:**
+
+Configure in GitHub Settings → Secrets and variables → Actions:
+```env
+DOKPLOY_URL=https://dokploy.example.com
+DOKPLOY_API_TOKEN=<your-api-token>
+DOKPLOY_PROJECT_ID=<project-uuid>
+APP_BASE_DOMAIN=preview.example.com
+```
+
+### How It Works
+
+**Automated Flow (GitHub Actions):**
+
+1. **PR Created/Updated:**
+   - CI runs: verify → docker-build → **preview-deploy**
+   - Image pushed to GHCR with tag `pr-<number>`
+
+2. **Preview Deploy Job:**
+   - Checks if preview exists (list-previews.sh)
+   - Creates new preview (create-preview.sh) OR updates existing (update-preview.sh)
+   - Waits for deployment to be ready (polls Dokploy API)
+
+3. **Smoke Tests:**
+   - Curls `/health` endpoint for 5 minutes (30 retries × 10s)
+   - Fails deployment if health check doesn't pass
+
+4. **PR Comment:**
+   - Posts preview URL: `https://pr-42.preview.example.com`
+   - Updates existing comment on subsequent commits (no spam)
+
+5. **PR Closed:**
+   - Cleanup workflow triggers (preview-cleanup.yml)
+   - Deletes preview deployment and comments PR
+   - **Note:** Database volumes must be cleaned manually in Dokploy UI
+
+### Manual Testing
+
+**Scripts Location:** `.dokploy/scripts/`
+
+**Test Preview Creation:**
+```bash
+cd .dokploy/scripts
+
+# Set required environment variables
+export DOKPLOY_URL="https://dokploy.example.com"
+export DOKPLOY_API_TOKEN="your-api-token"
+export PROJECT_ID="project-uuid"
+export GHCR_IMAGE="ghcr.io/vleletko/planner"
+export APP_BASE_DOMAIN="preview.example.com"
+
+# Create preview for PR #999
+./create-preview.sh 999
+
+# List all active previews
+./list-previews.sh
+
+# Update preview (e.g., after new commit)
+./update-preview.sh 999
+
+# Delete preview
+./delete-preview.sh 999
+```
+
+**Expected Output:**
+- Create: ~60-120s (includes SSL cert generation)
+- Update: ~20-40s (cert cached)
+- Delete: ~5-10s
+
+### Preview Environment Details
+
+**Resources per Preview:**
+- Docker Compose stack with 2 services: `web` + `db`
+- CPU: 0.5-1.0 cores
+- Memory: 400-500MB
+- Disk: ~100MB + database data
+
+**Services:**
+- **web**: Next.js app (pre-built from GHCR)
+- **db**: PostgreSQL 15 Alpine (isolated per preview)
+
+**Features:**
+- ✅ Automatic HTTPS via Traefik + Let's Encrypt
+- ✅ Isolated PostgreSQL database per preview
+- ✅ Health checks for deployment verification
+- ✅ Zero-downtime updates
+- ✅ Persistent data (survives container restarts)
+
+**Environment Variables (per preview):**
+```env
+GHCR_IMAGE=ghcr.io/vleletko/planner
+IMAGE_TAG=pr-42
+APP_NAME=planner-pr-42
+PREVIEW_DOMAIN=pr-42.preview.example.com
+DB_PASSWORD=${DB_PASSWORD}  # From Dokploy project secrets
+BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET}  # From Dokploy project secrets
+NODE_ENV=preview
+```
+
+### Troubleshooting
+
+**Preview deployment fails:**
+- Check GitHub Actions logs for error details
+- Verify all GitHub secrets are set correctly
+- Verify Dokploy project secrets exist (DB_PASSWORD, BETTER_AUTH_SECRET)
+- Test scripts manually (see Manual Testing above)
+
+**Preview URL not accessible:**
+- Verify DNS wildcard record is configured
+- Check DNS propagation: `dig pr-<number>.preview.example.com`
+- Check Dokploy logs for Traefik errors
+- Wait for SSL cert generation (first deployment may take longer)
+
+**Smoke tests timeout:**
+- Verify health check endpoint exists: `apps/web/app/api/health/route.ts`
+- Check Dokploy deployment logs for startup errors
+- Verify database connection (DATABASE_URL)
+- Check if preview is actually running in Dokploy UI
+
+**Preview not cleaned up:**
+- Check preview-cleanup.yml workflow logs
+- Manually delete using: `./delete-preview.sh <pr-number>`
+- Clean database volumes in Dokploy UI: Settings → Clean unused volumes
+
+**Database volume cleanup:**
+- Dokploy doesn't auto-delete volumes when preview is deleted
+- Manually clean in Dokploy UI: Settings → Clean unused volumes
+- Look for volumes named: `planner-pr-<number>-db`
+
+### Performance
+
+**Deployment Times:**
+- Create preview: 60-120s (includes SSL cert)
+- Update preview: 20-40s (cert cached)
+- Delete preview: 5-10s
+
+**CI Workflow Times (per PR commit):**
+- verify job: ~2-3 min (existing)
+- docker-build job: ~30s (existing, with cache)
+- preview-deploy job: ~1-2 min (new)
+- **Total:** ~4-6 min per commit
+
+### Research & Implementation
+
+For detailed implementation decisions and architecture, see:
+- **Research Document**: `.bmad-ephemeral/stories/1-5-research/phase-3-preview-deployments.md`
+- **Docker Compose Config**: `.dokploy/docker-compose.preview.yml`
+- **Lifecycle Scripts**: `.dokploy/scripts/*.sh`
+
 ## Authentication
 
 This project uses **Better-Auth 1.3.28** for session-based authentication with email/password credentials.

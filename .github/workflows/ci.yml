@@ -55,20 +55,6 @@ jobs:
           DATABASE_URL: postgresql://localhost:5432/dummy
         run: bun run build
 
-      - name: Debug - List build artifacts
-        run: |
-          echo "Checking workspace directory:"
-          pwd
-          echo ""
-          echo "Checking apps/web/.next contents:"
-          ls -la apps/web/.next/ || echo ".next directory not found"
-          echo ""
-          echo "Checking for standalone output:"
-          ls -la apps/web/.next/standalone/ || echo "standalone directory not found"
-          echo ""
-          echo "Checking for static output:"
-          ls -la apps/web/.next/static/ || echo "static directory not found"
-
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -110,3 +96,85 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha,scope=planner-web
           cache-to: type=gha,mode=max,scope=planner-web
+
+  preview-deploy:
+    name: Deploy Preview
+    needs: docker-build
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to Dokploy
+        env:
+          DOKPLOY_URL: ${{ secrets.DOKPLOY_URL }}
+          DOKPLOY_API_TOKEN: ${{ secrets.DOKPLOY_API_TOKEN }}
+          PROJECT_ID: ${{ secrets.DOKPLOY_PROJECT_ID }}
+          GHCR_IMAGE: ghcr.io/${{ github.repository }}
+          APP_BASE_DOMAIN: ${{ secrets.APP_BASE_DOMAIN }}
+        run: |
+          cd .dokploy/scripts
+
+          # Image already in GHCR from docker-build job!
+          if ./list-previews.sh 2>/dev/null | grep -q "pr-${{ github.event.pull_request.number }}"; then
+            ./update-preview.sh ${{ github.event.pull_request.number }}
+          else
+            ./create-preview.sh ${{ github.event.pull_request.number }}
+          fi
+
+      - name: Run smoke tests
+        env:
+          APP_BASE_DOMAIN: ${{ secrets.APP_BASE_DOMAIN }}
+        run: |
+          PREVIEW_URL="https://pr-${{ github.event.pull_request.number }}.${APP_BASE_DOMAIN}"
+
+          for i in {1..30}; do
+            if curl -sf "$PREVIEW_URL/health" > /dev/null 2>&1; then
+              echo "✅ Preview ready!"
+              break
+            fi
+            echo "⏳ Waiting... ($i/30)"
+            sleep 10
+          done
+
+          curl -sf "$PREVIEW_URL/health" || exit 1
+          echo "✅ Health check passed"
+
+      - name: Comment PR with preview URL
+        uses: actions/github-script@v7
+        if: success()
+        with:
+          script: |
+            const prNumber = context.payload.pull_request.number;
+            const previewUrl = `https://pr-${prNumber}.${{ secrets.APP_BASE_DOMAIN }}`;
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber
+            });
+
+            const botComment = comments.find(comment =>
+              comment.user.type === 'Bot' &&
+              comment.body.includes('Preview deployment')
+            );
+
+            const body = `✅ **Preview deployment ready!**\n\n🔗 **Preview URL:** ${previewUrl}\n\n_Updated automatically on every commit_`;
+
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: body
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber,
+                body: body
+              });
+            }
