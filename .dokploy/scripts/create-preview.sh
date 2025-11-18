@@ -206,15 +206,14 @@ log_info "Compose file loaded from: $COMPOSE_FILE_PATH"
 # Step 3: Update compose with docker-compose.yml content and environment variables
 log_info "Step 3: Updating compose configuration with docker-compose.yml..."
 
-# Environment variables for the preview
-# Note: Secrets (BETTER_AUTH_SECRET, DB_PASSWORD) should be configured at Dokploy project level
+# Environment variables for this specific preview deployment
+# Note: DB_PASSWORD and BETTER_AUTH_SECRET are set at environment level in Dokploy
+# and are automatically available to all deployments in that environment
 ENV_VARS=$(cat <<EOF
 GHCR_IMAGE=${GHCR_IMAGE}
 IMAGE_TAG=${IMAGE_TAG}
 APP_NAME=${COMPOSE_APP_NAME}
 PREVIEW_DOMAIN=${PREVIEW_URL}
-DB_PASSWORD=\${DB_PASSWORD}
-BETTER_AUTH_SECRET=\${BETTER_AUTH_SECRET}
 EOF
 )
 
