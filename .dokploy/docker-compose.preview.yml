@@ -34,13 +34,23 @@ services:
     networks:
       - dokploy-network
 
-    # Traefik labels for automatic HTTPS routing
+    # Traefik labels for automatic HTTPS routing (Dokploy pattern)
     labels:
-      - "traefik.enable=true"
+      # HTTP router (redirects to HTTPS)
       - "traefik.http.routers.${APP_NAME}.rule=Host(`${PREVIEW_DOMAIN}`)"
-      - "traefik.http.routers.${APP_NAME}.entrypoints=websecure"
-      - "traefik.http.routers.${APP_NAME}.tls.certResolver=letsencrypt"
+      - "traefik.http.routers.${APP_NAME}.entrypoints=web"
       - "traefik.http.services.${APP_NAME}.loadbalancer.server.port=3000"
+      - "traefik.http.routers.${APP_NAME}.service=${APP_NAME}"
+      - "traefik.http.routers.${APP_NAME}.middlewares=redirect-to-https@file"
+
+      # HTTPS router
+      - "traefik.http.routers.${APP_NAME}-websecure.rule=Host(`${PREVIEW_DOMAIN}`)"
+      - "traefik.http.routers.${APP_NAME}-websecure.entrypoints=websecure"
+      - "traefik.http.services.${APP_NAME}-websecure.loadbalancer.server.port=3000"
+      - "traefik.http.routers.${APP_NAME}-websecure.service=${APP_NAME}-websecure"
+      - "traefik.http.routers.${APP_NAME}-websecure.tls.certresolver=letsencrypt"
+
+      - "traefik.enable=true"
 
     # Restart policy
     restart: unless-stopped
