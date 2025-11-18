@@ -8,6 +8,8 @@ jobs:
   cleanup:
     name: Delete Preview
     runs-on: ubuntu-latest
+    permissions:
+      deployments: write
 
     steps:
       - name: Checkout code
@@ -22,14 +24,9 @@ jobs:
           cd .dokploy/scripts
           ./delete-preview.sh ${{ github.event.pull_request.number }}
 
-      - name: Comment PR
-        uses: actions/github-script@v7
-        if: success()
+      - name: Deactivate GitHub deployment
+        uses: chrnorm/deployment-status@v2
         with:
-          script: |
-            await github.rest.issues.createComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.payload.pull_request.number,
-              body: '🧹 Preview deployment cleaned up'
-            });
+          token: ${{ github.token }}
+          environment: preview-pr-${{ github.event.pull_request.number }}
+          state: inactive
