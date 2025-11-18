@@ -18,11 +18,11 @@ services:
 
     environment:
       # Database connection (internal compose network)
-      - DATABASE_URL=postgresql://postgres:${DB_PASSWORD}@db:5432/planner
+      - DATABASE_URL=postgresql://postgres:${{environment.DB_PASSWORD}}@db:5432/planner
 
       # Auth configuration
       - BETTER_AUTH_URL=https://${PREVIEW_DOMAIN}
-      - BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET}
+      - BETTER_AUTH_SECRET=${{environment.BETTER_AUTH_SECRET}}
 
       # CORS origin
       - CORS_ORIGIN=https://${PREVIEW_DOMAIN}
@@ -66,7 +66,7 @@ services:
     environment:
       - POSTGRES_DB=planner
       - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_PASSWORD=${{environment.DB_PASSWORD}}
 
     # Expose port for documentation (not externally accessible)
     expose:
