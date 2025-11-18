@@ -4,6 +4,7 @@ on:
   push:
     branches: [main]
   pull_request:
+    types: [opened, synchronize, reopened, closed]
     branches: [main]
   workflow_dispatch:
 
@@ -14,6 +15,7 @@ concurrency:
 jobs:
   verify:
     name: Verify
+    if: github.event.action != 'closed'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -36,6 +38,7 @@ jobs:
 
   docker-build:
     name: Build & Push Docker Image
+    if: github.event.action != 'closed'
     needs: verify
     runs-on: ubuntu-latest
     permissions:
@@ -114,7 +117,7 @@ jobs:
         uses: chrnorm/deployment-action@v2
         with:
           token: ${{ github.token }}
-          environment: preview-pr-${{ github.event.pull_request.number }}
+          environment: preview
           environment-url: https://pr-${{ github.event.pull_request.number }}.${{ secrets.APP_BASE_DOMAIN }}
 
       - name: Update deployment status (in progress)
@@ -175,3 +178,62 @@ jobs:
           token: ${{ github.token }}
           deployment-id: ${{ steps.deployment.outputs.deployment_id }}
           state: failure
+
+  preview-cleanup:
+    name: Cleanup Preview
+    if: github.event.action == 'closed'
+    runs-on: ubuntu-latest
+    permissions:
+      deployments: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Delete preview from Dokploy
+        env:
+          DOKPLOY_URL: ${{ secrets.DOKPLOY_URL }}
+          DOKPLOY_API_TOKEN: ${{ secrets.DOKPLOY_API_TOKEN }}
+          PROJECT_ID: ${{ secrets.DOKPLOY_PROJECT_ID }}
+        run: |
+          cd .dokploy/scripts
+          ./delete-preview.sh ${{ github.event.pull_request.number }}
+
+      - name: Deactivate GitHub deployments
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const prNumber = context.payload.pull_request.number;
+            const targetUrl = `https://pr-${prNumber}.${{ secrets.APP_BASE_DOMAIN }}`;
+
+            console.log(`Looking for deployments with URL: ${targetUrl}`);
+
+            // Get all deployments for the preview environment
+            const { data: deployments } = await github.rest.repos.listDeployments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              environment: 'preview'
+            });
+
+            console.log(`Found ${deployments.length} total deployments in preview environment`);
+
+            // Find and deactivate deployments matching this PR's URL
+            let deactivated = 0;
+            for (const deployment of deployments) {
+              if (deployment.environment_url === targetUrl) {
+                await github.rest.repos.createDeploymentStatus({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  deployment_id: deployment.id,
+                  state: 'inactive'
+                });
+                console.log(`✅ Deactivated deployment ${deployment.id}`);
+                deactivated++;
+              }
+            }
+
+            console.log(`Deactivated ${deactivated} deployment(s) for PR #${prNumber}`);
+
+            if (deactivated === 0) {
+              console.log('⚠️ No deployments found to deactivate');
+            }
