@@ -55,20 +55,6 @@ jobs:
           DATABASE_URL: postgresql://localhost:5432/dummy
         run: bun run build
 
-      - name: Debug - List build artifacts
-        run: |
-          echo "Checking workspace directory:"
-          pwd
-          echo ""
-          echo "Checking apps/web/.next contents:"
-          ls -la apps/web/.next/ || echo ".next directory not found"
-          echo ""
-          echo "Checking for standalone output:"
-          ls -la apps/web/.next/standalone/ || echo "standalone directory not found"
-          echo ""
-          echo "Checking for static output:"
-          ls -la apps/web/.next/static/ || echo "static directory not found"
-
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -110,3 +96,82 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha,scope=planner-web
           cache-to: type=gha,mode=max,scope=planner-web
+
+  preview-deploy:
+    name: Deploy Preview
+    needs: docker-build
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      deployments: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Create deployment
+        id: deployment
+        uses: chrnorm/deployment-action@v2
+        with:
+          token: ${{ github.token }}
+          environment: preview-pr-${{ github.event.pull_request.number }}
+          environment-url: https://pr-${{ github.event.pull_request.number }}.${{ secrets.APP_BASE_DOMAIN }}
+
+      - name: Update deployment status (in progress)
+        uses: chrnorm/deployment-status@v2
+        with:
+          token: ${{ github.token }}
+          deployment-id: ${{ steps.deployment.outputs.deployment_id }}
+          state: in_progress
+
+      - name: Deploy to Dokploy
+        env:
+          DOKPLOY_URL: ${{ secrets.DOKPLOY_URL }}
+          DOKPLOY_API_TOKEN: ${{ secrets.DOKPLOY_API_TOKEN }}
+          PROJECT_ID: ${{ secrets.DOKPLOY_PROJECT_ID }}
+          GHCR_IMAGE: ghcr.io/${{ github.repository }}
+          APP_BASE_DOMAIN: ${{ secrets.APP_BASE_DOMAIN }}
+        run: |
+          cd .dokploy/scripts
+
+          # Image already in GHCR from docker-build job!
+          if ./list-previews.sh 2>/dev/null | grep -q "pr-${{ github.event.pull_request.number }}"; then
+            ./update-preview.sh ${{ github.event.pull_request.number }}
+          else
+            ./create-preview.sh ${{ github.event.pull_request.number }}
+          fi
+
+      - name: Run smoke tests
+        env:
+          APP_BASE_DOMAIN: ${{ secrets.APP_BASE_DOMAIN }}
+        run: |
+          PREVIEW_URL="https://pr-${{ github.event.pull_request.number }}.${APP_BASE_DOMAIN}"
+
+          for i in {1..30}; do
+            if curl -sf "$PREVIEW_URL/api/health" > /dev/null 2>&1; then
+              echo "✅ Preview ready!"
+              break
+            fi
+            echo "⏳ Waiting... ($i/30)"
+            sleep 10
+          done
+
+          curl -sf "$PREVIEW_URL/api/health" || exit 1
+          echo "✅ Health check passed"
+
+      - name: Update deployment status (success)
+        if: success()
+        uses: chrnorm/deployment-status@v2
+        with:
+          token: ${{ github.token }}
+          deployment-id: ${{ steps.deployment.outputs.deployment_id }}
+          state: success
+          environment-url: https://pr-${{ github.event.pull_request.number }}.${{ secrets.APP_BASE_DOMAIN }}
+
+      - name: Update deployment status (failure)
+        if: failure()
+        uses: chrnorm/deployment-status@v2
+        with:
+          token: ${{ github.token }}
+          deployment-id: ${{ steps.deployment.outputs.deployment_id }}
+          state: failure

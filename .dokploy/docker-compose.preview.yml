@@ -1,0 +1,102 @@
+# Dokploy Preview Deployment Configuration
+# This compose file is used for PR preview deployments
+# Environment variables are set via Dokploy API per preview
+
+services:
+  web:
+    # Pre-built image from GitHub Actions CI/CD
+    image: ${GHCR_IMAGE}:${IMAGE_TAG}
+
+    # Pull policy ensures latest image is always used
+    pull_policy: always
+
+    # Expose port for internal routing (Traefik handles external)
+    expose:
+      - 3000
+
+    environment:
+      # Database connection (internal compose network)
+      - DATABASE_URL=postgresql://postgres:$${{environment.DB_PASSWORD}}@db:5432/planner
+
+      # Auth configuration
+      - BETTER_AUTH_URL=https://${PREVIEW_DOMAIN}
+      - BETTER_AUTH_SECRET=$${{environment.BETTER_AUTH_SECRET}}
+
+      # CORS origin
+      - CORS_ORIGIN=https://${PREVIEW_DOMAIN}
+
+      # Environment identifier
+      - NODE_ENV=preview
+
+      # Disable Next.js telemetry
+      - NEXT_TELEMETRY_DISABLED=1
+
+    networks:
+      - dokploy-network
+
+    # Traefik labels for automatic HTTPS routing (Dokploy pattern)
+    labels:
+      # HTTP router (redirects to HTTPS)
+      - "traefik.http.routers.${APP_NAME}.rule=Host(`${PREVIEW_DOMAIN}`)"
+      - "traefik.http.routers.${APP_NAME}.entrypoints=web"
+      - "traefik.http.services.${APP_NAME}.loadbalancer.server.port=3000"
+      - "traefik.http.routers.${APP_NAME}.service=${APP_NAME}"
+      - "traefik.http.routers.${APP_NAME}.middlewares=redirect-to-https@file"
+
+      # HTTPS router
+      - "traefik.http.routers.${APP_NAME}-websecure.rule=Host(`${PREVIEW_DOMAIN}`)"
+      - "traefik.http.routers.${APP_NAME}-websecure.entrypoints=websecure"
+      - "traefik.http.services.${APP_NAME}-websecure.loadbalancer.server.port=3000"
+      - "traefik.http.routers.${APP_NAME}-websecure.service=${APP_NAME}-websecure"
+      - "traefik.http.routers.${APP_NAME}-websecure.tls.certresolver=letsencrypt"
+
+      - "traefik.enable=true"
+
+    # Restart policy
+    restart: unless-stopped
+
+    # Health check using bun (no curl/wget in bun-slim)
+    healthcheck:
+      test: ["CMD", "bun", "-e", "fetch('http://localhost:3000/api/health').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    # PostgreSQL database (isolated per preview)
+    image: postgres:15-alpine
+
+    environment:
+      - POSTGRES_DB=planner
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=$${{environment.DB_PASSWORD}}
+
+    # Expose port for documentation (not externally accessible)
+    expose:
+      - 5432
+
+    # Persistent storage (Dokploy path pattern)
+    volumes:
+      - ../files/${APP_NAME}-db:/var/lib/postgresql/data
+
+    networks:
+      - dokploy-network
+
+    # Restart policy
+    restart: unless-stopped
+
+    # Health check
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  dokploy-network:
+    external: true
