@@ -55,9 +55,9 @@ services:
     # Restart policy
     restart: unless-stopped
 
-    # Health check
+    # Health check using bun (curl/wget not available in bun-slim)
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      test: ["CMD", "bun", "-e", "fetch('http://localhost:3000/health').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"]
       interval: 30s
       timeout: 10s
       retries: 3
