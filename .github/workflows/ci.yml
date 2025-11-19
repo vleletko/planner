@@ -220,14 +220,24 @@ jobs:
             // Find and deactivate deployments matching this PR's URL
             let deactivated = 0;
             for (const deployment of deployments) {
-              if (deployment.environment_url === targetUrl) {
+              // Get the latest status to check the environment_url
+              const { data: statuses } = await github.rest.repos.listDeploymentStatuses({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                deployment_id: deployment.id
+              });
+
+              // Check if any status has matching URL
+              const hasMatchingUrl = statuses.some(status => status.environment_url === targetUrl);
+
+              if (hasMatchingUrl) {
                 await github.rest.repos.createDeploymentStatus({
                   owner: context.repo.owner,
                   repo: context.repo.repo,
                   deployment_id: deployment.id,
                   state: 'inactive'
                 });
-                console.log(`✅ Deactivated deployment ${deployment.id}`);
+                console.log(`✅ Deactivated deployment ${deployment.id} (matched URL: ${targetUrl})`);
                 deactivated++;
               }
             }
