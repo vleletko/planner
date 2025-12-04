@@ -1,6 +1,6 @@
 # Story 1.5: Deployment Pipeline and Environment Configuration
 
-Status: ready-for-dev
+Status: done (Phase 4 deferred)
 
 ## Story
 
