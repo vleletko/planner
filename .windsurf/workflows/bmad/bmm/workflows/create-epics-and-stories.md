@@ -5,7 +5,7 @@ auto_execution_mode: 1
 
 # Epic and Story Decomposition Workflow
 name: create-epics-and-stories
-description: "Transform PRD requirements into bite-sized stories organized in epics for 200k context dev agents"
+description: "Transform PRD requirements and Architecture decisions into comprehensive stories organized by user value. This workflow requires completed PRD + Architecture documents (UX recommended if UI exists) and breaks down requirements into implementation-ready epics and user stories that incorporate all available technical and design context. Creates detailed, actionable stories with complete acceptance criteria for development teams."
 author: "BMad"
 
 # Critical variables from config
@@ -18,29 +18,27 @@ document_output_language: "{config_source}:document_output_language"
 user_skill_level: "{config_source}:user_skill_level"
 date: system-generated
 
-# Input requirements
-recommended_inputs:
-  - prd: "Product Requirements Document with FRs and NFRs"
-  - product_brief: "Product Brief with vision and goals (optional)"
-  - domain_brief: "Domain-specific requirements and context (optional)"
-
 # Smart input file references - handles both whole docs and sharded docs
 # Priority: Whole document first, then sharded version
 input_file_patterns:
   prd:
+    description: "Product Requirements Document with FRs and NFRs (required)"
     whole: "{output_folder}/*prd*.md"
     sharded: "{output_folder}/*prd*/index.md"
-
-  product_brief:
-    whole: "{output_folder}/*product*brief*.md"
-    sharded: "{output_folder}/*product*brief*/index.md"
-
-  domain_brief:
-    whole: "{output_folder}/*domain*brief*.md"
-    sharded: "{output_folder}/*domain*brief*/index.md"
+    load_strategy: "INDEX_GUIDED"
+  architecture:
+    description: "Architecture decisions and technical design (required)"
+    whole: "{output_folder}/*architecture*.md"
+    sharded: "{output_folder}/*architecture*/index.md"
+    load_strategy: "FULL_LOAD"
+  ux_design:
+    description: "UX design specification for interaction patterns (recommended if UI exists)"
+    whole: "{output_folder}/*ux*.md"
+    sharded: "{output_folder}/*ux*/index.md"
+    load_strategy: "FULL_LOAD"
 
 # Module path and component files
-installed_path: "{project-root}/.bmad/bmm/workflows/2-plan-workflows/prd/create-epics-and-stories"
+installed_path: "{project-root}/.bmad/bmm/workflows/3-solutioning/create-epics-and-stories"
 instructions: "{installed_path}/instructions.md"
 template: "{installed_path}/epics-template.md"
 

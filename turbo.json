@@ -34,6 +34,13 @@
       "cache": false,
       "persistent": true
     },
+    "generate": {
+      "cache": false
+    },
+    "start": {
+      "cache": false,
+      "env": ["DATABASE_URL", "RESET_DB", "SEED_PROFILE"]
+    },
     "db:generate": {
       "cache": false,
       "persistent": true

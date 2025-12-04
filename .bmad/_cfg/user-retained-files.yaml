@@ -1,0 +1,9 @@
+retainedFiles: []
+history:
+  - date: '2025-12-03T22:48:13.295Z'
+    deleted: 2
+    retained: 0
+    files:
+      - bmm/agents/ux-designer.md.bak
+      - >-
+        bmm/workflows/document-project/templates/project-scan-report-schema.json.bak
