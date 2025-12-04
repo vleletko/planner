@@ -89,7 +89,7 @@ jobs:
             echo "tag=ghcr.io/${{ github.repository }}:sha-$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
           fi
 
-      - name: Build and push Docker image
+      - name: Build and push Docker image (web)
         uses: docker/build-push-action@v6
         with:
           context: ./apps/web
@@ -99,6 +99,32 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha,scope=planner-web
           cache-to: type=gha,mode=max,scope=planner-web
+
+      - name: Prune monorepo for migrate
+        run: bunx turbo prune @planner/migrate --docker --out-dir=out-migrate
+
+      - name: Docker metadata (migrate)
+        id: meta-migrate
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}-migrate
+          tags: |
+            type=ref,event=pr,prefix=pr-
+            type=sha,prefix=sha-,format=short
+          labels: |
+            org.opencontainers.image.title=Planner Migrate
+            org.opencontainers.image.description=Database migrations and seeding
+
+      - name: Build and push Docker image (migrate)
+        uses: docker/build-push-action@v6
+        with:
+          context: ./out-migrate
+          file: ./apps/migrate/Dockerfile
+          push: true
+          tags: ${{ steps.meta-migrate.outputs.tags }}
+          labels: ${{ steps.meta-migrate.outputs.labels }}
+          cache-from: type=gha,scope=planner-migrate
+          cache-to: type=gha,mode=max,scope=planner-migrate
 
   preview-deploy:
     name: Deploy Preview

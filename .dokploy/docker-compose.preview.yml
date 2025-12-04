@@ -3,6 +3,28 @@
 # Environment variables are set via Dokploy API per preview
 
 services:
+  # Database migrations and seeding (runs once before web starts)
+  migrate:
+    image: ${GHCR_IMAGE}-migrate:${IMAGE_TAG}
+    pull_policy: always
+
+    environment:
+      # Database connection
+      - DATABASE_URL=postgresql://postgres:$${{environment.DB_PASSWORD}}@db:5432/planner
+      # Preview environments: reset and seed with test data
+      - RESET_DB=true
+      - SEED_PROFILE=test
+
+    networks:
+      - dokploy-network
+
+    # Run once and exit (not a long-running service)
+    restart: "no"
+
+    depends_on:
+      db:
+        condition: service_healthy
+
   web:
     # Pre-built image from GitHub Actions CI/CD
     image: ${GHCR_IMAGE}:${IMAGE_TAG}
@@ -66,6 +88,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
 
   db:
     # PostgreSQL database (isolated per preview)

@@ -17,7 +17,10 @@
       "better-auth": "^1.3.28",
       "@daveyplate/better-auth-ui": "^3.2.9",
       "dotenv": "^17.2.2",
-      "tsdown": "^0.15.5"
+      "tsdown": "^0.15.5",
+      "drizzle-orm": "^0.44.2",
+      "drizzle-kit": "^0.31.2",
+      "typescript": "^5.7.2"
     }
   },
   "scripts": {
@@ -31,10 +34,10 @@
     "clear": "rm -rf .turbo apps/*/.next",
     "db:push": "turbo -F @planner/db db:push",
     "db:studio": "turbo -F @planner/db db:studio",
-    "db:generate": "turbo -F @planner/db db:generate",
-    "db:migrate": "turbo -F @planner/db db:migrate",
-    "db:seed": "turbo -F @planner/db db:seed",
-    "db:reset": "./scripts/db-reset.sh",
+    "db:generate": "turbo -F @planner/migrate generate",
+    "db:migrate": "turbo -F @planner/migrate start",
+    "db:seed": "SEED_PROFILE=test turbo -F @planner/migrate start",
+    "db:reset": "RESET_DB=true SEED_PROFILE=test turbo -F @planner/migrate start",
     "db:start": "turbo -F @planner/db db:start",
     "db:watch": "turbo -F @planner/db db:watch",
     "db:stop": "turbo -F @planner/db db:stop",
