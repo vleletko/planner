@@ -932,6 +932,7 @@ jobs:
 - [x] Verify CI builds migrate image ✅
 - [x] Verify preview deployment creates test users ✅
 - [x] Test login with test@example.com / TestPassword123! ✅
+- [x] Verify preview deployment updates on push ✅
 
 #### Bug Fix (2025-12-05)
 

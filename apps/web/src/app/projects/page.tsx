@@ -14,7 +14,7 @@ export default async function ProjectsPage() {
   return (
     <div>
       <h1>Projects</h1>
-      <p>Projects page - Preview update test (PR #5)</p>
+      <p>Projects page - Coming soon</p>
     </div>
   );
 }
