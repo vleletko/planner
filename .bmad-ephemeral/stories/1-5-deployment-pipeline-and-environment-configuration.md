@@ -656,7 +656,7 @@ This story uses a **gradual improvement pattern** where each phase is researched
 - [x] Verify preview deleted from Dokploy ✅
 - [x] Verify GitHub deployment deactivated ✅
 - [x] Verify no orphaned deployments ✅
-- [ ] Mark Phase 3 COMPLETE before moving to Phase 4
+- [x] Mark Phase 3 COMPLETE ✅
 
 **VERIFIED WORKING (2025-11-19):**
 - ✅ Deployment creation working correctly
@@ -668,10 +668,10 @@ This story uses a **gradual improvement pattern** where each phase is researched
 
 ---
 
-### Phase 3.5: Database Migrations & Seeding (INVESTIGATION & DESIGN)
+### Phase 3.5: Database Migrations & Seeding ✅ COMPLETE
 
-**Status:** Investigation Complete (2025-11-19)
-**Next:** Ready for implementation
+**Status:** Complete (2025-12-05)
+**PR:** #5 - feat: add migrate app for database migrations and seeding
 
 #### Problem Statement
 
@@ -928,9 +928,10 @@ jobs:
 - [x] Test idempotency - running `bun run db:migrate` skips existing users ✅
 - [x] Test Docker build with `turbo prune --docker` ✅
 - [x] Test Docker container against local database ✅
-- [ ] Create test PR to verify preview migration/seeding
-- [ ] Verify CI builds migrate image
-- [ ] Verify preview deployment creates test users
+- [x] Create test PR to verify preview migration/seeding (PR #5)
+- [x] Verify CI builds migrate image ✅
+- [x] Verify preview deployment creates test users ✅
+- [x] Test login with test@example.com / TestPassword123! ✅
 
 #### Bug Fix (2025-12-05)
 
@@ -1508,10 +1509,22 @@ Each phase follows this cycle:
 - ✅ Modified: `README.md` - Added Docker deployment section
 - ✅ Modified: `turbo.json` - Added .next/** to build outputs (required for build-reuse pattern)
 
+**Phase 3.5:**
+- ✅ Created: `apps/migrate/` - Complete migration app with drizzle-orm and seeding
+- ✅ Created: `apps/migrate/Dockerfile` - Uses turbo prune --docker for optimized builds
+- ✅ Created: `apps/migrate/src/reset.ts` - Database reset with safety checks
+- ✅ Created: `apps/migrate/src/seed/` - Test user seeding with Better Auth compatible passwords
+- ✅ Modified: `.github/workflows/ci.yml` - Added turbo prune and migrate image build
+- ✅ Modified: `.dokploy/docker-compose.preview.yml` - Added migrate service
+- ✅ Modified: `package.json` - Added db:generate, db:migrate, db:seed, db:reset scripts
+- ✅ Modified: `turbo.json` - Added start and generate tasks
+
 ## Change Log
 
 - 2025-11-16: Story drafted from Epic 1 Story 1.5 specifications. Established research-first, gradual improvement pattern with mandatory human verification pauses after each research phase. 5 phases: Basic CI, Docker Integration, Dokploy Preview Deployments, Dokploy Production Deployment, Dependency Management. Key decisions: CI runs on all PRs/branches (not just main), self-hosted deployment via Dokploy (NOT Vercel), Docker-based deployment with Next.js standalone mode, integration tests on preview deployments. All implementation tasks deferred until research phase completes AND user approves for each phase. Research findings documented in dedicated files (`.bmad-ephemeral/stories/1-5-research/phase-X-*.md`) to serve as baseline for verification and implementation. Research tasks are Dokploy-focused to leverage platform features (preview environments, zero-downtime deployments, health checks, rollbacks).
 
 - 2025-11-17: Phase 2 research completed and approved. Key research findings: (1) Build-reuse pattern selected over Docker-in-Docker for 5-10x performance improvement by leveraging existing Bun+Turbo caching; (2) Preview-focused tagging strategy (`pr-XX` for deployments, `sha-XXXXXX` for rollback) with production tagging deferred to Phase 4 to avoid `latest` confusion; (3) GitHub Container Registry (GHCR) selected for free, rate-limit-free integration with Dokploy; (4) Composite action pattern (`.github/actions/setup-bun-workspace/`) to DRY up duplicated setup steps in workflow; (5) Single-stage runtime Dockerfile targeting <200MB image size with Next.js standalone output, Bun slim runtime, non-root user security hardening. Updated story with detailed implementation tasks for Phase 2 including composite action creation, Dockerfile creation, workflow updates, and comprehensive verification steps. Ready to begin Phase 2 implementation.
+
+- 2025-12-05: Phase 3.5 (Database Migrations & Seeding) completed. Created dedicated `apps/migrate` app for database migrations and seeding in preview deployments. Key implementation: (1) Used `turbo prune --docker` for optimized Docker builds per Turborepo best practices; (2) Password hashing with Node.js crypto scrypt using Better Auth compatible parameters (N=16384, r=16, p=1, dkLen=64, format `${salt}:${hash}`); (3) Safety checks prevent accidental production reset (error if RESET_DB=true with SEED_PROFILE=none); (4) Fixed drizzle migrate bug where migrations reported success but tables weren't created - root cause was drizzle schema not being dropped during reset; (5) Idempotent seeding skips existing users. PR #5 verified: CI builds migrate image successfully, preview deployment runs migrations and seeds test users, login with test@example.com works. Phase 3 + 3.5 COMPLETE.
 
 - 2025-11-17: Phase 2 implementation completed successfully. Created composite action (`.github/actions/setup-bun-workspace/`) eliminating code duplication in CI workflow. Created single-stage Dockerfile with security hardening (non-root user, slim base image, telemetry disabled). Discovered and resolved .dockerignore issue - needed to whitelist `.next/standalone` and `.next/static` while excluding rest of `.next/*`. Updated `turbo.json` to cache `.next/**` outputs (required for build-reuse pattern to work - enables Turborepo to cache Next.js build artifacts between verify and docker-build jobs). Local testing confirmed: Docker image builds successfully (255MB, 13% above target but production-ready), container starts in 42ms, app accessible and functional, running as non-root user `nextjs`. CI testing successful: `verify` job passes with Turbo cache hits, `docker-build` job completes in ~30 seconds (instant cache replay), image pushed to GHCR with tag `sha-ef82a9a`, Docker layer cache working (GHA cache scope: planner-web, mode: max). Documentation updated: README Docker deployment section added, .env.example enhanced with detailed comments. Debug steps removed from CI workflow (production-ready). Phase 2 COMPLETE - all tasks verified, CI passing, ready for Phase 3 (Dokploy preview deployments).
