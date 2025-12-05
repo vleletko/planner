@@ -38,7 +38,7 @@ jobs:
       - name: Run unit tests
         run: |
           mkdir -p packages/api/test-results
-          bun run test:coverage 2>&1 | tee test-output.txt
+          cd packages/api && bun test --coverage 2>&1 | tee ../../test-output.txt
 
       - name: Report test results
         if: always()
