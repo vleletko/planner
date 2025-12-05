@@ -66,9 +66,26 @@ jobs:
           script: |
             const fs = require('fs');
             const output = fs.readFileSync('test-output.txt', 'utf8');
-            const coverageMatch = output.match(/-+\|.*\|.*\|[\s\S]*?-+\|.*\|.*\|/g);
-            const coverage = coverageMatch ? coverageMatch.join('\n') : 'No coverage data';
+            const lines = output.split('\n');
 
+            // Find coverage table (lines starting with dashes or containing |)
+            let inTable = false;
+            let tableLines = [];
+            for (const line of lines) {
+              if (line.match(/^-+\|/)) {
+                inTable = !inTable || tableLines.length === 0;
+                tableLines.push(line);
+              } else if (inTable && line.includes('|')) {
+                tableLines.push(line);
+              } else if (inTable && line.match(/^-+\|/)) {
+                tableLines.push(line);
+                break;
+              } else if (inTable && !line.includes('|')) {
+                break;
+              }
+            }
+
+            const coverage = tableLines.length > 0 ? tableLines.join('\n') : 'No coverage data';
             const body = `## Test Coverage\n\n\`\`\`\n${coverage}\n\`\`\`\n\n*Updated: ${new Date().toISOString()}*`;
 
             const { data: comments } = await github.rest.issues.listComments({
