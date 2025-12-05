@@ -32,7 +32,7 @@
     "typescript": "^5"
   },
   "dependencies": {
-    "drizzle-orm": "^0.44.2",
+    "drizzle-orm": "^0.45.0",
     "pg": "^8.14.1",
     "dotenv": "catalog:",
     "zod": "catalog:"
