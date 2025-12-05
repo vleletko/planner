@@ -24,16 +24,16 @@
     "db:down": "docker compose down"
   },
   "devDependencies": {
-    "drizzle-kit": "^0.31.8",
-    "@types/pg": "^8.11.11",
+    "drizzle-kit": "catalog:",
+    "@types/pg": "catalog:",
     "tsdown": "catalog:"
   },
   "peerDependencies": {
     "typescript": "^5"
   },
   "dependencies": {
-    "drizzle-orm": "^0.45.0",
-    "pg": "^8.14.1",
+    "drizzle-orm": "catalog:",
+    "pg": "catalog:",
     "dotenv": "catalog:",
     "zod": "catalog:"
   }

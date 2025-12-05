@@ -12,11 +12,11 @@
     "@planner/db": "workspace:*",
     "dotenv": "catalog:",
     "drizzle-orm": "catalog:",
-    "pg": "^8.14.1"
+    "pg": "catalog:"
   },
   "devDependencies": {
-    "@types/bun": "^1.1.14",
-    "@types/pg": "^8.11.11",
+    "@types/bun": "catalog:",
+    "@types/pg": "catalog:",
     "drizzle-kit": "catalog:",
     "typescript": "catalog:"
   }
