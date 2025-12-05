@@ -46,6 +46,7 @@ jobs:
         with:
           report_paths: '**/test-results/junit.xml'
           include_passed: true
+          detailed_summary: true
           check_name: Unit Tests
 
       - name: Add coverage to job summary
