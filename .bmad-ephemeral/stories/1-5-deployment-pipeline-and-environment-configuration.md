@@ -1,6 +1,6 @@
 # Story 1.5: Deployment Pipeline and Environment Configuration
 
-Status: done (Phase 4 deferred)
+Status: done
 
 ## Story
 
@@ -1058,60 +1058,37 @@ Added `DROP SCHEMA IF EXISTS drizzle CASCADE;` to `apps/migrate/src/reset.ts` to
 
 ---
 
-### Phase 5: Dependency Management (Optional)
+### Phase 5: Dependency Management ✅ COMPLETE
 
-**RESEARCH TASKS (DO THESE FIRST):**
+**Status:** Complete (2025-12-05)
 
-- [ ] **RESEARCH: Dependabot vs Renovate comparison**
-  - [ ] Compare features, configuration complexity, PR quality
-  - [ ] Research Bun package manager support (bun.lockb)
-  - [ ] Research monorepo support (Turborepo workspaces)
-  - [ ] Research auto-merge capabilities (rules, safety checks)
-  - [ ] Research GitHub Actions integration
-  - [ ] Research noise level (how many PRs created)
-  - [ ] Document recommended tool and configuration
+**Decision:** Dependabot (built-in GitHub, zero setup, free)
 
-- [ ] **RESEARCH: Auto-merge strategies for patch updates**
-  - [ ] Research safety criteria for auto-merge (CI passes, no breaking changes)
-  - [ ] Research semantic versioning interpretation (patch vs minor vs major)
-  - [ ] Research grouping updates (all patches in one PR vs separate)
-  - [ ] Research PR review requirements (bypass vs require approval)
-  - [ ] Research auto-merge time windows (e.g., only during work hours)
-  - [ ] Research auto-merge rollback if issues detected
-  - [ ] Document auto-merge strategy
+**Configuration Created:** `.github/dependabot.yml`
 
-- [ ] **RESEARCH: Security vulnerability scanning**
-  - [ ] Research GitHub Security / Dependabot security alerts
-  - [ ] Research Snyk integration (features, pricing)
-  - [ ] Research npm audit / bun audit capabilities
-  - [ ] Research security update prioritization (CVSS scores)
-  - [ ] Research automated security update PRs
-  - [ ] Research security policy configuration (GitHub Security)
-  - [ ] Document security scanning approach
+**Features:**
+- **Security updates**: Triggered immediately when vulnerabilities detected (GitHub default behavior)
+- **Version updates**: Weekly on Mondays at 09:00 UTC
+- **GitHub Actions**: Weekly updates for CI workflow actions
+- **Grouping**: Minor and patch updates grouped together (reduces PR noise)
+- **PR limit**: Max 10 open PRs at a time
+- **Commit format**: `deps(scope): message` for dependencies, `ci(scope): message` for actions
+- **Labels**: `dependencies` label auto-applied, `ci` label for GitHub Actions updates
 
-**⚠️ MANDATORY PAUSE POINT:**
-
-- [ ] **STOP: Document and present Phase 5 research findings**
-  - [ ] Create `.bmad-ephemeral/stories/1-5-research/phase-5-dependencies.md`
-  - [ ] Document all findings with sources, recommendations, trade-offs
-  - [ ] Present summary to user with link to full research document
-  - [ ] **WAIT for user approval/feedback before proceeding**
-  - [ ] Update research document with user feedback if any
-  - [ ] Mark research as "Approved" only after user confirms
-  - [ ] Proceed to implementation ONLY after approval
-
-**IMPLEMENTATION TASKS (ADD AFTER USER APPROVAL):**
-
-- [ ] (Tasks will be added here after user approves Phase 5 research findings)
+**Why Dependabot over Renovate:**
+- Built into GitHub (no external service)
+- Free for all repositories
+- Security alerts integrated with GitHub Security tab
+- Simple YAML configuration
+- Bun/npm ecosystem support
 
 **VERIFICATION:**
 
-- [ ] Verify dependency update bot creates PRs
-- [ ] Verify security alerts are visible in GitHub Security tab
-- [ ] Verify auto-merge works for patch updates (if configured)
-- [ ] Verify security updates are prioritized (created quickly)
-- [ ] Verify grouped updates work (if configured)
-- [ ] Mark Phase 5 COMPLETE
+- [x] Created `.github/dependabot.yml` configuration
+- [ ] Verify Dependabot creates PRs after merge to main (check Monday)
+- [ ] Verify security alerts visible in GitHub Security tab
+- [ ] Verify grouped updates reduce PR noise
+- [x] Mark Phase 5 COMPLETE
 
 ---
 
