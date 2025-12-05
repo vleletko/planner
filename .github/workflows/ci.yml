@@ -46,7 +46,6 @@ jobs:
         with:
           report_paths: '**/test-results/junit.xml'
           include_passed: true
-          annotate_notice: true
           detailed_summary: true
           job_summary: false
           check_name: Unit Tests
