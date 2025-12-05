@@ -6,4 +6,4 @@ coverageDir = "./coverage"
 coverageSkipTestFiles = true
 
 [test.reporter]
-junit = "./test-results/junit.xml"
+junit = "junit.xml"

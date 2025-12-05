@@ -22,7 +22,7 @@ coverageDir = "./coverage"
 coverageSkipTestFiles = true
 
 [test.reporter]
-junit = "./test-results/junit.xml"
+junit = "junit.xml"
 ```
 
 ### 2. Add Test Scripts
@@ -49,7 +49,7 @@ coverage
 *.lcov
 
 # test results
-test-results
+junit.xml
 ```
 
 ### 4. Write Tests
@@ -96,7 +96,7 @@ bun run test:coverage
 
 No additional CI configuration needed. The existing CI workflow uses glob patterns that automatically discover:
 
-- Test results: `**/test-results/junit.xml`
+- Test results: `**/junit.xml`
 
 Your package's test results will appear as a PR check automatically. Coverage is visible in CI logs.
 

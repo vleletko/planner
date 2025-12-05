@@ -35,7 +35,7 @@ so that I can write and run fast, reliable tests for utilities and API logic.
   - [x] 1.2: Add test scripts to `packages/api/package.json`: `test`, `test:watch`, `test:coverage`
 
 - [x] Task 2: Add Root-Level Test Scripts (AC: #1)
-  - [x] 2.1: Add `test`, `test:watch`, `test:coverage` scripts to root `package.json`
+  - [x] 2.1: Add `test`, `test:coverage` scripts to root `package.json`
   - [x] 2.2: Update `turbo.json` with test pipeline configuration
 
 - [x] Task 3: Create Example Tests (AC: #2)
@@ -99,7 +99,9 @@ coverage = true
 coverageReporter = ["text", "lcov"]
 coverageDir = "./coverage"
 coverageSkipTestFiles = true
-reporter = { junit = "./test-results/junit.xml" }
+
+[test.reporter]
+junit = "junit.xml"
 ```
 
 **`packages/api/package.json` scripts:**
@@ -123,16 +125,18 @@ reporter = { junit = "./test-results/junit.xml" }
 }
 ```
 
+Note: `test:watch` was intentionally excluded from root scripts as `turbo watch test` provides better monorepo-aware watching.
+
 **`turbo.json` additions:**
 ```json
 {
   "tasks": {
     "test": {
-      "outputs": ["coverage/**"],
+      "outputs": ["coverage/**", "junit.xml"],
       "cache": false
     },
     "test:coverage": {
-      "outputs": ["coverage/**"],
+      "outputs": ["coverage/**", "junit.xml"],
       "cache": false
     }
   }
@@ -145,15 +149,13 @@ Add to `.github/workflows/ci.yml` in the `verify` job (after lint, before build)
 
 ```yaml
 - name: Run unit tests
-  run: |
-    mkdir -p packages/api/test-results
-    bun run test:coverage
+  run: bun run test:coverage
 
 - name: Report test results
   if: always()
   uses: mikepenz/action-junit-report@v6
   with:
-    report_paths: '**/test-results/junit.xml'
+    report_paths: '**/junit.xml'
     include_passed: true
     detailed_summary: true
     job_summary: false
@@ -162,7 +164,7 @@ Add to `.github/workflows/ci.yml` in the `verify` job (after lint, before build)
 
 **Features:**
 - [JUnit Report Action](https://github.com/mikepenz/action-junit-report) - Shows test results as PR check
-- Glob pattern `**/test-results/junit.xml` auto-discovers all package test results
+- Glob pattern `**/junit.xml` auto-discovers all package test results
 - Coverage visible in CI logs (no PR comment due to monorepo path complexity)
 
 ### Coverage PR Comment - Deferred
@@ -180,12 +182,11 @@ packages/api/
 ├── bunfig.toml                    # Bun test configuration
 ├── coverage/                      # Generated coverage reports
 │   └── lcov.info
-├── test-results/                  # Generated JUnit XML
-│   └── junit.xml
+├── junit.xml                      # Generated JUnit XML (gitignored)
 └── src/
     └── lib/
         ├── validation.ts          # Validation utilities
-        └── validation.test.ts     # 14 tests, 100% coverage
+        └── validation.test.ts     # 15 tests, 100% coverage
 ```
 
 ### Test File Convention
@@ -223,10 +224,10 @@ Claude Opus 4.5 (claude-opus-4-5-20251101)
 
 - Configured Bun test runner with bunfig.toml (coverage + JUnit output)
 - Created validation utilities (isValidEmail, isNonEmptyString, isPositiveInteger, sanitizeString) with 100% test coverage
-- All 14 tests pass with 100% function and line coverage
+- All 15 tests pass with 100% function and line coverage
 - Added test scripts to root package.json and turbo.json for monorepo test orchestration
 - Integrated JUnit test reporting with mikepenz/action-junit-report@v6
-- Glob patterns used for monorepo compatibility (`**/test-results/junit.xml`)
+- Glob patterns used for monorepo compatibility (`**/junit.xml`)
 - Coverage PR comment deferred - no mature monorepo solution available
 - Created package testing setup guide for adding tests to other packages
 

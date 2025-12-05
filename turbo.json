@@ -62,11 +62,11 @@
       "persistent": true
     },
     "test": {
-      "outputs": ["coverage/**", "test-results/**"],
+      "outputs": ["coverage/**", "junit.xml"],
       "cache": false
     },
     "test:coverage": {
-      "outputs": ["coverage/**", "test-results/**"],
+      "outputs": ["coverage/**", "junit.xml"],
       "cache": false
     }
   }

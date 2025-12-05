@@ -42,7 +42,7 @@ jobs:
         if: always()
         uses: mikepenz/action-junit-report@v6
         with:
-          report_paths: '**/test-results/junit.xml'
+          report_paths: '**/junit.xml'
           include_passed: true
           detailed_summary: true
           job_summary: false

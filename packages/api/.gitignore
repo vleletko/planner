@@ -11,7 +11,7 @@ coverage
 *.lcov
 
 # test results
-test-results
+junit.xml
 
 # logs
 logs
