@@ -20,7 +20,7 @@ jobs:
     timeout-minutes: 15
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup workspace
         uses: ./.github/actions/setup-bun-workspace
@@ -48,7 +48,7 @@ jobs:
       image-tag: ${{ steps.image-tag.outputs.tag }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup workspace
         uses: ./.github/actions/setup-bun-workspace
@@ -136,7 +136,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Create deployment
         id: deployment
@@ -214,7 +214,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Delete preview from Dokploy
         env:
