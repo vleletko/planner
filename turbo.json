@@ -60,6 +60,14 @@
     "db:down": {
       "cache": false,
       "persistent": true
+    },
+    "test": {
+      "outputs": ["coverage/**"],
+      "cache": false
+    },
+    "test:coverage": {
+      "outputs": ["coverage/**"],
+      "cache": false
     }
   }
 }

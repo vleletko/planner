@@ -49,7 +49,10 @@
     "db:start": "turbo -F @planner/db db:start",
     "db:watch": "turbo -F @planner/db db:watch",
     "db:stop": "turbo -F @planner/db db:stop",
-    "db:down": "turbo -F @planner/db db:down"
+    "db:down": "turbo -F @planner/db db:down",
+    "test": "turbo test",
+    "test:watch": "bun test --watch --cwd packages/api",
+    "test:coverage": "turbo test:coverage"
   },
   "dependencies": {
     "@daveyplate/better-auth-ui": "^3.2.13",

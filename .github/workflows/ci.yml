@@ -18,6 +18,9 @@ jobs:
     if: github.event.action != 'closed'
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    permissions:
+      contents: read
+      pull-requests: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
@@ -30,6 +33,27 @@ jobs:
 
       - name: Type check
         run: bun run check-types
+
+      - name: Run unit tests
+        run: |
+          mkdir -p packages/api/test-results
+          bun run test:coverage
+
+      - name: Report test results
+        if: always()
+        uses: mikepenz/action-junit-report@v5
+        with:
+          report_paths: '**/test-results/junit.xml'
+          include_passed: true
+          check_name: Unit Tests
+
+      - name: Report coverage
+        if: github.event_name == 'pull_request'
+        uses: zgosalvez/github-actions-report-lcov@v4
+        with:
+          coverage-files: '**/coverage/lcov.info'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          update-comment: true
 
       - name: Build
         env:
