@@ -38,7 +38,7 @@ jobs:
       - name: Run unit tests
         run: |
           mkdir -p packages/api/test-results
-          cd packages/api && bun test --coverage 2>&1 | tee ../../test-output.txt
+          bun run test:coverage
 
       - name: Report test results
         if: always()
@@ -50,67 +50,18 @@ jobs:
           job_summary: false
           check_name: Unit Tests
 
-      - name: Add coverage to job summary
-        if: always()
-        run: |
-          echo "## Test Coverage" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
-          grep -A 50 "^-.*|.*|.*|" test-output.txt | head -20 >> $GITHUB_STEP_SUMMARY || echo "No coverage data" >> $GITHUB_STEP_SUMMARY
-          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
-
-      - name: Comment coverage on PR
+      - name: Install lcov
         if: github.event_name == 'pull_request'
-        uses: actions/github-script@v7
+        run: sudo apt-get install -y lcov
+
+      - name: Report coverage
+        if: github.event_name == 'pull_request'
+        uses: zgosalvez/github-actions-report-lcov@v4
         with:
-          script: |
-            const fs = require('fs');
-            const output = fs.readFileSync('test-output.txt', 'utf8');
-            const lines = output.split('\n');
-
-            // Find coverage table (lines starting with dashes or containing |)
-            let inTable = false;
-            let tableLines = [];
-            for (const line of lines) {
-              if (line.match(/^-+\|/)) {
-                inTable = !inTable || tableLines.length === 0;
-                tableLines.push(line);
-              } else if (inTable && line.includes('|')) {
-                tableLines.push(line);
-              } else if (inTable && line.match(/^-+\|/)) {
-                tableLines.push(line);
-                break;
-              } else if (inTable && !line.includes('|')) {
-                break;
-              }
-            }
-
-            const coverage = tableLines.length > 0 ? tableLines.join('\n') : 'No coverage data';
-            const body = `## Test Coverage\n\n\`\`\`\n${coverage}\n\`\`\`\n\n*Updated: ${new Date().toISOString()}*`;
-
-            const { data: comments } = await github.rest.issues.listComments({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-            });
-
-            const botComment = comments.find(c => c.user.type === 'Bot' && c.body.includes('## Test Coverage'));
-
-            if (botComment) {
-              await github.rest.issues.updateComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                comment_id: botComment.id,
-                body
-              });
-            } else {
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: context.issue.number,
-                body
-              });
-            }
+          coverage-files: packages/api/coverage/lcov.info
+          working-directory: packages/api
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          update-comment: true
 
       - name: Build
         env:
