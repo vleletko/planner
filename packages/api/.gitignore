@@ -10,6 +10,9 @@ dist
 coverage
 *.lcov
 
+# test results
+junit.xml
+
 # logs
 logs
 _.log

@@ -60,6 +60,14 @@
     "db:down": {
       "cache": false,
       "persistent": true
+    },
+    "test": {
+      "outputs": ["coverage/**", "junit.xml"],
+      "cache": false
+    },
+    "test:coverage": {
+      "outputs": ["coverage/**", "junit.xml"],
+      "cache": false
     }
   }
 }
