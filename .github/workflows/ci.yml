@@ -47,6 +47,10 @@ jobs:
           include_passed: true
           check_name: Unit Tests
 
+      - name: Install lcov
+        if: github.event_name == 'pull_request'
+        run: sudo apt-get install -y lcov
+
       - name: Report coverage
         if: github.event_name == 'pull_request'
         uses: zgosalvez/github-actions-report-lcov@v4
