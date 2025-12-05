@@ -36,9 +36,7 @@ jobs:
         run: bun run check-types
 
       - name: Run unit tests
-        run: |
-          mkdir -p packages/api/test-results
-          bun run test:coverage
+        run: bun run test:coverage
 
       - name: Report test results
         if: always()

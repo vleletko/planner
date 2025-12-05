@@ -62,11 +62,11 @@
       "persistent": true
     },
     "test": {
-      "outputs": ["coverage/**"],
+      "outputs": ["coverage/**", "test-results/**"],
       "cache": false
     },
     "test:coverage": {
-      "outputs": ["coverage/**"],
+      "outputs": ["coverage/**", "test-results/**"],
       "cache": false
     }
   }

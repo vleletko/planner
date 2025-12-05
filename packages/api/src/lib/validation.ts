@@ -13,7 +13,7 @@ export function isValidEmail(email: string): boolean {
   if (!email || typeof email !== "string") {
     return false;
   }
-  return EMAIL_REGEX.test(email);
+  return EMAIL_REGEX.test(email.trim());
 }
 
 /**

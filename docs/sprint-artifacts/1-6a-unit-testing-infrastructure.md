@@ -1,6 +1,6 @@
 # Story 1.6a: Unit Testing Infrastructure
 
-Status: Ready for Review
+Status: Done
 
 ## Story
 
@@ -99,9 +99,7 @@ coverage = true
 coverageReporter = ["text", "lcov"]
 coverageDir = "./coverage"
 coverageSkipTestFiles = true
-
-[test.reporter]
-junit = "./test-results/junit.xml"
+reporter = { junit = "./test-results/junit.xml" }
 ```
 
 **`packages/api/package.json` scripts:**
@@ -120,7 +118,6 @@ junit = "./test-results/junit.xml"
 {
   "scripts": {
     "test": "turbo test",
-    "test:watch": "bun test --watch --cwd packages/api",
     "test:coverage": "turbo test:coverage"
   }
 }
@@ -250,3 +247,4 @@ Claude Opus 4.5 (claude-opus-4-5-20251101)
 - 2025-12-05: Story created - Unit testing for business logic only (no component tests)
 - 2025-12-05: Story implementation completed - All tasks finished, tests passing with 100% coverage
 - 2025-12-05: Coverage PR comment deferred due to monorepo complexity - JUnit test reporting working
+- 2025-12-05: Code review fixes applied - 6 issues resolved (3 medium, 3 low)

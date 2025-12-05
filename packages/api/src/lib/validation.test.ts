@@ -14,6 +14,11 @@ describe("validation helpers", () => {
       expect(isValidEmail("user+tag@example.co.uk")).toBe(true);
     });
 
+    test("trims whitespace before validation", () => {
+      expect(isValidEmail(" test@example.com ")).toBe(true);
+      expect(isValidEmail("\tuser@domain.org\n")).toBe(true);
+    });
+
     test("returns false for invalid email addresses", () => {
       expect(isValidEmail("invalid")).toBe(false);
       expect(isValidEmail("@example.com")).toBe(false);

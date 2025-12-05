@@ -97,9 +97,8 @@ bun run test:coverage
 No additional CI configuration needed. The existing CI workflow uses glob patterns that automatically discover:
 
 - Test results: `**/test-results/junit.xml`
-- Coverage: `**/coverage/lcov.info`
 
-Your package's test results and coverage will appear in PR checks and comments automatically.
+Your package's test results will appear as a PR check automatically. Coverage is visible in CI logs.
 
 ## Best Practices
 

@@ -51,7 +51,6 @@
     "db:stop": "turbo -F @planner/db db:stop",
     "db:down": "turbo -F @planner/db db:down",
     "test": "turbo test",
-    "test:watch": "bun test --watch --cwd packages/api",
     "test:coverage": "turbo test:coverage"
   },
   "dependencies": {
