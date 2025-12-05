@@ -226,7 +226,7 @@ jobs:
           ./delete-preview.sh ${{ github.event.pull_request.number }}
 
       - name: Deactivate GitHub deployments
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const prNumber = context.payload.pull_request.number;
