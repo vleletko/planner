@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "../index.css";
 import Providers from "@/app/providers";
 import Header from "@/components/header";
+import { HydrationMarker } from "@/components/hydration-marker";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -49,6 +50,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} flex h-full flex-col antialiased`}
       >
         <Providers>
+          <HydrationMarker />
           <Header />
           <Background>
             <main className="relative z-10 flex flex-1 flex-col pt-16">

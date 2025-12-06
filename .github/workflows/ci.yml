@@ -223,6 +223,67 @@ jobs:
           deployment-id: ${{ steps.deployment.outputs.deployment_id }}
           state: failure
 
+  e2e-tests:
+    name: E2E Tests
+    needs: preview-deploy
+    if: github.event_name == 'pull_request' && github.event.action != 'closed'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      checks: write
+    container:
+      image: ghcr.io/${{ github.repository }}-playwright:v1.57.0-bun1.3.1
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Cache Bun dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Run E2E tests
+        env:
+          PLAYWRIGHT_BASE_URL: https://pr-${{ github.event.pull_request.number }}.${{ secrets.APP_BASE_DOMAIN }}
+        run: bun run test:e2e -- --project=chromium
+
+      - name: Report E2E test results
+        if: always()
+        uses: mikepenz/action-junit-report@v6
+        with:
+          report_paths: 'apps/e2e/junit.xml'
+          include_passed: true
+          detailed_summary: true
+          job_summary: true
+          check_name: E2E Test Results
+
+      - name: Upload test artifacts
+        id: artifact-upload
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report-pr-${{ github.event.pull_request.number }}
+          path: |
+            apps/e2e/playwright-report/
+            apps/e2e/test-results/
+            apps/e2e/junit.xml
+          retention-days: 7
+
+      - name: Add artifact link to summary
+        if: failure()
+        run: |
+          echo "## 📦 Test Artifacts" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "[Download Playwright Report](${{ steps.artifact-upload.outputs.artifact-url }})" >> $GITHUB_STEP_SUMMARY
+
   preview-cleanup:
     name: Cleanup Preview
     if: github.event.action == 'closed'
