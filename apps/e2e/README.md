@@ -228,7 +228,7 @@ These users are seeded when `SEED_PROFILE=test` is used (dev, preview, e2e envir
 E2E tests run automatically on PRs after the preview deployment succeeds:
 
 1. Preview is deployed to `https://pr-{number}.{APP_BASE_DOMAIN}`
-2. E2E tests run inside the official Playwright Docker image (`mcr.microsoft.com/playwright:v1.49.1-noble`)
+2. E2E tests run inside the official Playwright Docker image (`mcr.microsoft.com/playwright:v1.57.0-noble`)
 3. Tests run against the preview URL with Chromium only (faster)
 4. Failures are reported but don't block PR merge (initially)
 5. Test artifacts (screenshots, videos) are uploaded on failure
