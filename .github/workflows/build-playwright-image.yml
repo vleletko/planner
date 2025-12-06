@@ -2,7 +2,7 @@ name: Build Playwright+Bun Image
 
 on:
   push:
-    branches: [main, feat/e2e-testing-infrastructure]
+    branches: [main]
     paths:
       - '.github/images/playwright-bun/**'
       - '.github/workflows/build-playwright-image.yml'

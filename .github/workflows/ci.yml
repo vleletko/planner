@@ -233,17 +233,11 @@ jobs:
       contents: read
       checks: write
     container:
-      image: mcr.microsoft.com/playwright:v1.57.0-noble
+      image: ghcr.io/${{ github.repository }}-playwright:v1.57.0-bun1.3.1
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
-
-      - name: Install unzip (required by bun)
-        run: apt-get update && apt-get install -y unzip
-
-      - name: Setup bun
-        uses: oven-sh/setup-bun@v2
 
       - name: Cache Bun dependencies
         uses: actions/cache@v4
