@@ -234,7 +234,6 @@ jobs:
       checks: write
     container:
       image: mcr.microsoft.com/playwright:v1.57.0-noble
-      options: --user 1001
 
     steps:
       - name: Checkout code
@@ -245,6 +244,15 @@ jobs:
 
       - name: Setup bun
         uses: oven-sh/setup-bun@v2
+
+      - name: Cache Bun dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-e2e-${{ hashFiles('**/bun.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-e2e-
+            ${{ runner.os }}-bun-
 
       - name: Install dependencies
         run: bun install --frozen-lockfile
