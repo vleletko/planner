@@ -56,7 +56,6 @@ export class LoginPage extends BasePage {
   }
 
   private async fillCredentials(email: string, password: string) {
-    await this.waitForHydration();
     await this.emailInput.fill(email);
     await this.passwordInput.fill(password);
   }
