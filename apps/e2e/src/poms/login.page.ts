@@ -56,8 +56,7 @@ export class LoginPage extends BasePage {
   }
 
   private async fillCredentials(email: string, password: string) {
-    // Wait for network idle to ensure React hydration is complete
-    await this.page.waitForLoadState("networkidle");
+    await this.waitForHydration();
     await this.emailInput.fill(email);
     await this.passwordInput.fill(password);
   }
