@@ -240,6 +240,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6
 
+      - name: Install unzip (required by bun)
+        run: apt-get update && apt-get install -y unzip
+
       - name: Setup bun
         uses: oven-sh/setup-bun@v2
 
