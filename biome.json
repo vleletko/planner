@@ -20,7 +20,9 @@
       "!**/.svelte-kit",
       "!**/wrangler.jsonc",
       "!**/.source",
-      "!**/docs/ux-mockups"
+      "!**/docs/ux-mockups",
+      "!**/playwright-report",
+      "!**/test-results"
     ]
   },
   "extends": ["ultracite/core", "ultracite/next"],

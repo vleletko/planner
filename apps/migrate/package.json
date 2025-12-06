@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
+  "exports": {
+    "./seed/test": "./src/seed/test.ts"
+  },
   "scripts": {
     "start": "bun run src/index.ts",
     "generate": "drizzle-kit generate",
