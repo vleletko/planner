@@ -263,7 +263,7 @@ jobs:
           include_passed: true
           detailed_summary: true
           job_summary: true
-          check_name: E2E Tests
+          check_name: E2E Test Results
 
       - name: Upload test artifacts
         id: artifact-upload
