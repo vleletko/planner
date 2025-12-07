@@ -6,7 +6,7 @@ const WEB_SERVER_TIMEOUT_MS = 120_000;
 // Timeout configuration - centralized, no magic numbers in tests
 const EXPECT_TIMEOUT_MS = 10_000;
 const ACTION_TIMEOUT_MS = 15_000;
-const NAVIGATION_TIMEOUT_MS = 30_000;
+const NAVIGATION_TIMEOUT_MS = 15_000;
 
 export default defineConfig({
   testDir: "./tests",
@@ -33,6 +33,9 @@ export default defineConfig({
     video: "retain-on-failure",
     actionTimeout: ACTION_TIMEOUT_MS,
     navigationTimeout: NAVIGATION_TIMEOUT_MS,
+    launchOptions: {
+      slowMo: 100, // Give React time to attach event handlers after navigation
+    },
   },
   projects: [
     { name: "chromium", use: { ...devices["Desktop Chrome"] } },

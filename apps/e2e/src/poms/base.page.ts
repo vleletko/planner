@@ -14,14 +14,6 @@ export abstract class BasePage {
     this.toastRegion = page.locator("[data-sonner-toaster]");
   }
 
-  /**
-   * Wait for React hydration to complete.
-   * Uses data-hydrated attribute set by HydrationMarker component.
-   */
-  async waitForHydration() {
-    await this.page.locator("body[data-hydrated='true']").waitFor();
-  }
-
   async expectSuccessToast(message: string | RegExp) {
     const toast = this.toastRegion.locator("[data-type='success']");
     await expect(toast).toContainText(message);
