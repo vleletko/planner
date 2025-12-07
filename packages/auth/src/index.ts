@@ -53,6 +53,7 @@ export const auth = betterAuth<BetterAuthOptions>({
     enabled: true,
   },
   rateLimit: {
+    enabled: false,
     window: 10, // 10 seconds
     max: 500, // 50 requests per window
   },
