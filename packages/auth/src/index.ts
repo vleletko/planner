@@ -52,6 +52,11 @@ export const auth = betterAuth<BetterAuthOptions>({
   emailAndPassword: {
     enabled: true,
   },
+  rateLimit: {
+    enabled: false,
+    window: 10, // 10 seconds
+    max: 500, // 50 requests per window
+  },
   // Next.js integration for automatic session cookie management
   plugins: [nextCookies()],
 });
