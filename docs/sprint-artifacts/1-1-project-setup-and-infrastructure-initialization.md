@@ -185,8 +185,8 @@ This story verifies and validates the existing brownfield monorepo infrastructur
 
 **Epic and Technical Specifications:**
 - [Source: docs/epics/epic-1-foundation-project-infrastructure.md#Story-1.1]
-- [Source: .bmad-ephemeral/stories/tech-spec-epic-1.md#Detailed-Design > Services-and-Modules]
-- [Source: .bmad-ephemeral/stories/tech-spec-epic-1.md#Dependencies-and-Integrations]
+- [Source: docs/sprint-artifacts/tech-spec-epic-1.md#Detailed-Design > Services-and-Modules]
+- [Source: docs/sprint-artifacts/tech-spec-epic-1.md#Dependencies-and-Integrations]
 
 **Architecture Documentation:**
 - [Source: docs/architecture.md#Project-Infrastructure-Setup]
@@ -195,7 +195,7 @@ This story verifies and validates the existing brownfield monorepo infrastructur
 
 **Acceptance Criteria Source:**
 - [Source: docs/epics/epic-1-foundation-project-infrastructure.md#Story-1.1 > Acceptance-Criteria]
-- [Source: .bmad-ephemeral/stories/tech-spec-epic-1.md#Acceptance-Criteria > AC1]
+- [Source: docs/sprint-artifacts/tech-spec-epic-1.md#Acceptance-Criteria > AC1]
 
 **Code Standards:**
 - [Source: .claude/CLAUDE.md#Ultracite-Code-Standards]
@@ -204,7 +204,7 @@ This story verifies and validates the existing brownfield monorepo infrastructur
 
 ### Context Reference
 
-- .bmad-ephemeral/stories/1-1-project-setup-and-infrastructure-initialization.context.xml
+- docs/sprint-artifacts/1-1-project-setup-and-infrastructure-initialization.context.xml
 
 ### Agent Model Used
 

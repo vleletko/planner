@@ -80,7 +80,7 @@ From Story 1.1 validation:
 - BUILD ON existing auth.ts schema file - do not overwrite
 - VALIDATE actual PostgreSQL connection (Story 1.1 didn't test live database)
 
-[Source: .bmad-ephemeral/stories/1-1-project-setup-and-infrastructure-initialization.md#Dev-Agent-Record]
+[Source: docs/sprint-artifacts/1-1-project-setup-and-infrastructure-initialization.md#Dev-Agent-Record]
 
 ### Expected File Paths
 
@@ -341,14 +341,14 @@ packages/db/
 - [Source: .claude/CLAUDE.md#Modern-JavaScript-TypeScript]
 
 **Previous Story Context:**
-- [Source: .bmad-ephemeral/stories/1-1-project-setup-and-infrastructure-initialization.md#Dev-Agent-Record]
-- [Source: .bmad-ephemeral/stories/1-1-project-setup-and-infrastructure-initialization.md#Completion-Notes-List]
+- [Source: docs/sprint-artifacts/1-1-project-setup-and-infrastructure-initialization.md#Dev-Agent-Record]
+- [Source: docs/sprint-artifacts/1-1-project-setup-and-infrastructure-initialization.md#Completion-Notes-List]
 
 ## Dev Agent Record
 
 ### Context Reference
 
-- `.bmad-ephemeral/stories/1-2-database-setup-and-schema-foundation.context.xml`
+- `docs/sprint-artifacts/1-2-database-setup-and-schema-foundation.context.xml`
 
 ### Agent Model Used
 

@@ -390,7 +390,7 @@ NODE_ENV=preview
 ### Research & Implementation
 
 For detailed implementation decisions and architecture, see:
-- **Research Document**: `.bmad-ephemeral/stories/1-5-research/phase-3-preview-deployments.md`
+- **Research Document**: `docs/sprint-artifacts/1-5-research/phase-3-preview-deployments.md`
 - **Docker Compose Config**: `.dokploy/docker-compose.preview.yml`
 - **Lifecycle Scripts**: `.dokploy/scripts/*.sh`
 
@@ -431,7 +431,7 @@ This project uses **Better-Auth 1.3.28** for session-based authentication with e
 
 For comprehensive manual testing procedures, see:
 - **Testing Guide**: `docs/authentication-testing-guide.md`
-- **Story File**: `.bmad-ephemeral/stories/1-3-authentication-system-integration.md`
+- **Story File**: `docs/sprint-artifacts/1-3-authentication-system-integration.md`
 
 Quick test flow:
 1. Navigate to http://localhost:3001/login

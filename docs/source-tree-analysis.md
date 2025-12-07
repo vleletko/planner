@@ -55,8 +55,6 @@ planner/ (root)
 │   │   └── bmad/                # BMAD workflow integration
 │   └── rules/                    # Windsurf rules
 │
-├── .bmad-ephemeral/                # Temporary BMAD files (gitignored)
-│
 ├── docs/                           # 📚 Project Documentation (OUTPUT FOLDER)
 │   ├── technical/                # Technical documentation
 │   ├── bmm-workflow-status.yaml  # BMM workflow tracking
@@ -248,7 +246,6 @@ dist/                  # TypeScript build outputs
 node_modules/          # Package dependencies
 .next/                 # Next.js build cache
 .turbo/                # Turborepo cache
-.bmad-ephemeral/       # BMAD temporary files
 ```
 
 ---

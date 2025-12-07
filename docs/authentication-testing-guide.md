@@ -369,9 +369,9 @@ Mark each test as complete after verification:
 
 ## References
 
-- Story File: `.bmad-ephemeral/stories/1-3-authentication-system-integration.md`
+- Story File: `docs/sprint-artifacts/1-3-authentication-system-integration.md`
 - Architecture Doc: `docs/architecture.md#Authentication-Flow`
-- Tech Spec: `.bmad-ephemeral/stories/tech-spec-epic-1.md#Story-1.3`
+- Tech Spec: `docs/sprint-artifacts/tech-spec-epic-1.md#Story-1.3`
 - Better-Auth Config: `packages/auth/src/index.ts`
 - Auth Client: `apps/web/src/lib/auth-client.ts`
 
