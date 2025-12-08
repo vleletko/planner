@@ -1,4 +1,4 @@
-FROM oven/bun:1.3.1-slim AS runner
+FROM node:22-slim AS runner
 
 WORKDIR /app
 
@@ -25,4 +25,4 @@ USER nextjs
 
 EXPOSE 3000
 
-CMD ["bun", "apps/web/server.js"]
+CMD ["node", "apps/web/server.js"]

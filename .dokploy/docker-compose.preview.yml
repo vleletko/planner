@@ -49,6 +49,13 @@ services:
 
       # Environment identifier
       - NODE_ENV=preview
+      - PREVIEW_ID=${PREVIEW_ID}
+      - APP_VERSION=${IMAGE_TAG}
+
+      # OpenTelemetry configuration
+      - OTEL_EXPORTER_OTLP_ENDPOINT=$${{environment.OTEL_EXPORTER_OTLP_ENDPOINT}}
+      - OTEL_EXPORTER_OTLP_HEADERS=$${{environment.OTEL_EXPORTER_OTLP_HEADERS}}
+      - OTEL_SERVICE_NAME=planner-web
 
       # Disable Next.js telemetry
       - NEXT_TELEMETRY_DISABLED=1

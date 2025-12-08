@@ -209,11 +209,15 @@ log_info "Step 3: Updating compose configuration with docker-compose.yml..."
 # Environment variables for this specific preview deployment
 # Note: DB_PASSWORD and BETTER_AUTH_SECRET are set at environment level in Dokploy
 # and are automatically available to all deployments in that environment
+APP_VERSION=$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
 ENV_VARS=$(cat <<EOF
 GHCR_IMAGE=${GHCR_IMAGE}
 IMAGE_TAG=${IMAGE_TAG}
 APP_NAME=${COMPOSE_APP_NAME}
 PREVIEW_DOMAIN=${PREVIEW_URL}
+PREVIEW_ID=${PR_NUMBER}
+APP_VERSION=${APP_VERSION}
+OTEL_SERVICE_NAME=planner-web
 EOF
 )
 
