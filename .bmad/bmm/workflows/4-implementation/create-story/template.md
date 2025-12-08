@@ -49,3 +49,25 @@ so that {{benefit}}.
 ### Completion Notes List
 
 ### File List
+
+## Discoveries
+
+<!-- Document unexpected learnings, findings, and insights discovered during implementation -->
+<!-- Format: What was discovered | How it impacts the project | What action was taken -->
+
+| Discovery | Impact | Action |
+|-----------|--------|--------|
+| | | |
+
+## Tech Debt Created
+
+<!-- Track any technical debt introduced or deferred during this story -->
+<!-- Format: What was deferred | Why it was deferred | Issue/PR reference for tracking -->
+
+| Item | Reason | Tracking |
+|------|--------|----------|
+| | | |
+
+## Change Log
+
+<!-- Document significant changes to the story during implementation -->

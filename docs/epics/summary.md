@@ -1,24 +1,26 @@
 # Summary
 
-This epic breakdown transforms the Planner PRD into **10 epics containing 53 implementable stories**, all sized for single-session completion by development agents.
+This epic breakdown transforms the Planner PRD into **11 epics containing 57 implementable stories**, all sized for single-session completion by development agents.
 
 ## Epic Summary:
 
 1. **Epic 1: Foundation & Project Infrastructure** (5 stories) - Core setup, database, auth, UI shell, deployment
-2. **Epic 2: Project & Workspace Management** (5 stories) - Project creation, role-based permissions, invitations, ownership
-3. **Epic 3: Workflow Configuration Engine** (5 stories) - Statuses, card types, fields, requirements, schema editor
-4. **Epic 4: Field Types & Validation Framework** (6 stories) - Rich text, files, sync/async validation, conditionals, defaults
-5. **Epic 5: Card Lifecycle & Board Operations** (6 stories) - Card CRUD, board UI, drag-drop, transitions, reordering
-6. **Epic 6: Resource Management & Validation** (6 stories) - Resource types, instances, validation, security
-7. **Epic 7: Search, Filters & Board Performance** (5 stories) - Real-time search, filtering, performance optimization
-8. **Epic 8: Comments & Activity Tracking** (5 stories) - Markdown comments, @mentions, activity logging, timeline
-9. **Epic 9: Telegram Notifications** (6 stories) - Bot setup, linking, notifications, delivery monitoring
-10. **Epic 10: Configuration Management & Portability** (5 stories) - Import/export, duplication, validation, templates
+2. **Epic 2B: Observability** (4 stories) - OpenTelemetry setup, structured logging, error handling, request tracing
+3. **Epic 2: Project & Workspace Management** (5 stories) - Project creation, role-based permissions, invitations, ownership
+4. **Epic 3: Workflow Configuration Engine** (5 stories) - Statuses, card types, fields, requirements, schema editor
+5. **Epic 4: Field Types & Validation Framework** (6 stories) - Rich text, files, sync/async validation, conditionals, defaults
+6. **Epic 5: Card Lifecycle & Board Operations** (6 stories) - Card CRUD, board UI, drag-drop, transitions, reordering
+7. **Epic 6: Resource Management & Validation** (6 stories) - Resource types, instances, validation, security
+8. **Epic 7: Search, Filters & Board Performance** (5 stories) - Real-time search, filtering, performance optimization
+9. **Epic 8: Comments & Activity Tracking** (5 stories) - Markdown comments, @mentions, activity logging, timeline
+10. **Epic 9: Telegram Notifications** (6 stories) - Bot setup, linking, notifications, delivery monitoring
+11. **Epic 10: Configuration Management & Portability** (5 stories) - Import/export, duplication, validation, templates
 
 ## Key Implementation Notes:
 
 **Sequential Dependencies:**
 - Epic 1 must complete before all others (foundation)
+- Epic 2B establishes observability before feature development
 - Epic 2 establishes project-based access control required by subsequent epics
 - Epics 3-4 build the configuration engine
 - Epic 5 delivers the core user workflow

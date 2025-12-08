@@ -171,6 +171,74 @@ This enables all subsequent user-facing epics.
 <template-output>epics_technical_context</template-output>
 </step>
 
+<step n="1.5" goal="Validate epic sizing guidelines">
+<action>**EPIC SIZING VALIDATION (from Retrospective AI-1):**</action>
+
+<critical>EPIC SIZING GUIDELINES:
+- Maximum 3-5 stories per epic
+- Phases within stories count as story equivalents
+- Research cycles count as story equivalents
+- If an epic cannot complete in ~2 weeks, it is too large
+</critical>
+
+<action>For each proposed epic, validate sizing:
+
+**Count story equivalents:**
+1. Explicit stories planned for this epic
+2. Internal phases within stories (each phase = 1 additional story equivalent)
+3. Research cycles planned (each research cycle = 1 story equivalent)
+
+**Total story equivalents** = explicit stories + phase equivalents + research cycles
+
+**Thresholds:**
+- 3-5 story equivalents: ✅ Optimal size
+- 6+ story equivalents: ⚠️ Oversized - consider splitting
+- 1-2 story equivalents: ⚠️ May be too small - consider merging
+</action>
+
+<check if="any epic has more than 5 story equivalents">
+<output>⚠️ **EPIC SIZING WARNING**
+
+The following epic(s) exceed the recommended 3-5 story maximum:
+
+{{list_oversized_epics}}
+
+**Remediation Options:**
+1. **Split the epic** into two smaller epics with clear boundaries
+2. **Promote phases to stories** - if stories have internal phases, make them explicit stories
+3. **Defer non-essential stories** to a future epic
+
+</output>
+<ask>How would you like to address oversized epic(s)? [split/promote/defer/override]</ask>
+</check>
+
+<check if="any story contains internal phases">
+<output>📋 **PHASE DETECTION WARNING**
+
+The following stories contain internal phases that may indicate they should be split:
+
+{{list_stories_with_phases}}
+
+Per AI-2 (Story Granularity Standards), stories with internal "phases" should be separate stories.
+Each phase should be independently:
+- Estimable
+- Deliverable
+- Testable
+- Prioritizable
+
+Consider splitting before proceeding to detailed story creation.</output>
+</check>
+
+<action>Document epic sizing validation results</action>
+<output>**Epic Sizing Validation Complete**
+
+| Epic | Stories | Phases | Research | Total | Status |
+|------|---------|--------|----------|-------|--------|
+{{epic_sizing_table}}
+
+</output>
+</step>
+
 <step n="2" goal="Create detailed stories with complete implementation context" repeat="for-each-epic">
 <action>**EPIC {{N}} - COMPREHENSIVE STORY CREATION:**</action>
 

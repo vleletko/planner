@@ -229,6 +229,69 @@
   <step n="5" goal="Create comprehensive story file">
     <critical>📝 CREATE ULTIMATE STORY FILE - The developer's master implementation guide!</critical>
 
+    <!-- RESEARCH-FIRST DETECTION (from Retrospective AI-3) -->
+    <action>**RESEARCH-FIRST DETECTION:**</action>
+    <action>Analyze story characteristics to determine if research-first workflow applies:
+
+**Infrastructure Indicators:**
+- Story involves CI/CD, deployment, pipelines, or DevOps
+- Story involves new technology stack components not yet used
+- Story requires cloud service or infrastructure configuration
+- Story involves database migrations or schema changes at scale
+
+**Integration Indicators:**
+- Story involves third-party API integration
+- Story requires authentication with external services
+- Story involves data synchronization between systems
+- Story requires webhook or event-driven architecture
+
+**Complexity Indicators:**
+- Story references architecture decisions not yet validated
+- Story involves technology the team has not used before
+- Story has significant unknowns or "TBD" items in requirements
+- Story involves performance optimization without baseline metrics
+    </action>
+
+    <check if="infrastructure OR integration OR complexity indicators detected">
+      <output>📚 **RESEARCH-FIRST WORKFLOW REQUIRED**
+
+This story has characteristics indicating a research-first approach is needed:
+{{detected_indicators}}
+
+**Research-First Process:**
+1. Research phase: Investigate options with sources
+2. Document findings: Create research document
+3. User approval: Checkpoint before implementation
+4. Implement: Execute approved approach
+5. Verify: Test in real environment
+
+**Auto-inserting research phase tasks...**</output>
+
+      <action>Insert research phase tasks at beginning of task list:
+
+**Research Phase (Auto-inserted per AI-3):**
+- [ ] Task 0.1: Research and document approaches
+  - [ ] 0.1.1: Identify 2-3 viable approaches with trade-offs
+  - [ ] 0.1.2: Document pros/cons with sources
+  - [ ] 0.1.3: Identify risks, unknowns, and dependencies
+  - [ ] 0.1.4: Create research document at docs/sprint-artifacts/{{story_key}}-research.md
+- [ ] Task 0.2: User Approval Checkpoint
+  - [ ] 0.2.1: Present research findings summary to user
+  - [ ] 0.2.2: Get explicit approval on chosen approach
+  - [ ] 0.2.3: Document decision rationale in research file
+      </action>
+
+      <action>Insert verification task at end of task list:
+
+**Verification Phase (Auto-inserted per AI-3):**
+- [ ] Task FINAL: Verify in Real Environment
+  - [ ] FINAL.1: Deploy to preview/staging environment
+  - [ ] FINAL.2: Verify functionality works as researched/documented
+  - [ ] FINAL.3: Document any variances from research findings in Discoveries section
+      </action>
+    </check>
+    <!-- END RESEARCH-FIRST DETECTION -->
+
     <action>Initialize from template.md:
     {default_output_file}</action>
     <template-output file="{default_output_file}">story_header</template-output>
@@ -277,6 +340,69 @@
     <action>Set story Status to: "ready-for-dev"</action>
     <action>Add completion note: "Ultimate
     context engine analysis completed - comprehensive developer guide created"</action>
+  </step>
+
+  <step n="5.5" goal="Validate story granularity">
+    <critical>🔍 STORY GRANULARITY CHECK (from Retrospective AI-2)</critical>
+
+    <action>**GRANULARITY VALIDATION:**</action>
+    <action>Count total top-level tasks in the story (not subtasks)</action>
+    <action>Scan story content for phase-like structure patterns:
+- "Phase 1:", "Phase 2:", "Phase 3:", etc.
+- "Part 1:", "Part 2:", "Part 3:", etc.
+- "Stage 1:", "Stage 2:", "Stage 3:", etc.
+- Numbered sections that could run independently
+- Sequential sections with clear handoff boundaries
+    </action>
+
+    <check if="task_count > 15">
+      <output>⚠️ **STORY GRANULARITY WARNING**
+
+This story has {{task_count}} top-level tasks (threshold: 15).
+
+Stories with many tasks often indicate multiple stories combined. This can lead to:
+- Long feedback cycles before "done" signal
+- Difficult progress tracking
+- Blocked prioritization of incremental work
+- Increased risk of scope creep
+
+**Suggested Actions:**
+1. Review if tasks can be grouped into logical phases
+2. Consider splitting at natural boundaries (e.g., research vs implementation)
+3. Identify MVP subset that delivers value independently
+
+**Current Task Summary:**
+{{task_summary_by_category}}</output>
+
+      <ask>Would you like to split this story? [yes/no/details]</ask>
+
+      <check if="user chooses yes">
+        <action>Guide user through story splitting process</action>
+        <output>Let's identify split points. Which tasks form the first deliverable unit?</output>
+      </check>
+    </check>
+
+    <check if="phase_structure_detected">
+      <output>🚨 **PHASE STRUCTURE DETECTED**
+
+This story contains internal phases:
+{{detected_phases}}
+
+Per AI-2 (Story Granularity Standards), stories with "phases" should be split into separate stories.
+
+Each phase should be independently:
+- Estimable (clear scope)
+- Deliverable (provides value alone)
+- Testable (has acceptance criteria)
+- Prioritizable (can be deferred if needed)
+
+**Recommendation:** Split into {{phase_count}} separate stories, one per phase.</output>
+
+      <ask>Split this story into {{phase_count}} stories? [yes/no/override]</ask>
+    </check>
+
+    <action>Document granularity validation result</action>
+    <output>**Granularity Check:** {{task_count}} tasks, {{phase_count}} phases detected - {{validation_status}}</output>
   </step>
 
   <step n="6" goal="Update sprint status and finalize">

@@ -256,6 +256,62 @@ Bob (Scrum Master): "We'll get to all of it. But first, let me load the previous
 
 </step>
 
+<step n="2.5" goal="Aggregate Tech Debt from Story Files (AI-4)">
+
+<action>**TECH DEBT AGGREGATION (from Retrospective AI-4):**</action>
+
+<action>For each story in Epic {{epic_number}}, scan for tech debt sections:
+- "## Tech Debt Created" section (new format)
+- "## Tech Debt" or "## Technical Debt" section (legacy format)
+- "## Deferred Items" or "### Deferred Items" section
+- "## Known Issues" or "### Known Issues" section
+- "## TODO" or "## Future Work" section
+</action>
+
+<action>Extract and categorize each tech debt item found:
+- Item description
+- Source story (e.g., "1-5")
+- Severity (Critical/High/Medium/Low) - infer if not specified
+- Category (code quality, infrastructure, documentation, testing)
+- Whether it has tracking reference (issue/PR)
+- Suggested resolution if provided
+</action>
+
+<action>Compile tech debt summary:</action>
+
+<output>
+**Technical Debt Inventory - Epic {{epic_number}}:**
+
+**New Debt Created This Epic:**
+{{#each new_debt_items}}
+- [{{source_story}}] {{description}} ({{severity}}) {{#if tracking}}[{{tracking}}]{{/if}}
+{{/each}}
+
+**Deferred Items:**
+{{#each deferred_items}}
+- [{{source_story}}] {{description}} → Reason: {{reason}}
+{{/each}}
+
+**Known Issues:**
+{{#each known_issues}}
+- [{{source_story}}] {{description}} ({{severity}})
+{{/each}}
+
+**Items Missing Tracking:**
+{{#if untracked_items}}
+⚠️ The following items need issue/PR references for proper tracking:
+{{#each untracked_items}}
+- [{{source_story}}] {{description}}
+{{/each}}
+{{else}}
+✅ All items have tracking references
+{{/if}}
+</output>
+
+<action>Store aggregated tech debt for later registry update in Step 11</action>
+
+</step>
+
 <step n="3" goal="Load and Integrate Previous Epic Retrospective">
 
 <action>Calculate previous epic number: {{prev_epic_num}} = {{epic_number}} - 1</action>
@@ -1328,6 +1384,48 @@ Bob (Scrum Master): "See you all when prep work is done. Meeting adjourned!"
 <output>
 ✅ Retrospective document saved: {retrospectives_folder}/epic-{{epic_number}}-retro-{date}.md
 </output>
+
+<!-- TECH DEBT REGISTRY UPDATE (from Retrospective AI-4) -->
+<action>**UPDATE TECH DEBT REGISTRY:**</action>
+<action>Check if docs/tech-debt-registry.md exists</action>
+
+<check if="tech-debt-registry.md exists">
+  <action>Load docs/tech-debt-registry.md</action>
+
+  <action>For each new tech debt item from Epic {{epic_number}} (aggregated in Step 2.5):
+  - Generate unique ID: TD-{{epic_number}}-{{sequence}}
+  - Add row to "Active Tech Debt" table with:
+    - ID, Item, Source Story, Epic {{epic_number}}, Severity, Status="Open"
+  </action>
+
+  <action>For each deferred item from Epic {{epic_number}}:
+  - Find or create appropriate "Deferred Items Backlog" section for target epic
+  - Add row with: Item, Original Location, Reason for Deferral
+  </action>
+
+  <action>Update "## Tech Debt by Epic" section:
+  - Add "### Epic {{epic_number}}: {{epic_title}}" subsection if not exists
+  - Add all tech debt items from this epic with story references and status
+  </action>
+
+  <action>Update "Last Updated" date at top of registry</action>
+  <action>Save docs/tech-debt-registry.md</action>
+
+  <output>
+✅ Tech debt registry updated: docs/tech-debt-registry.md
+- New items added: {{new_item_count}}
+- Deferred items catalogued: {{deferred_count}}
+  </output>
+</check>
+
+<check if="tech-debt-registry.md does NOT exist">
+  <output>
+⚠️ Tech debt registry not found at docs/tech-debt-registry.md
+Tech debt items captured in retrospective document only.
+Consider creating the registry using the BMAD workflow enhancements.
+  </output>
+</check>
+<!-- END TECH DEBT REGISTRY UPDATE -->
 
 <action>Update {sprint_status_file} to mark retrospective as completed</action>
 
