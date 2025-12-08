@@ -31,7 +31,7 @@ const apiHandler = new OpenAPIHandler(appRouter, {
 });
 
 async function handleRequest(req: NextRequest) {
-  log.debug({ method: req.method, url: req.url }, "RPC request received");
+  log.info({ method: req.method, url: req.url }, "RPC request received");
 
   const rpcResult = await rpcHandler.handle(req, {
     prefix: "/api/rpc",
