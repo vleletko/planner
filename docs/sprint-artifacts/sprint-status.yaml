@@ -43,7 +43,14 @@ development_status:
   1-5-deployment-pipeline-and-environment-configuration: done
   1-6a-unit-testing-infrastructure: done
   1-6b-e2e-testing-infrastructure: done
-  epic-1-retrospective: optional
+  epic-1-retrospective: docs/sprint-artifacts/epic-1-retrospective-2025-12-07.md
+
+  epic-1b: backlog
+  1b-1-observability-research-decision: backlog
+  1b-2-opentelemetry-sdk-setup: backlog
+  1b-3-structured-logging-via-otel: backlog
+  1b-4-error-handling-spans: backlog
+  epic-1b-retrospective: optional
 
   epic-2: backlog
   2-1-project-creation-and-basic-crud: backlog

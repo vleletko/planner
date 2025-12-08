@@ -125,12 +125,12 @@ Based on the gap discovered (missing observability), epics have been resequenced
 | Original | New | Epic Name | Status |
 |----------|-----|-----------|--------|
 | Epic 1 | Epic 1 | Foundation & Project Infrastructure | Complete |
-| - | **Epic 2** | **Observability (NEW)** | Not Started |
-| Epic 2 | Epic 3 | Project & Workspace Management | Not Started |
+| - | **Epic 1B** | **Observability (NEW)** | Not Started |
+| Epic 2 | Epic 2 | Project & Workspace Management | Not Started |
 
 ---
 
-## New Epic 2: Observability
+## New Epic 1B: Observability
 
 **Goal:** Establish application observability infrastructure using OpenTelemetry.
 
@@ -138,12 +138,12 @@ Based on the gap discovered (missing observability), epics have been resequenced
 
 | Story | Title | Scope |
 |-------|-------|-------|
-| 2.1 | Observability Research & Decision | Compare OTEL libraries, exporters, backends; document findings; user approval |
-| 2.2 | OpenTelemetry SDK Setup | Implement chosen approach, auto-instrumentation |
-| 2.3 | Structured Logging via OTEL | Log API, correlation, log levels |
-| 2.4 | Error Handling & Spans | Error boundaries, exception recording |
+| 1B.1 | Observability Research & Decision | Compare OTEL libraries, exporters, backends; document findings; user approval |
+| 1B.2 | OpenTelemetry SDK Setup | Implement chosen approach, auto-instrumentation |
+| 1B.3 | Structured Logging via OTEL | Log API, correlation, log levels |
+| 1B.4 | Error Handling & Spans | Error boundaries, exception recording |
 
-### Story 2.1 Research Topics
+### Story 1B.1 Research Topics
 - OTEL SDK: `@opentelemetry/sdk-node` vs `@vercel/otel` vs manual setup
 - Auto-instrumentation: Next.js, Drizzle/Postgres, fetch, ORPC
 - Log Bridge: pino + OTEL bridge vs native OTEL Logs API
@@ -159,25 +159,25 @@ Based on the gap discovered (missing observability), epics have been resequenced
 
 ---
 
-## Revised Epic 3: Project & Workspace Management
+## Epic 2: Project & Workspace Management
 
 **Goal:** Enable users to create projects, invite team members, and manage role-based access control.
 
 | Story | Title | Scope |
 |-------|-------|-------|
-| 3.1 | Project Creation and Basic CRUD | Create/edit projects, default statuses |
-| 3.2 | Project Access Control and Permissions | RBAC middleware (Owner/Admin/Member) |
-| 3.3 | User Invitation System | Invite/remove members |
-| 3.4 | Ownership Transfer | Transfer ownership (no audit logging) |
-| 3.5 | Project Archive (Soft Delete) | Archive projects, 30-day grace period |
+| 2.1 | Project Creation and Basic CRUD | Create/edit projects, default statuses |
+| 2.2 | Project Access Control and Permissions | RBAC middleware (Owner/Admin/Member) |
+| 2.3 | User Invitation System | Invite/remove members |
+| 2.4 | Ownership Transfer | Transfer ownership (no audit logging) |
+| 2.5 | Project Archive (Soft Delete) | Archive projects, 30-day grace period |
 
 ### Scope Changes from Original Epic 2
 
-**Removed from Story 3.4 (was 2.4):**
+**Removed from Story 2.4:**
 - "Activity log records ownership transfer" - deferred to Audit epic
 - "Log transfer event in activity history" - deferred to Audit epic
 
-**Removed from Story 3.5 (was 2.5):**
+**Removed from Story 2.5:**
 - Project Restore from Archive - deferred
 - Permanent Deletion (admin manual) - deferred
 - Auto-purge background job (30-day cleanup) - deferred
@@ -198,9 +198,9 @@ Based on the gap discovered (missing observability), epics have been resequenced
 ### Future Epic: Project Lifecycle
 | Item | Original Location | Reason for Deferral |
 |------|-------------------|---------------------|
-| Project Restore from Archive | Story 2.5 | Simplify Epic 3 |
-| Permanent Deletion (admin) | Story 2.5 | Simplify Epic 3 |
-| Auto-purge background job | Story 2.5 | Simplify Epic 3 |
+| Project Restore from Archive | Story 2.5 | Simplify Epic 2 |
+| Permanent Deletion (admin) | Story 2.5 | Simplify Epic 2 |
+| Auto-purge background job | Story 2.5 | Simplify Epic 2 |
 
 ### Future Observability Enhancements
 | Item | Reason for Deferral |
@@ -228,11 +228,11 @@ Based on the gap discovered (missing observability), epics have been resequenced
 **Date:** 2025-12-07
 
 **Next Steps:**
-1. Update Epic 2 file to be Observability epic
-2. Rename current Epic 2 to Epic 3
-3. Update Story 2.4 (now 3.4) to remove audit logging requirements
-4. Update Story 2.5 (now 3.5) to remove restore/delete/auto-purge
-5. Begin Epic 2 (Observability) with Story 2.1 research
+1. ~~Update Epic 2 file to be Observability epic~~ → Created Epic 1B for Observability
+2. ~~Rename current Epic 2 to Epic 3~~ → Epic 2 remains as Project & Workspace Management
+3. Update Story 2.4 to remove audit logging requirements
+4. Update Story 2.5 to remove restore/delete/auto-purge
+5. Begin Epic 1B (Observability) with Story 1B.1 research
 
 ---
 

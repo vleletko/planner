@@ -1,4 +1,4 @@
-# Epic 2B: Observability
+# Epic 1B: Observability
 
 **Goal:** Establish application observability infrastructure using OpenTelemetry, providing structured logging, request tracing, and error handling before building feature epics.
 
@@ -8,7 +8,7 @@
 
 ---
 
-## Story 2B.1: Observability Research & Decision
+## Story 1B.1: Observability Research & Decision
 
 As a developer,
 I want to research and document observability options for our stack,
@@ -54,7 +54,7 @@ So that we make an informed decision on libraries, exporters, and backends.
    - Dokploy deployment considerations
 
 **Deliverables:**
-- Research document: `docs/sprint-artifacts/2b-1-observability-research.md`
+- Research document: `docs/sprint-artifacts/1b-1-observability-research.md`
 - Recommendation with rationale
 - User approval before implementation
 
@@ -69,7 +69,7 @@ So that we make an informed decision on libraries, exporters, and backends.
 
 ---
 
-## Story 2B.2: OpenTelemetry SDK Setup
+## Story 1B.2: OpenTelemetry SDK Setup
 
 As a developer,
 I want OpenTelemetry SDK configured in our application,
@@ -77,7 +77,7 @@ So that I have the foundation for traces, logs, and metrics.
 
 **Acceptance Criteria:**
 
-**Given** the approved observability approach from Story 2B.1
+**Given** the approved observability approach from Story 1B.1
 **When** I set up the OTEL SDK
 **Then** the application initializes telemetry on startup
 
@@ -96,7 +96,7 @@ So that I have the foundation for traces, logs, and metrics.
 - HTTP outgoing requests (fetch)
 - Database queries (Drizzle/PostgreSQL)
 
-**Prerequisites:** Story 2B.1 approved
+**Prerequisites:** Story 1B.1 approved
 
 **Technical Notes:**
 - Create `instrumentation.ts` in `apps/web/`
@@ -107,7 +107,7 @@ So that I have the foundation for traces, logs, and metrics.
 
 ---
 
-## Story 2B.3: Structured Logging via OTEL
+## Story 1B.3: Structured Logging via OTEL
 
 As a developer,
 I want structured logging integrated with OpenTelemetry,
@@ -135,7 +135,7 @@ So that logs are correlated with traces and have consistent format.
 - Type-safe API with attribute support
 - Example: `logger.info('User logged in', { userId: '123' })`
 
-**Prerequisites:** Story 2B.2
+**Prerequisites:** Story 1B.2
 
 **Technical Notes:**
 - Create logger utility in `packages/api/src/lib/logger.ts` or similar
@@ -146,7 +146,7 @@ So that logs are correlated with traces and have consistent format.
 
 ---
 
-## Story 2B.4: Error Handling & Spans
+## Story 1B.4: Error Handling & Spans
 
 As a developer,
 I want errors properly captured in traces and logs,
@@ -176,7 +176,7 @@ So that I can debug issues effectively in any environment.
 - Promise rejection handler
 - Graceful logging before crash
 
-**Prerequisites:** Story 2B.3
+**Prerequisites:** Story 1B.3
 
 **Technical Notes:**
 - Create error handling utilities

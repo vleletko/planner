@@ -70,10 +70,10 @@
 
 | Item | Original Location | Reason for Deferral |
 |------|-------------------|---------------------|
-| OTLP collector deployment | Epic 2B | Need traffic patterns first |
-| Grafana/Jaeger backend | Epic 2B | Can use console export initially |
-| Metrics dashboards | Epic 2B | Need data to visualize |
-| Alerting configuration | Epic 2B | Need baseline to set thresholds |
+| OTLP collector deployment | Epic 1B | Need traffic patterns first |
+| Grafana/Jaeger backend | Epic 1B | Can use console export initially |
+| Metrics dashboards | Epic 1B | Need data to visualize |
+| Alerting configuration | Epic 1B | Need baseline to set thresholds |
 
 ---
 

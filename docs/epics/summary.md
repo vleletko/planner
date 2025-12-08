@@ -5,7 +5,7 @@ This epic breakdown transforms the Planner PRD into **11 epics containing 57 imp
 ## Epic Summary:
 
 1. **Epic 1: Foundation & Project Infrastructure** (5 stories) - Core setup, database, auth, UI shell, deployment
-2. **Epic 2B: Observability** (4 stories) - OpenTelemetry setup, structured logging, error handling, request tracing
+2. **Epic 1B: Observability** (4 stories) - OpenTelemetry setup, structured logging, error handling, request tracing
 3. **Epic 2: Project & Workspace Management** (5 stories) - Project creation, role-based permissions, invitations, ownership
 4. **Epic 3: Workflow Configuration Engine** (5 stories) - Statuses, card types, fields, requirements, schema editor
 5. **Epic 4: Field Types & Validation Framework** (6 stories) - Rich text, files, sync/async validation, conditionals, defaults
@@ -20,7 +20,7 @@ This epic breakdown transforms the Planner PRD into **11 epics containing 57 imp
 
 **Sequential Dependencies:**
 - Epic 1 must complete before all others (foundation)
-- Epic 2B establishes observability before feature development
+- Epic 1B establishes observability before feature development
 - Epic 2 establishes project-based access control required by subsequent epics
 - Epics 3-4 build the configuration engine
 - Epic 5 delivers the core user workflow

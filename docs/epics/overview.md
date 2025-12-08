@@ -9,7 +9,7 @@ This project is organized into 11 epics that follow a logical progression from f
 **Epic 1: Foundation & Project Infrastructure**
 Establish core project setup, authentication, deployment pipeline, and basic project CRUD operations. This epic creates the foundation for all subsequent work.
 
-**Epic 2B: Observability**
+**Epic 1B: Observability**
 Establish application observability infrastructure using OpenTelemetry, providing structured logging, request tracing, and error handling. This epic was identified during the Epic 1 retrospective as a missing foundational component.
 
 **Epic 2: Project & Workspace Management**
