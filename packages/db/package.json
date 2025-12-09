@@ -32,6 +32,7 @@
     "typescript": "^5"
   },
   "dependencies": {
+    "@planner/logger": "workspace:*",
     "drizzle-orm": "catalog:",
     "pg": "catalog:",
     "dotenv": "catalog:",

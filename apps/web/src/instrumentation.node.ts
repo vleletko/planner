@@ -104,13 +104,9 @@ const sdk = new NodeSDK({
 });
 
 sdk.start();
-
 console.log("[OTEL] SDK initialized", {
   environment,
-  traceExporter: traceExporterUrl
-    ? `OTLP (\`${traceExporterUrl}\`)`
-    : "Console",
-  traceSampler: getSampler(environment).constructor.name,
+  exporter: traceExporterUrl || "console",
 });
 
 process.on("SIGTERM", () => {

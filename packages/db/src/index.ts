@@ -1,5 +1,8 @@
+import { createLogger } from "@planner/logger";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
+
+const log = createLogger("db");
 
 if (!process.env.DATABASE_URL) {
   throw new Error(
@@ -17,7 +20,7 @@ const pool = new Pool({
 
 // Handle pool errors to prevent application crashes
 pool.on("error", (err) => {
-  console.error("Unexpected error on idle client", err);
+  log.error({ err }, "Unexpected error on idle client");
 });
 
 // Create Drizzle client with the connection pool

@@ -66,6 +66,7 @@
         "@orpc/zod": "catalog:",
         "@planner/api": "workspace:*",
         "@planner/auth": "workspace:*",
+        "@planner/logger": "workspace:*",
         "@radix-ui/react-dialog": "^1.1.15",
         "@radix-ui/react-navigation-menu": "^1.2.14",
         "@tanstack/react-form": "^1.27.1",
@@ -78,7 +79,7 @@
         "next": "catalog:",
         "next-themes": "^0.4.6",
         "pg": "catalog:",
-        "pino": "^10.1.0",
+        "pino": "catalog:",
         "pino-pretty": "^13.1.3",
         "radix-ui": "^1.4.2",
         "react": "catalog:",
@@ -121,6 +122,7 @@
       "name": "@planner/auth",
       "dependencies": {
         "@planner/db": "workspace:*",
+        "@planner/logger": "workspace:*",
         "better-auth": "catalog:",
         "dotenv": "catalog:",
         "zod": "catalog:",
@@ -135,6 +137,7 @@
     "packages/db": {
       "name": "@planner/db",
       "dependencies": {
+        "@planner/logger": "workspace:*",
         "dotenv": "catalog:",
         "drizzle-orm": "catalog:",
         "pg": "catalog:",
@@ -143,6 +146,19 @@
       "devDependencies": {
         "@types/pg": "catalog:",
         "drizzle-kit": "catalog:",
+        "tsdown": "catalog:",
+      },
+      "peerDependencies": {
+        "typescript": "^5",
+      },
+    },
+    "packages/logger": {
+      "name": "@planner/logger",
+      "dependencies": {
+        "pino": "catalog:",
+        "pino-pretty": "^13.1.3",
+      },
+      "devDependencies": {
         "tsdown": "catalog:",
       },
       "peerDependencies": {
@@ -167,6 +183,7 @@
     "drizzle-orm": "^0.45.0",
     "next": "^16.0.6",
     "pg": "^8.14.1",
+    "pino": "^10.1.0",
     "react": "19.2.1",
     "react-dom": "19.2.1",
     "tsdown": "^0.17.0",
@@ -547,6 +564,8 @@
     "@planner/db": ["@planner/db@workspace:packages/db"],
 
     "@planner/e2e": ["@planner/e2e@workspace:apps/e2e"],
+
+    "@planner/logger": ["@planner/logger@workspace:packages/logger"],
 
     "@planner/migrate": ["@planner/migrate@workspace:apps/migrate"],
 

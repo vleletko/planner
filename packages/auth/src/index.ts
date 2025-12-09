@@ -1,9 +1,12 @@
 import { db } from "@planner/db";
 // biome-ignore lint/performance/noNamespaceImport: Schema object needs all tables for drizzle adapter
 import * as schema from "@planner/db/schema/auth";
+import { createLogger } from "@planner/logger";
 import { type BetterAuthOptions, betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { nextCookies } from "better-auth/next-js";
+
+const authLogger = createLogger("better-auth");
 
 /**
  * Better-Auth Configuration
@@ -59,4 +62,10 @@ export const auth = betterAuth<BetterAuthOptions>({
   },
   // Next.js integration for automatic session cookie management
   plugins: [nextCookies()],
+  // Route Better Auth logs to Pino for OpenTelemetry capture
+  logger: {
+    log: (level, message, ...args) => {
+      authLogger[level]({ args }, message);
+    },
+  },
 });

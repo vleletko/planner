@@ -5,8 +5,8 @@ import { RPCHandler } from "@orpc/server/fetch";
 import { ZodToJsonSchemaConverter } from "@orpc/zod/zod4";
 import { createContext } from "@planner/api/context";
 import { appRouter } from "@planner/api/routers/index";
+import { createLogger } from "@planner/logger";
 import type { NextRequest } from "next/server";
-import { createLogger } from "@/lib/logger";
 
 const log = createLogger("orpc");
 
