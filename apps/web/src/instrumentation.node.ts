@@ -41,7 +41,7 @@ function getLog(): Logger {
     const { createLogger } = require("@planner/logger");
     _log = createLogger("process");
   }
-  return _log;
+  return _log as Logger;
 }
 
 function getSampler(env: string) {
