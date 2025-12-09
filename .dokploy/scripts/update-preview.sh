@@ -121,11 +121,19 @@ log_info "Compose file loaded (will pick up any changes from PR)"
 # Step 3: Update environment variables with new image tag
 log_info "Step 3: Updating IMAGE_TAG to ${IMAGE_TAG}..."
 
+APP_VERSION=$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
 ENV_VARS=$(cat <<EOF
 GHCR_IMAGE=${GHCR_IMAGE}
 IMAGE_TAG=${IMAGE_TAG}
 APP_NAME=${COMPOSE_APP_NAME}
 PREVIEW_DOMAIN=${PREVIEW_URL}
+PREVIEW_ID=${PR_NUMBER}
+APP_VERSION=${APP_VERSION}
+OTEL_SERVICE_NAME=planner-web
+DB_PASSWORD=\${{environment.DB_PASSWORD}}
+BETTER_AUTH_SECRET=\${{environment.BETTER_AUTH_SECRET}}
+OTEL_EXPORTER_OTLP_ENDPOINT=\${{environment.OTEL_EXPORTER_OTLP_ENDPOINT}}
+OTEL_EXPORTER_OTLP_HEADERS=\${{environment.OTEL_EXPORTER_OTLP_HEADERS}}
 EOF
 )
 

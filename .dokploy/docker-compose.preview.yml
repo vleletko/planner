@@ -10,7 +10,7 @@ services:
 
     environment:
       # Database connection
-      - DATABASE_URL=postgresql://postgres:$${{environment.DB_PASSWORD}}@db:5432/planner
+      - DATABASE_URL=postgresql://postgres:${DB_PASSWORD}@db:5432/planner
       # Preview environments: reset and seed with test data
       - RESET_DB=true
       - SEED_PROFILE=test
@@ -38,17 +38,24 @@ services:
 
     environment:
       # Database connection (internal compose network)
-      - DATABASE_URL=postgresql://postgres:$${{environment.DB_PASSWORD}}@db:5432/planner
+      - DATABASE_URL=postgresql://postgres:${DB_PASSWORD}@db:5432/planner
 
       # Auth configuration
       - BETTER_AUTH_URL=https://${PREVIEW_DOMAIN}
-      - BETTER_AUTH_SECRET=$${{environment.BETTER_AUTH_SECRET}}
+      - BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET}
 
       # CORS origin
       - CORS_ORIGIN=https://${PREVIEW_DOMAIN}
 
       # Environment identifier
       - NODE_ENV=preview
+      - PREVIEW_ID=${PREVIEW_ID}
+      - APP_VERSION=${IMAGE_TAG}
+
+      # OpenTelemetry configuration
+      - OTEL_EXPORTER_OTLP_ENDPOINT=${OTEL_EXPORTER_OTLP_ENDPOINT}
+      - OTEL_EXPORTER_OTLP_HEADERS=${OTEL_EXPORTER_OTLP_HEADERS}
+      - OTEL_SERVICE_NAME=planner-web
 
       # Disable Next.js telemetry
       - NEXT_TELEMETRY_DISABLED=1
@@ -79,7 +86,13 @@ services:
 
     # Health check using bun (no curl/wget in bun-slim)
     healthcheck:
-      test: ["CMD", "bun", "-e", "fetch('http://localhost:3000/api/health').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"]
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://localhost:3000/api/health').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))",
+        ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -98,7 +111,7 @@ services:
     environment:
       - POSTGRES_DB=planner
       - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=$${{environment.DB_PASSWORD}}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
 
     # Expose port for documentation (not externally accessible)
     expose:

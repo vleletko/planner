@@ -5,12 +5,15 @@ import { RPCHandler } from "@orpc/server/fetch";
 import { ZodToJsonSchemaConverter } from "@orpc/zod/zod4";
 import { createContext } from "@planner/api/context";
 import { appRouter } from "@planner/api/routers/index";
+import { createLogger } from "@planner/logger";
 import type { NextRequest } from "next/server";
+
+const log = createLogger("orpc");
 
 const rpcHandler = new RPCHandler(appRouter, {
   interceptors: [
     onError((error) => {
-      console.error(error);
+      log.error({ err: error }, "RPC handler error");
     }),
   ],
 });
@@ -22,12 +25,14 @@ const apiHandler = new OpenAPIHandler(appRouter, {
   ],
   interceptors: [
     onError((error) => {
-      console.error(error);
+      log.error({ err: error }, "API handler error");
     }),
   ],
 });
 
 async function handleRequest(req: NextRequest) {
+  log.info({ method: req.method, url: req.url }, "RPC request received");
+
   const rpcResult = await rpcHandler.handle(req, {
     prefix: "/api/rpc",
     context: await createContext(req),
