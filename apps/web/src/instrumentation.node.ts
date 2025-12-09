@@ -22,7 +22,7 @@ import {
   ATTR_SERVICE_VERSION,
 } from "@opentelemetry/semantic-conventions";
 
-import { createLogger } from "@planner/logger";
+import type { Logger } from "pino";
 
 import {
   APP_VERSION,
@@ -32,9 +32,17 @@ import {
   getTraceExporterUrl,
 } from "./instrumentation.utils";
 
-// Create logger after imports but before SDK initialization
-// This logger will be instrumented by PinoInstrumentation
-const log = createLogger("process");
+// Lazy logger - created on first use (after SDK starts, so pino is instrumented)
+let _log: Logger | undefined;
+function getLog(): Logger {
+  if (!_log) {
+    // Dynamic import to ensure pino is instrumented before we create the logger
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { createLogger } = require("@planner/logger");
+    _log = createLogger("process");
+  }
+  return _log;
+}
 
 function getSampler(env: string) {
   const samplerConfig = getSamplerConfig(env);
@@ -77,7 +85,7 @@ const sdk = new NodeSDK({
           }
         } catch (error) {
           // Log error but don't break the response
-          log.error({ err: error }, "Failed to set x-trace-id header");
+          getLog().error({ err: error }, "Failed to set x-trace-id header");
         }
       },
     }),
@@ -107,13 +115,13 @@ process.on("SIGTERM", () => {
  */
 
 process.on("uncaughtException", (error: Error, origin: string) => {
-  log.fatal({ err: error, origin }, "Uncaught exception");
+  getLog().fatal({ err: error, origin }, "Uncaught exception");
 
   // Attempt graceful OTEL shutdown to flush pending traces
   sdk
     .shutdown()
     .catch((shutdownError) =>
-      log.error({ err: shutdownError }, "Error during emergency shutdown")
+      getLog().error({ err: shutdownError }, "Error during emergency shutdown")
     )
     .finally(() => {
       process.exit(1);
@@ -124,7 +132,7 @@ process.on(
   "unhandledRejection",
   (reason: unknown, promise: Promise<unknown>) => {
     const error = reason instanceof Error ? reason : new Error(String(reason));
-    log.fatal(
+    getLog().fatal(
       { err: error, promise: String(promise) },
       "Unhandled promise rejection"
     );
@@ -133,7 +141,10 @@ process.on(
     sdk
       .shutdown()
       .catch((shutdownError) =>
-        log.error({ err: shutdownError }, "Error during emergency shutdown")
+        getLog().error(
+          { err: shutdownError },
+          "Error during emergency shutdown"
+        )
       )
       .finally(() => {
         process.exit(1);
