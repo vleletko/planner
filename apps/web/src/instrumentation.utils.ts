@@ -13,17 +13,17 @@ const TRAILING_SLASH_REGEX = /\/$/;
 
 /**
  * Determines the deployment environment based on environment variables.
- * Priority: production > preview > staging > development
+ * Priority: PREVIEW_ID > STAGING > NODE_ENV > fallback to user-development
  */
 export function getDeploymentEnvironment(): string {
-  if (process.env.NODE_ENV === "production" && !process.env.PREVIEW_ID) {
-    return "production";
-  }
   if (process.env.PREVIEW_ID) {
     return `preview-${process.env.PREVIEW_ID}`;
   }
   if (process.env.STAGING === "true") {
     return "staging";
+  }
+  if (process.env.NODE_ENV === "production") {
+    return "production";
   }
   return `${process.env.USER || "unknown"}-development`;
 }

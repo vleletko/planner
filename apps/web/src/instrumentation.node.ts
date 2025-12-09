@@ -22,6 +22,8 @@ import {
   ATTR_SERVICE_VERSION,
 } from "@opentelemetry/semantic-conventions";
 
+import { createLogger } from "@planner/logger";
+
 import {
   APP_VERSION,
   getDeploymentEnvironment,
@@ -29,6 +31,10 @@ import {
   getSamplerConfig,
   getTraceExporterUrl,
 } from "./instrumentation.utils";
+
+// Create logger after imports but before SDK initialization
+// This logger will be instrumented by PinoInstrumentation
+const log = createLogger("process");
 
 function getSampler(env: string) {
   const samplerConfig = getSamplerConfig(env);
@@ -58,7 +64,23 @@ const sdk = new NodeSDK({
   sampler: getSampler(environment),
   traceExporter,
   instrumentations: [
-    new HttpInstrumentation(),
+    new HttpInstrumentation({
+      // Add trace ID to response headers for error correlation in support scenarios
+      responseHook: (span, response) => {
+        try {
+          const { traceId } = span.spanContext();
+          if (
+            "setHeader" in response &&
+            typeof response.setHeader === "function"
+          ) {
+            response.setHeader("x-trace-id", traceId);
+          }
+        } catch (error) {
+          // Log error but don't break the response
+          log.error({ err: error }, "Failed to set x-trace-id header");
+        }
+      },
+    }),
     new UndiciInstrumentation(),
     new PgInstrumentation(),
     new PinoInstrumentation(),
@@ -78,3 +100,43 @@ process.on("SIGTERM", () => {
     .catch((error) => console.error("[OTEL] Error shutting down SDK:", error))
     .finally(() => process.exit(0));
 });
+
+/**
+ * Global unhandled error handlers for observability.
+ * These ensure errors are logged with full context before the process exits.
+ */
+
+process.on("uncaughtException", (error: Error, origin: string) => {
+  log.fatal({ err: error, origin }, "Uncaught exception");
+
+  // Attempt graceful OTEL shutdown to flush pending traces
+  sdk
+    .shutdown()
+    .catch((shutdownError) =>
+      log.error({ err: shutdownError }, "Error during emergency shutdown")
+    )
+    .finally(() => {
+      process.exit(1);
+    });
+});
+
+process.on(
+  "unhandledRejection",
+  (reason: unknown, promise: Promise<unknown>) => {
+    const error = reason instanceof Error ? reason : new Error(String(reason));
+    log.fatal(
+      { err: error, promise: String(promise) },
+      "Unhandled promise rejection"
+    );
+
+    // Attempt graceful OTEL shutdown to flush pending traces
+    sdk
+      .shutdown()
+      .catch((shutdownError) =>
+        log.error({ err: shutdownError }, "Error during emergency shutdown")
+      )
+      .finally(() => {
+        process.exit(1);
+      });
+  }
+);

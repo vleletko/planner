@@ -1,6 +1,7 @@
 import { ORPCError, os } from "@orpc/server";
 import { createLogger } from "@planner/logger";
 import type { Context } from "./context";
+import { getTraceId, recordSpanError } from "./lib/trace-utils";
 
 const log = createLogger("orpc");
 
@@ -22,16 +23,33 @@ const errorLogging = o.middleware(async ({ context, next, path }) => {
     log.debug({ procedure }, "Procedure completed");
     return result;
   } catch (error) {
-    const logContext = { err: error, procedure };
+    const traceId = getTraceId();
+    const logContext = { err: error, procedure, traceId };
+    const isClientError = error instanceof ORPCError;
 
-    if (error instanceof ORPCError) {
+    // Record error in active OTEL span for observability
+    if (error instanceof Error) {
+      recordSpanError(error, { "rpc.path": procedure }, isClientError);
+    }
+
+    if (isClientError) {
       // Client errors (validation, unauthorized, not found) - expected, log as warning
       log.warn(logContext, "RPC client error");
-    } else {
-      // Server errors - unexpected, log as error
-      log.error(logContext, "RPC server error");
+      // Re-throw ORPCError with traceId in data for client correlation
+      throw new ORPCError(error.code, {
+        message: error.message,
+        data: { ...error.data, traceId },
+        cause: error.cause,
+      });
     }
-    throw error;
+    // Server errors - unexpected, log as error
+    log.error(logContext, "RPC server error");
+    // Wrap server errors in INTERNAL_SERVER_ERROR with traceId
+    throw new ORPCError("INTERNAL_SERVER_ERROR", {
+      message: "An unexpected error occurred",
+      data: { traceId },
+      cause: error,
+    });
   }
 });
 

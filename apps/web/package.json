@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "@daveyplate/better-auth-ui": "catalog:",
-    "@opentelemetry/api": "^1.9.0",
+    "@opentelemetry/api": "catalog:",
     "@opentelemetry/exporter-trace-otlp-http": "^0.208.0",
     "@opentelemetry/instrumentation-http": "^0.208.0",
     "@opentelemetry/instrumentation-pg": "^0.61.1",
