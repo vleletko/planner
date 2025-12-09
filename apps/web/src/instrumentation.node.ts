@@ -22,67 +22,28 @@ import {
   ATTR_SERVICE_VERSION,
 } from "@opentelemetry/semantic-conventions";
 
-const TRAILING_SLASH_REGEX = /\/$/;
-
-function getDeploymentEnvironment(): string {
-  if (process.env.NODE_ENV === "production" && !process.env.PREVIEW_ID) {
-    return "production";
-  }
-  if (process.env.PREVIEW_ID) {
-    return `preview-${process.env.PREVIEW_ID}`;
-  }
-  if (process.env.STAGING === "true") {
-    return "staging";
-  }
-  return `${process.env.USER || "unknown"}-development`;
-}
+import {
+  getDeploymentEnvironment,
+  getOtlpHeaders,
+  getSamplerConfig,
+  getTraceExporterUrl,
+} from "./instrumentation.utils";
 
 function getSampler(env: string) {
-  if (env === "production") {
+  const samplerConfig = getSamplerConfig(env);
+  if (samplerConfig.type === "ratio" && samplerConfig.ratio !== undefined) {
     return new ParentBasedSampler({
-      root: new TraceIdRatioBasedSampler(0.1),
+      root: new TraceIdRatioBasedSampler(samplerConfig.ratio),
     });
   }
-  if (env === "staging") {
-    return new ParentBasedSampler({
-      root: new TraceIdRatioBasedSampler(0.5),
-    });
-  }
-  // Development and preview environments: sample everything
   return new AlwaysOnSampler();
 }
 
 const environment = getDeploymentEnvironment();
 const otlpEndpoint = process.env.OTEL_EXPORTER_OTLP_ENDPOINT;
 
-// Parse OTLP headers from environment (format: "key1=value1,key2=value2")
-function getOtlpHeaders(): Record<string, string> | undefined {
-  const headersEnv = process.env.OTEL_EXPORTER_OTLP_HEADERS;
-  if (!headersEnv) {
-    return;
-  }
-
-  const headers: Record<string, string> = {};
-  for (const pair of headersEnv.split(",")) {
-    const [key, ...valueParts] = pair.split("=");
-    if (key && valueParts.length > 0) {
-      headers[key.trim()] = valueParts.join("=").trim();
-    }
-  }
-  return Object.keys(headers).length > 0 ? headers : undefined;
-}
-
-// Build trace exporter URL (append /v1/traces to base endpoint)
-function getTraceExporterUrl(): string | undefined {
-  if (!otlpEndpoint) {
-    return;
-  }
-  const base = otlpEndpoint.replace(TRAILING_SLASH_REGEX, "");
-  return `${base}/v1/traces`;
-}
-
 // Use OTLP exporter if endpoint is configured, otherwise console in development
-const traceExporterUrl = getTraceExporterUrl();
+const traceExporterUrl = getTraceExporterUrl(otlpEndpoint);
 const traceExporter = traceExporterUrl
   ? new OTLPTraceExporter({ url: traceExporterUrl, headers: getOtlpHeaders() })
   : new ConsoleSpanExporter();
