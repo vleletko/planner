@@ -3,6 +3,12 @@
  * Extracted for testability.
  */
 
+/**
+ * Application version from build-time environment variable.
+ * Falls back to "0.0.0-dev" for local development.
+ */
+export const APP_VERSION = process.env.APP_VERSION || "0.0.0-dev";
+
 const TRAILING_SLASH_REGEX = /\/$/;
 
 /**

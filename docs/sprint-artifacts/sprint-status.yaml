@@ -48,7 +48,7 @@ development_status:
   epic-1b: contexted
   1b-1-observability-research-decision: done
   1b-2-opentelemetry-sdk-setup: done
-  1b-3-structured-logging-via-otel: backlog
+  1b-3-structured-logging-via-otel: done
   1b-4-error-handling-spans: backlog
   epic-1b-retrospective: optional
 

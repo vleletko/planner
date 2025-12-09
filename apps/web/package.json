@@ -26,6 +26,7 @@
     "@orpc/zod": "catalog:",
     "@planner/api": "workspace:*",
     "@planner/auth": "workspace:*",
+    "@planner/db": "workspace:*",
     "@planner/logger": "workspace:*",
     "@radix-ui/react-dialog": "^1.1.15",
     "@radix-ui/react-navigation-menu": "^1.2.14",

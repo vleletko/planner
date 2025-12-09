@@ -23,6 +23,7 @@ import {
 } from "@opentelemetry/semantic-conventions";
 
 import {
+  APP_VERSION,
   getDeploymentEnvironment,
   getOtlpHeaders,
   getSamplerConfig,
@@ -51,7 +52,7 @@ const traceExporter = traceExporterUrl
 const sdk = new NodeSDK({
   resource: resourceFromAttributes({
     [ATTR_SERVICE_NAME]: process.env.OTEL_SERVICE_NAME || "planner-web",
-    [ATTR_SERVICE_VERSION]: process.env.APP_VERSION || "0.0.0",
+    [ATTR_SERVICE_VERSION]: APP_VERSION,
     "deployment.environment": environment,
   }),
   sampler: getSampler(environment),

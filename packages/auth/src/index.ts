@@ -65,7 +65,15 @@ export const auth = betterAuth<BetterAuthOptions>({
   // Route Better Auth logs to Pino for OpenTelemetry capture
   logger: {
     log: (level, message, ...args) => {
-      authLogger[level]({ args }, message);
+      // Map Better-Auth log levels to pino methods with fallback to info
+      const levelMap: Record<string, "error" | "warn" | "debug" | "info"> = {
+        error: "error",
+        warn: "warn",
+        debug: "debug",
+        info: "info",
+      };
+      const logLevel = levelMap[level] ?? "info";
+      authLogger[logLevel]({ args }, message);
     },
   },
 });

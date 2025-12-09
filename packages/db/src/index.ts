@@ -29,6 +29,9 @@ export const db = drizzle(pool);
 // Export pool for advanced use cases (e.g., transactions)
 export { pool };
 
+// Export sql template tag for raw SQL queries
+// biome-ignore lint/performance/noBarrelFile: Database package requires sql utility export
+export { sql } from "drizzle-orm";
+
 // Export schema tables for type inference
-// biome-ignore lint/performance/noBarrelFile: Database package requires schema exports for type inference
 export { account, session, user, verification } from "./schema/auth";

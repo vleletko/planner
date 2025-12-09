@@ -1,6 +1,5 @@
 import { OpenAPIHandler } from "@orpc/openapi/fetch";
 import { OpenAPIReferencePlugin } from "@orpc/openapi/plugins";
-import { onError } from "@orpc/server";
 import { RPCHandler } from "@orpc/server/fetch";
 import { ZodToJsonSchemaConverter } from "@orpc/zod/zod4";
 import { createContext } from "@planner/api/context";
@@ -8,30 +7,22 @@ import { appRouter } from "@planner/api/routers/index";
 import { createLogger } from "@planner/logger";
 import type { NextRequest } from "next/server";
 
-const log = createLogger("orpc");
+const log = createLogger("orpc-handler");
 
-const rpcHandler = new RPCHandler(appRouter, {
-  interceptors: [
-    onError((error) => {
-      log.error({ err: error }, "RPC handler error");
-    }),
-  ],
-});
+// Error logging is now handled by middleware in @planner/api (procedure-level)
+// with procedure path context - see packages/api/src/index.ts
+
+const rpcHandler = new RPCHandler(appRouter);
 const apiHandler = new OpenAPIHandler(appRouter, {
   plugins: [
     new OpenAPIReferencePlugin({
       schemaConverters: [new ZodToJsonSchemaConverter()],
     }),
   ],
-  interceptors: [
-    onError((error) => {
-      log.error({ err: error }, "API handler error");
-    }),
-  ],
 });
 
 async function handleRequest(req: NextRequest) {
-  log.info({ method: req.method, url: req.url }, "RPC request received");
+  log.debug({ method: req.method, url: req.url }, "RPC request received");
 
   const rpcResult = await rpcHandler.handle(req, {
     prefix: "/api/rpc",

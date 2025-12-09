@@ -31,6 +31,7 @@
     "dotenv": "catalog:",
     "zod": "catalog:",
     "@planner/auth": "workspace:*",
-    "@planner/db": "workspace:*"
+    "@planner/db": "workspace:*",
+    "@planner/logger": "workspace:*"
   }
 }
