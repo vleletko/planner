@@ -33,21 +33,27 @@ export const onRequestError: Instrumentation.onRequestError = async (
   // Get trace ID from active span for error correlation
   const traceId = getTraceId();
 
+  // Use OTEL semantic conventions for exception and HTTP attributes
+  // See: https://opentelemetry.io/docs/specs/semconv/exceptions/exceptions-logs/
+  // See: https://opentelemetry.io/docs/specs/semconv/http/http-spans/
   log.error(
     {
-      err: error,
+      // OTEL exception semantic conventions (for SigNoz exception tracking)
+      "exception.type": error instanceof Error ? error.name : "Error",
+      "exception.message":
+        error instanceof Error ? error.message : String(error),
+      "exception.stacktrace": error instanceof Error ? error.stack : undefined,
+      // OTEL HTTP semantic conventions
+      "http.request.method": request.method,
+      "url.path": request.path,
+      "http.route": context.routePath,
+      // Additional context
       digest,
       traceId,
-      request: {
-        path: request.path,
-        method: request.method,
-      },
-      context: {
-        routerKind: context.routerKind,
-        routePath: context.routePath,
-        routeType: context.routeType,
-        renderSource: context.renderSource,
-      },
+      // Next.js specific context
+      "next.routerKind": context.routerKind,
+      "next.routeType": context.routeType,
+      "next.renderSource": context.renderSource,
     },
     "Server error"
   );
