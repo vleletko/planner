@@ -22,8 +22,7 @@ export const onRequestError: Instrumentation.onRequestError = async (
   }
 
   // Dynamic import to avoid issues with Edge runtime
-  const { createLogger } = await import("@planner/logger");
-  const { getTraceId } = await import("@planner/api/lib/trace-utils");
+  const { createLogger, getTraceId } = await import("@planner/logger");
   const log = createLogger("next-server");
 
   // Extract digest if available (React-processed errors have this)
