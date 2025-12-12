@@ -1,5 +1,11 @@
 // Load environment variables before anything else
 // (instrumentation runs before Next.js loads .env files)
+//
+// ⚠️  IMPORTANT: Do NOT add static imports from @planner/logger at the top of this file!
+// The logger package creates a pino instance at module load time. If imported before
+// sdk.start(), PinoInstrumentation won't be registered and trace context (trace_id,
+// span_id) won't be injected into logs. Use lazy require() calls instead (see getLog).
+//
 import { config } from "dotenv";
 
 config();
