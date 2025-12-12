@@ -250,13 +250,103 @@ Before committing:
 
 ## Testing
 
-**Note:** Testing infrastructure is not yet set up in this project. Tests should be added as the project matures.
+### Unit Tests
 
-**Future Testing Setup:**
-- Add Bun test runner or Vitest
-- Set up component testing with Testing Library
-- Add E2E tests with Playwright
-- Configure test scripts in package.json
+```bash
+bun run test          # Run all unit tests
+bun run test:web      # Run web app tests only
+```
+
+Uses **Bun test runner** (Jest-compatible API).
+
+### E2E Tests
+
+```bash
+bun run test:e2e      # Run Playwright E2E tests
+```
+
+E2E tests run against preview deployments in CI.
+
+---
+
+## Observability
+
+The project uses **OpenTelemetry** for distributed tracing and structured logging.
+
+### Quick Start
+
+Traces and logs appear in console by default. To send to SigNoz:
+
+```bash
+# In apps/web/.env.local
+OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318
+OTEL_SERVICE_NAME=planner-web
+```
+
+### Using the Logger
+
+```typescript
+import { createLogger } from "@planner/logger";
+
+const log = createLogger("my-module");
+
+log.info({ userId: "123" }, "User logged in");
+log.warn({ attempt: 3 }, "Rate limit approaching");
+log.error({ err: error }, "Failed to process request");
+```
+
+Logs automatically include `trace_id` and `span_id` for correlation.
+
+### Key Patterns
+
+#### Module Loading Order (Critical)
+
+In `apps/web/src/instrumentation.node.ts`, `@planner/logger` must NOT be statically imported. The pino logger must be created AFTER PinoInstrumentation is registered.
+
+```typescript
+// WRONG - breaks trace correlation
+import { createLogger } from "@planner/logger";
+
+// CORRECT - lazy loading
+function getLog() {
+  const { createLogger } = require("@planner/logger");
+  return createLogger("otel");
+}
+```
+
+See warning comment at top of `instrumentation.node.ts`.
+
+#### Workspace Package Pattern
+
+Use `@planner/logger` (workspace package) instead of direct pino imports. This ensures consistent trace correlation across the monorepo.
+
+```json
+{
+  "dependencies": {
+    "@planner/logger": "workspace:*"
+  }
+}
+```
+
+For packages that need `@opentelemetry/api`, add it as a **peerDependency** to avoid duplicate instances (Bun isolated linker issue).
+
+### After OTEL Changes
+
+When modifying observability code:
+
+1. Run `bun run dev:web` and verify console shows traces
+2. Check `trace_id` appears in log output
+3. If using SigNoz, verify traces appear in dashboard
+4. Test error handling: errors should have `x-trace-id` header
+
+### Files Reference
+
+| File | Purpose |
+|------|---------|
+| `apps/web/src/instrumentation.ts` | Next.js entry point |
+| `apps/web/src/instrumentation.node.ts` | OTEL SDK configuration |
+| `packages/logger/src/index.ts` | Shared pino logger |
+| `packages/logger/src/span.ts` | Span utilities (getTraceId, recordSpanError) |
 
 ---
 
