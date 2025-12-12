@@ -21,8 +21,6 @@ import {
   ATTR_SERVICE_NAME,
   ATTR_SERVICE_VERSION,
 } from "@opentelemetry/semantic-conventions";
-
-import { recordSpanError } from "@planner/logger";
 import type { Logger } from "pino";
 
 import {
@@ -44,6 +42,17 @@ function getLog(): Logger {
     _log = createLogger("otel");
   }
   return _log as Logger;
+}
+
+// Lazy span error recorder - avoid importing @planner/logger at module load time
+// which would cause pino logger to be created before PinoInstrumentation is registered
+function recordSpanError(
+  error: Error,
+  options: { attributes?: Record<string, string>; isInternalError?: boolean }
+): void {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { recordSpanError: record } = require("@planner/logger");
+  record(error, options);
 }
 
 function getSampler(env: string) {
