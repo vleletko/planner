@@ -12,6 +12,60 @@
 **Design Token Usage:**
 All design values must use design tokens from the design system. See docs/ux-design-specification.md Section 6.2 for complete token definitions.
 
+## Story 2.0: Epic 2 UX Design
+
+As a developer,
+I want complete UX designs for all Epic 2 screens and flows,
+So that implementation stories have clear visual specifications to follow.
+
+**Acceptance Criteria:**
+
+**Given** the Epic 2 functional requirements
+**When** this story is complete
+**Then** the following deliverables exist:
+
+1. **Screen Wireframes/Mockups:**
+   - Projects list page (empty state, populated state)
+   - Project creation dialog
+   - Project overview/dashboard page
+   - Project settings page (Overview tab, Members tab)
+   - Member invitation dialog
+   - Ownership transfer dialog
+   - Project deletion confirmation dialog
+
+2. **User Flows:**
+   - New user → create first project → land on project dashboard
+   - Owner → invite member → member accepts
+   - Owner → transfer ownership → confirmation → role change
+   - Admin → delete project → confirmation → redirect
+
+3. **Interaction Specifications:**
+   - Form validation states (inline errors, field highlighting)
+   - Loading states for async operations
+   - Success/error feedback patterns
+   - Dialog open/close animations
+   - Empty states and onboarding cues
+
+4. **Responsive Behavior:**
+   - Desktop layout (primary)
+   - Tablet/mobile adaptations (if applicable)
+
+5. **Component Specifications:**
+   - Project card component (for list view)
+   - Member row component (for members table)
+   - Role badge variants (Owner, Admin, Member)
+   - Any new components not in existing design system
+
+**Prerequisites:** Epic 1 complete, UX Design Specification exists
+
+**Technical Notes:**
+- Output format: Excalidraw wireframes and/or HTML mockups
+- Store in `docs/ux-mockups/epic-2/`
+- Reference existing design tokens from `docs/ux-design-specification.md`
+- Designs should be detailed enough for dev implementation without ambiguity
+
+---
+
 ## Story 2.1: Project Creation and Basic CRUD
 
 As a user,
