@@ -1,10 +1,16 @@
-import { afterEach, beforeEach, describe, expect, test } from "bun:test";
+import { afterEach, beforeEach, describe, expect, mock, test } from "bun:test";
 import {
+  addTraceIdHeader,
   getDeploymentEnvironment,
   getOtlpHeaders,
   getSamplerConfig,
   getTraceExporterUrl,
 } from "./instrumentation.utils";
+
+// Noop function for mock implementations
+const noop = () => {
+  // Mock function intentionally does nothing
+};
 
 describe("instrumentation.utils", () => {
   // Store original env values
@@ -169,6 +175,61 @@ describe("instrumentation.utils", () => {
       expect(getTraceExporterUrl("https://otel.example.com:443")).toBe(
         "https://otel.example.com:443/v1/traces"
       );
+    });
+  });
+
+  describe("addTraceIdHeader", () => {
+    test("sets x-trace-id header from span context", () => {
+      const mockSetHeader = mock(noop);
+      const mockResponse = { setHeader: mockSetHeader };
+      const mockSpan = {
+        spanContext: () => ({ traceId: "abc123def456" }),
+      };
+      const mockLogger = { error: mock(noop) };
+
+      addTraceIdHeader(mockSpan, mockResponse, mockLogger);
+
+      expect(mockSetHeader).toHaveBeenCalledWith("x-trace-id", "abc123def456");
+      expect(mockLogger.error).not.toHaveBeenCalled();
+    });
+
+    test("handles response without setHeader method gracefully", () => {
+      const mockResponse = {}; // No setHeader - like IncomingMessage
+      const mockSpan = {
+        spanContext: () => ({ traceId: "abc123def456" }),
+      };
+      const mockLogger = { error: mock(noop) };
+
+      // Should not throw
+      addTraceIdHeader(mockSpan, mockResponse, mockLogger);
+      expect(mockLogger.error).not.toHaveBeenCalled();
+    });
+
+    test("handles null response gracefully", () => {
+      const mockSpan = {
+        spanContext: () => ({ traceId: "abc123def456" }),
+      };
+      const mockLogger = { error: mock(noop) };
+
+      // Should not throw
+      addTraceIdHeader(mockSpan, null, mockLogger);
+      expect(mockLogger.error).not.toHaveBeenCalled();
+    });
+
+    test("logs error if spanContext throws", () => {
+      const mockSetHeader = mock(noop);
+      const mockResponse = { setHeader: mockSetHeader };
+      const mockSpan = {
+        spanContext: () => {
+          throw new Error("span error");
+        },
+      };
+      const mockLogger = { error: mock(noop) };
+
+      addTraceIdHeader(mockSpan, mockResponse, mockLogger);
+
+      expect(mockLogger.error).toHaveBeenCalled();
+      expect(mockSetHeader).not.toHaveBeenCalled();
     });
   });
 });

@@ -1,6 +1,6 @@
 # Story 1B.4: Error Handling & Spans
 
-Status: review
+Status: done
 
 ## Story
 
@@ -207,28 +207,41 @@ Already installed:
 Claude Opus 4.5 (claude-opus-4-5-20251101)
 
 ### Debug Log References
-- All 7 unit tests pass for trace-utils
-- Build passes (5/5 turbo tasks)
-- Lint passes (no errors, no warnings)
+- All 55 unit tests pass (13 logger + 15 API + 27 web)
+- Build passes
+- Lint passes (no errors)
 
 ### Completion Notes List
-1. Created `trace-utils.ts` with `getTraceId()` and `recordSpanError()` helper functions
+1. Created `span.ts` in logger package with `getTraceId()`, `isInternalServerError()`, `recordSpanError()` functions
 2. Added span error recording to ORPC error middleware - records exception, sets status, adds attributes
-3. Differentiated span status: OK for client errors (ORPCError), ERROR for server errors
+3. Differentiated span status: OK for expected errors (ORPCError except INTERNAL_SERVER_ERROR), ERROR for internal errors
 4. Added traceId to error response body (in ORPCError data payload)
-5. Added `x-trace-id` header to all RPC responses via `withTraceIdHeader()` wrapper
-6. Added `uncaughtException` and `unhandledRejection` handlers with graceful OTEL shutdown
-7. Added `@opentelemetry/api` to workspace catalog and as peerDependency/devDependency in API package
+5. Added `x-trace-id` header via HttpInstrumentation.responseHook in instrumentation.node.ts
+6. Added `uncaughtException` and `unhandledRejection` handlers with graceful OTEL shutdown and span error recording (AC #3)
+7. Added `@opentelemetry/api` to workspace catalog and as peerDependency/devDependency
+
+### Code Review Refactoring (2025-12-12)
+8. Renamed `isExpectedClientError` → `isInternalServerError` for clarity
+9. Moved span utilities from `packages/api/src/lib/trace-utils.ts` to `packages/logger/src/span.ts`
+10. Consolidated duplicate `recordErrorInActiveSpan` function - now uses shared `recordSpanError`
+11. Changed `recordSpanError` signature to options object pattern: `recordSpanError(error, { attributes, isInternalError })`
 
 ### File List
-- `packages/api/src/lib/trace-utils.ts` (NEW) - Trace utility functions
-- `packages/api/src/lib/trace-utils.test.ts` (NEW) - Unit tests for trace utilities
-- `packages/api/src/index.ts` (MODIFIED) - Error middleware with span recording
-- `packages/api/package.json` (MODIFIED) - Added @opentelemetry/api dependencies
-- `apps/web/src/app/api/rpc/[[...rest]]/route.ts` (MODIFIED) - x-trace-id header
-- `apps/web/src/instrumentation.node.ts` (MODIFIED) - Unhandled error handlers
+- `packages/logger/src/logger.ts` (RENAMED from index.ts) - Pino logger configuration
+- `packages/logger/src/index.ts` (NEW) - Re-exports logger and span utilities
+- `packages/logger/src/span.ts` (NEW) - Span utilities: getTraceId, isInternalServerError, recordSpanError
+- `packages/logger/src/span.test.ts` (NEW) - Unit tests for span utilities
+- `packages/logger/package.json` (MODIFIED) - Added @opentelemetry/api and @orpc/server as peer/dev dependencies
+- `packages/api/src/index.ts` (MODIFIED) - Error middleware imports from @planner/logger
+- `packages/api/src/lib/trace-utils.ts` (DELETED) - Moved to logger package
+- `packages/api/src/lib/trace-utils.test.ts` (DELETED) - Moved to logger package
+- `apps/web/src/instrumentation.node.ts` (MODIFIED) - Uses shared recordSpanError, removed duplicate function
+- `apps/web/src/instrumentation.utils.ts` (MODIFIED) - OTEL configuration utilities, addTraceIdHeader helper
+- `apps/web/src/instrumentation.utils.test.ts` (MODIFIED) - Added tests for addTraceIdHeader
 - `apps/web/package.json` (MODIFIED) - Changed @opentelemetry/api to catalog:
 - `package.json` (MODIFIED) - Added @opentelemetry/api to workspace catalog
+- `biome.json` (MODIFIED) - Added override to allow barrel files in package entry points
+- `apps/web/src/app/test-error/page.tsx` (DELETED) - Test page removed after verification
 
 ## Discoveries
 
@@ -259,3 +272,8 @@ Claude Opus 4.5 (claude-opus-4-5-20251101)
   - Renumbered remaining ACs and tasks
   - Added tech debt entry for future error.tsx/global-error.tsx implementation
   - Reason: Focus on core OTEL value; Next.js dev overlay sufficient for now
+- 2025-12-10: Code review fixes:
+  - Fixed INTERNAL_SERVER_ERROR span status (now ERROR instead of OK)
+  - Added error.code attribute to span attributes
+  - Added isExpectedClientError helper function with tests
+  - Deleted test-error page after manual verification complete
