@@ -3,6 +3,11 @@
  * Extracted for testability.
  */
 
+/** Logger type for error reporting in utility functions */
+type ErrorLogger = {
+  error: (ctx: { err: unknown }, msg: string) => void;
+};
+
 /**
  * Application version from build-time environment variable.
  * Falls back to "0.0.0-dev" for local development.
@@ -13,17 +18,17 @@ const TRAILING_SLASH_REGEX = /\/$/;
 
 /**
  * Determines the deployment environment based on environment variables.
- * Priority: production > preview > staging > development
+ * Priority: PREVIEW_ID > STAGING > NODE_ENV > fallback to user-development
  */
 export function getDeploymentEnvironment(): string {
-  if (process.env.NODE_ENV === "production" && !process.env.PREVIEW_ID) {
-    return "production";
-  }
   if (process.env.PREVIEW_ID) {
     return `preview-${process.env.PREVIEW_ID}`;
   }
   if (process.env.STAGING === "true") {
     return "staging";
+  }
+  if (process.env.NODE_ENV === "production") {
+    return "production";
   }
   return `${process.env.USER || "unknown"}-development`;
 }
@@ -80,4 +85,35 @@ export function getTraceExporterUrl(
   }
   const base = endpoint.replace(TRAILING_SLASH_REGEX, "");
   return `${base}/v1/traces`;
+}
+
+/** Span-like type for trace ID extraction */
+type SpanLike = {
+  spanContext: () => { traceId: string };
+};
+
+/**
+ * HTTP response hook that adds x-trace-id header for error correlation.
+ * Extracted for testability from HttpInstrumentation responseHook.
+ *
+ * Accepts any response object - only adds header if setHeader method exists.
+ */
+export function addTraceIdHeader(
+  span: SpanLike,
+  response: unknown,
+  logger: ErrorLogger
+): void {
+  try {
+    const { traceId } = span.spanContext();
+    if (
+      response !== null &&
+      typeof response === "object" &&
+      "setHeader" in response &&
+      typeof response.setHeader === "function"
+    ) {
+      response.setHeader("x-trace-id", traceId);
+    }
+  } catch (error) {
+    logger.error({ err: error }, "Failed to set x-trace-id header");
+  }
 }

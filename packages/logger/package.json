@@ -8,13 +8,18 @@
     }
   },
   "scripts": {
-    "build": "tsdown"
+    "build": "tsdown",
+    "test": "bun test"
   },
   "devDependencies": {
-    "tsdown": "catalog:"
+    "tsdown": "catalog:",
+    "@opentelemetry/api": "catalog:",
+    "@orpc/server": "catalog:"
   },
   "peerDependencies": {
-    "typescript": "^5"
+    "typescript": "^5",
+    "@opentelemetry/api": "catalog:",
+    "@orpc/server": "catalog:"
   },
   "dependencies": {
     "pino": "catalog:",

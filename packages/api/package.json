@@ -18,9 +18,11 @@
     "test:coverage": "bun test --coverage"
   },
   "devDependencies": {
+    "@opentelemetry/api": "catalog:",
     "tsdown": "catalog:"
   },
   "peerDependencies": {
+    "@opentelemetry/api": "catalog:",
     "typescript": "^5"
   },
   "dependencies": {
