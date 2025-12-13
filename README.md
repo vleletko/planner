@@ -89,6 +89,10 @@ planner/
 - `bun run check`: Run Biome linter and formatter (with auto-fix)
 - `bun run check-types`: Check TypeScript types across all packages
 
+### Component Development
+- `bun run storybook`: Start Storybook on port 6006 (from apps/web)
+- `bun run test:storybook`: Run component tests via Vitest
+
 ## CI/CD Pipeline
 
 This project uses GitHub Actions for automated quality checks and builds.
