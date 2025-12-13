@@ -20,6 +20,7 @@ Monorepo using **Turborepo** + **Bun** with full-stack TypeScript and end-to-end
 - **Styling:** TailwindCSS 4.1.10 + shadcn/ui
 - **State:** TanStack Query + TanStack Form
 - **API:** ORPC Client (type-safe RPC)
+- **Component Dev:** Storybook 10 + Vitest (browser mode)
 
 ### API (`packages/api`)
 - **Framework:** ORPC Server 1.10.0

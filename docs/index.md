@@ -93,6 +93,7 @@ This is a brownfield monorepo project with complete technical documentation to s
   - Usage examples
   - Component patterns
   - Accessibility notes
+  - Storybook integration
 
 ---
 
@@ -132,6 +133,10 @@ This is a brownfield monorepo project with complete technical documentation to s
 bun run dev                 # Start development server
 bun run check               # Lint and format code
 bun run check-types         # TypeScript type checking
+
+# Component Development
+bun run storybook           # Start Storybook on port 6006
+bun run test:storybook      # Run component tests via Vitest
 
 # Database
 bun run db:start            # Start PostgreSQL container

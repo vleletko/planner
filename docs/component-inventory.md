@@ -117,3 +117,41 @@ This enables imports like:
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 ```
+
+---
+
+## Storybook
+
+Components are documented and tested using **Storybook 10** with Vitest integration.
+
+**Start Storybook:**
+```bash
+cd apps/web
+bun run storybook
+```
+
+Opens at `http://localhost:6006`
+
+**Run component tests:**
+```bash
+bun run test:storybook
+```
+
+### Story Files
+
+Stories are colocated with components using `.stories.tsx` extension:
+- `components/ui/button.stories.tsx` - Button variants
+- `components/ui/card.stories.tsx` - Card compositions
+- `components/sign-in-form.stories.tsx` - Form with mocked auth
+
+### Features
+
+- **Autodocs**: Automatic documentation generation from component props
+- **Interaction Testing**: `play` functions for user interaction tests
+- **Module Mocking**: `sb.mock()` for auth and API dependencies
+- **Theme Support**: Light/dark mode via `next-themes` integration
+- **Accessibility**: `@storybook/addon-a11y` for a11y checks
+
+### Writing New Stories
+
+See [Development Guide - Component Testing](./development-guide.md#component-testing-with-storybook) for patterns and examples.

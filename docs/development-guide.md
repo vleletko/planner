@@ -118,6 +118,8 @@ Run from project root:
 | **Web Only** | `bun run dev:web` | Start only web app |
 | **Database Push** | `bun run db:push` | Push schema to database (dev) |
 | **DB Studio** | `bun run db:studio` | Open Drizzle Studio UI |
+| **Storybook** | `bun run storybook` | Start Storybook on port 6006 (from apps/web) |
+| **Storybook Tests** | `bun run test:storybook` | Run component tests via Vitest |
 | **Generate Migration** | `bun run db:generate` | Generate migration files |
 | **Run Migrations** | `bun run db:migrate` | Apply migrations (production) |
 | **Start DB** | `bun run db:start` | Start Docker PostgreSQL |
@@ -266,6 +268,99 @@ bun run test:e2e      # Run Playwright E2E tests
 ```
 
 E2E tests run against preview deployments in CI.
+
+### Component Testing with Storybook
+
+Storybook provides isolated component development and testing.
+
+**Start Storybook:**
+```bash
+cd apps/web
+bun run storybook
+```
+
+Opens at `http://localhost:6006`
+
+**Run component tests:**
+```bash
+bun run test:storybook
+```
+
+Tests run via Vitest with Playwright browser mode (headless Chromium).
+
+**Writing Stories:**
+
+Stories are located alongside components with `.stories.tsx` extension:
+
+```typescript
+// apps/web/src/components/ui/button.stories.tsx
+import type { Meta, StoryObj } from "@storybook/nextjs-vite";
+import { Button } from "./button";
+
+const meta = {
+  title: "UI/Button",
+  component: Button,
+  tags: ["autodocs"],
+} satisfies Meta<typeof Button>;
+
+export default meta;
+type Story = StoryObj<typeof meta>;
+
+export const Default: Story = {
+  args: {
+    children: "Click me",
+  },
+};
+```
+
+**Mocking Authentication:**
+
+Components using `authClient` require mocks. Create mocks in `apps/web/src/lib/__mocks__/`:
+
+```typescript
+// apps/web/src/lib/__mocks__/auth-client.ts
+import { fn } from "storybook/test";
+
+export const authClient = {
+  useSession: fn(),
+  signOut: fn(),
+  signIn: { social: fn() },
+};
+```
+
+Then use `sb.mock()` in stories:
+
+```typescript
+import { sb } from "storybook/test";
+sb.mock("@/lib/auth-client", () => import("@/lib/__mocks__/auth-client"));
+```
+
+**Interaction Tests:**
+
+Add `play` functions for user interaction testing:
+
+```typescript
+import { expect, userEvent, within } from "storybook/test";
+
+export const WithInteraction: Story = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const button = canvas.getByRole("button");
+    await userEvent.click(button);
+    await expect(button).toHaveTextContent("Clicked");
+  },
+};
+```
+
+For portal elements (dropdowns, modals), use `within(document.body)`:
+
+```typescript
+play: async ({ canvasElement }) => {
+  const body = within(document.body);
+  const menuItem = await body.findByRole("menuitem", { name: /sign out/i });
+  await userEvent.click(menuItem);
+};
+```
 
 ---
 
