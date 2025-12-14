@@ -24,6 +24,29 @@ const preview: Preview = {
     nextjs: {
       appDirectory: true,
     },
+    viewport: {
+      viewports: {
+        mobile1: {
+          name: "Mobile (320px)",
+          styles: { width: "320px", height: "568px" },
+        },
+        mobile2: {
+          name: "Mobile Large (414px)",
+          styles: { width: "414px", height: "896px" },
+        },
+        tablet: {
+          name: "Tablet (768px)",
+          styles: { width: "768px", height: "1024px" },
+        },
+        desktop: {
+          name: "Desktop (1280px)",
+          styles: { width: "1280px", height: "800px" },
+        },
+      },
+    },
+  },
+  initialGlobals: {
+    viewport: { value: "desktop" },
   },
   decorators: [
     withThemeByClassName({
