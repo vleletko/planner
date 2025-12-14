@@ -1,6 +1,8 @@
-import { dirname } from "node:path";
+import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { StorybookConfig } from "@storybook/nextjs-vite";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 /**
  * This function is used to resolve the absolute path of a package.
@@ -21,5 +23,15 @@ const config: StorybookConfig = {
   ],
   framework: getAbsolutePath("@storybook/nextjs-vite"),
   staticDirs: ["../public"],
+  viteFinal: (viteConfig) => {
+    // Workaround for Next.js 15+ Link component not being properly mocked
+    // See: https://github.com/storybookjs/storybook/issues/30390
+    viteConfig.resolve = viteConfig.resolve || {};
+    viteConfig.resolve.alias = {
+      ...viteConfig.resolve.alias,
+      "next/link": resolve(__dirname, "mocks/next/link.js"),
+    };
+    return viteConfig;
+  },
 };
 export default config;

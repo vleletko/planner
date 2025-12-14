@@ -9,8 +9,24 @@ We use Storybook 10 with Next.js 16 via `@storybook/nextjs-vite`.
 ## Commands
 
 - `bun run test:storybook` - Run all tests
-- `bun run test:storybook -- src/components/sign-in-form.stories.tsx` - Run single story
+- `bun run test:storybook -- src/components/auth/sign-in-form.stories.tsx` - Run single story
 - `bun run storybook` - Development mode on port 6006
+
+## Component Organization
+
+Feature-based folder structure with matching story titles:
+
+```
+components/
+├── ui/           → title: "UI/Button"
+├── auth/         → title: "Auth/SignInForm"
+│   └── interactions/  → title: "Auth/SignInForm/Interactions"
+├── layout/       → title: "Layout/Header"
+│   └── interactions/  → title: "Layout/.../Interactions"
+└── shared/       → title: "Shared/Loader"
+```
+
+**Visual stories** stay in component file, **interaction stories** go in `interactions/` subfolder.
 
 ## Critical Import Rules
 
@@ -37,9 +53,9 @@ import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { MyComponent } from "./my-component";
 
 const meta = {
-  title: "Category/MyComponent",
+  title: "Feature/MyComponent", // Match folder: auth/ → "Auth/..."
   component: MyComponent,
-  tags: ["autodocs"], // Enable docs generation
+  tags: ["autodocs"],
 } satisfies Meta<typeof MyComponent>;
 
 export default meta;
@@ -52,30 +68,46 @@ export const Default: Story = {
 
 ## Mocking with sb.mock()
 
-Mock modules BEFORE component import:
+Register mocks globally in `.storybook/preview.ts`:
 
-```tsx
-import { sb } from "storybook/test";
-sb.mock("@/lib/auth-client", () => import("@/lib/__mocks__/auth-client"));
-
-import { MyComponent } from "./my-component";
+```ts
+sb.mock(import("../src/lib/auth-client.ts"));
 ```
 
-Mock files go in `src/lib/__mocks__/`. Use `mocked()` and `beforeEach` to configure per-story.
+Storybook auto-discovers mock files from adjacent `__mocks__/` folder:
+
+```
+src/lib/
+├── auth-client.ts
+└── __mocks__/
+    └── auth-client.ts  ← Auto-discovered
+```
+
+Use `mocked()` and `beforeEach` in stories to configure per-story behavior.
 
 ## Interaction Tests
 
-Add `play` functions for user interaction coverage:
+Interaction stories live in `interactions/` subfolder to keep visual stories clean:
+
+```
+auth/
+├── sign-in-form.stories.tsx              # Visual: Default, Loading, Error
+└── interactions/sign-in-form.stories.tsx # Interactions: SuccessfulSubmit
+```
 
 ```tsx
-import { expect, userEvent, within } from "storybook/test";
+// interactions/sign-in-form.stories.tsx
+const meta = {
+  title: "Auth/SignInForm/Interactions",
+  component: SignInForm,
+} satisfies Meta<typeof SignInForm>;
 
-export const ClickTest: Story = {
+export const SuccessfulSubmit: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    const button = canvas.getByRole("button");
-    await userEvent.click(button);
-    await expect(button).toHaveTextContent("Clicked");
+    await userEvent.type(canvas.getByLabelText("Email"), "test@example.com");
+    await userEvent.click(canvas.getByRole("button", { name: "Submit" }));
+    await expect(mockFn).toHaveBeenCalled();
   },
 };
 ```

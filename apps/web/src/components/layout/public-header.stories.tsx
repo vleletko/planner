@@ -4,7 +4,7 @@ import { ThemeProvider } from "next-themes";
 import PublicHeader from "./public-header";
 
 const meta = {
-  title: "Components/PublicHeader",
+  title: "Layout/PublicHeader",
   component: PublicHeader,
   parameters: {
     layout: "fullscreen",

@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { fn, mocked } from "storybook/test";
 import { authClient } from "@/lib/auth-client";
+import { Toaster } from "../ui/sonner";
 import SignUpForm from "./sign-up-form";
-import { Toaster } from "./ui/sonner";
 
 const mockSessionIdle = {
   isPending: false,
@@ -21,7 +21,7 @@ const mockSessionPending = {
 } as const;
 
 const meta = {
-  title: "Components/SignUpForm",
+  title: "Auth/SignUpForm",
   component: SignUpForm,
   parameters: {
     layout: "centered",

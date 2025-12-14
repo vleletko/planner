@@ -24,7 +24,7 @@ const mockSession = {
 };
 
 const meta = {
-  title: "Components/Header",
+  title: "Layout/Header",
   component: Header,
   parameters: {
     layout: "fullscreen",

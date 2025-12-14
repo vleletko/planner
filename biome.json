@@ -22,7 +22,8 @@
       "!**/.source",
       "!**/docs/ux-mockups",
       "!**/playwright-report",
-      "!**/test-results"
+      "!**/test-results",
+      "!**/.claude"
     ]
   },
   "extends": ["ultracite/core", "ultracite/next"],

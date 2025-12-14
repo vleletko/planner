@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import Loader from "./loader";
 
 const meta = {
-  title: "Components/Loader",
+  title: "Shared/Loader",
   component: Loader,
   parameters: {
     layout: "centered",

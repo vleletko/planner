@@ -4,7 +4,7 @@ import { ThemeProvider } from "next-themes";
 import { ModeToggle } from "./mode-toggle";
 
 const meta = {
-  title: "Components/ModeToggle",
+  title: "Layout/ModeToggle",
   component: ModeToggle,
   parameters: {
     layout: "centered",

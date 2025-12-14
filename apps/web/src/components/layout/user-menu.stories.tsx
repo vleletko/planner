@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 
-import { Button } from "./ui/button";
+import { Button } from "../ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -8,8 +8,8 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "./ui/dropdown-menu";
-import { Skeleton } from "./ui/skeleton";
+} from "../ui/dropdown-menu";
+import { Skeleton } from "../ui/skeleton";
 
 /**
  * UserMenu component displays user account information and sign out action.
@@ -19,7 +19,7 @@ import { Skeleton } from "./ui/skeleton";
  * isolated UI components.
  */
 const meta = {
-  title: "Components/UserMenu",
+  title: "Layout/UserMenu",
   parameters: {
     layout: "centered",
   },
