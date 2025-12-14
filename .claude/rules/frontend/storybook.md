@@ -28,6 +28,8 @@ components/
 
 **Visual stories** stay in component file, **interaction stories** go in `interactions/` subfolder.
 
+Visual stories CAN have `play` functions for **state verification** (assertions without user interaction). Interaction stories use `play` for **user interactions** (clicks, typing).
+
 ## Critical Import Rules
 
 **Use `storybook/test` (not `@storybook/test`):**
@@ -85,9 +87,27 @@ src/lib/
 
 Use `mocked()` and `beforeEach` in stories to configure per-story behavior.
 
-## Interaction Tests
+## Play Functions
 
-Interaction stories live in `interactions/` subfolder to keep visual stories clean:
+### State Verification (visual stories)
+
+Visual stories can use `play` to verify rendered state without user interaction:
+
+```tsx
+// layout/header.stories.tsx
+export const OnDashboard: Story = {
+  parameters: { nextjs: { navigation: { pathname: "/dashboard" } } },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const dashboardLink = canvas.getByRole("link", { name: /dashboard/i });
+    await expect(dashboardLink).toHaveAttribute("data-active", "true");
+  },
+};
+```
+
+### User Interactions (interactions/ subfolder)
+
+Interaction stories with user actions (clicks, typing) go in `interactions/` subfolder:
 
 ```
 auth/

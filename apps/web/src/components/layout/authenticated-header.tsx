@@ -92,15 +92,22 @@ export default function AuthenticatedHeader({
           {/* Desktop Navigation - larger gap from logo on desktop */}
           <NavigationMenu className="hidden md:flex" viewport={false}>
             <NavigationMenuList>
-              {links.map(({ to, label }) => (
-                <NavigationMenuItem key={to}>
-                  <NavigationMenuLink active={pathname === to} asChild>
-                    <Link className="h-9 px-4 py-2" href={to}>
-                      {label}
-                    </Link>
-                  </NavigationMenuLink>
-                </NavigationMenuItem>
-              ))}
+              {links.map(({ to, label }) => {
+                const isActive = pathname === to;
+                return (
+                  <NavigationMenuItem key={to}>
+                    <NavigationMenuLink
+                      active={isActive}
+                      asChild
+                      data-active={isActive}
+                    >
+                      <Link className="h-9 px-4 py-2" href={to}>
+                        {label}
+                      </Link>
+                    </NavigationMenuLink>
+                  </NavigationMenuItem>
+                );
+              })}
             </NavigationMenuList>
           </NavigationMenu>
         </div>

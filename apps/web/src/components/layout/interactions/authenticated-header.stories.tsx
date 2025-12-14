@@ -58,12 +58,6 @@ const meta = {
   args: {
     user: mockUser,
   },
-} satisfies Meta<typeof AuthenticatedHeader>;
-
-export default meta;
-type Story = StoryObj<typeof meta>;
-
-export const SignOut: Story = {
   beforeEach() {
     mocked(authClient.useSession).mockReturnValue({
       data: mockSession,
@@ -72,6 +66,14 @@ export const SignOut: Story = {
       error: null,
       refetch: fn(),
     });
+  },
+} satisfies Meta<typeof AuthenticatedHeader>;
+
+export default meta;
+type Story = StoryObj<typeof meta>;
+
+export const SignOut: Story = {
+  beforeEach() {
     mocked(authClient.signOut).mockResolvedValue({ success: true });
   },
   play: async ({ canvasElement }) => {
