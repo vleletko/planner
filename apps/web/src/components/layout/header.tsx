@@ -7,7 +7,7 @@ export default function Header() {
   const { data: session } = authClient.useSession();
 
   if (session?.user) {
-    return <AuthenticatedHeader user={session.user} />;
+    return <AuthenticatedHeader />;
   }
 
   return <PublicHeader />;

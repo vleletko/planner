@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { expect, fn, mocked, userEvent, within } from "storybook/test";
 import { authClient } from "@/lib/auth-client";
-import { Toaster } from "../../ui/sonner";
-import SignInForm from "../sign-in-form";
+import { Toaster } from "../ui/sonner";
+import SignInForm from "./sign-in-form";
 
 const NEED_ACCOUNT_PATTERN = /need an account/i;
 

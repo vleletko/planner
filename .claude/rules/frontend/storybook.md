@@ -8,9 +8,12 @@ We use Storybook 10 with Next.js 16 via `@storybook/nextjs-vite`.
 
 ## Commands
 
-- `bun run test:storybook` - Run all tests
-- `bun run test:storybook -- src/components/auth/sign-in-form.stories.tsx` - Run single story
+Run from `apps/web/`:
+- `bun run test:storybook` - Run all story tests
 - `bun run storybook` - Development mode on port 6006
+
+Run specific file from monorepo root:
+- `bun run --filter web test:storybook -- src/components/auth/sign-in-form.stories.tsx`
 
 ## Component Organization
 
@@ -67,6 +70,11 @@ export const Default: Story = {
   args: { /* props */ },
 };
 ```
+
+**Why `satisfies` + `typeof meta`:**
+- `satisfies Meta<...>` gives stricter type checking (errors for missing required args, not just invalid ones)
+- `StoryObj<typeof meta>` connects meta and story types, so TypeScript knows args defined at meta level satisfy story requirements
+- Enables proper inference of `play` function availability when sharing across stories
 
 ## Mocking with sb.mock()
 
@@ -133,6 +141,39 @@ export const SuccessfulSubmit: Story = {
 ```
 
 **Portal elements** (dropdowns, modals): Use `within(document.body)` since Radix renders outside `canvasElement`.
+
+### Reusable Play Functions
+
+Extract shared verification logic into factory functions:
+
+```tsx
+const BOARD_LINK = /^board$/i;
+const PROJECTS_LINK = /^projects$/i;
+const NAV_LINKS = [BOARD_LINK, PROJECTS_LINK] as const;
+
+/** Verifies only the expected link has data-active="true" */
+const verifyActiveLink =
+  (activeLink: RegExp) =>
+  async ({ canvasElement }: { canvasElement: HTMLElement }) => {
+    const canvas = within(canvasElement);
+    for (const link of NAV_LINKS) {
+      const element = canvas.getByRole("link", { name: link });
+      await expect(element).toHaveAttribute(
+        "data-active",
+        link === activeLink ? "true" : "false"
+      );
+    }
+  };
+
+export const Default: Story = {
+  play: verifyActiveLink(BOARD_LINK),
+};
+
+export const OnProjectsPage: Story = {
+  parameters: { nextjs: { navigation: { pathname: "/projects" } } },
+  play: verifyActiveLink(PROJECTS_LINK),
+};
+```
 
 **Extract regex patterns to top level** (Biome performance rule):
 

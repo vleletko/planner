@@ -32,8 +32,22 @@ const BOARD_LINK = /^board$/i;
 const PROJECTS_LINK = /^projects$/i;
 const REPORTS_LINK = /^reports$/i;
 
+const NAV_LINKS = [BOARD_LINK, PROJECTS_LINK, REPORTS_LINK] as const;
+
+/** Verifies only the expected link has data-active="true" */
+const verifyActiveLink =
+  (activeLink: RegExp) =>
+  async ({ canvasElement }: { canvasElement: HTMLElement }) => {
+    const canvas = within(canvasElement);
+    for (const link of NAV_LINKS) {
+      const element = canvas.getByRole("link", { name: link });
+      const expectedValue = link === activeLink ? "true" : "false";
+      await expect(element).toHaveAttribute("data-active", expectedValue);
+    }
+  };
+
 const meta = {
-  title: "Layout/AuthenticatedHeader",
+  title: "Layout/Header/Authenticated",
   component: AuthenticatedHeader,
   parameters: {
     layout: "fullscreen",
@@ -57,9 +71,6 @@ const meta = {
       </ThemeProvider>
     ),
   ],
-  args: {
-    user: mockUser,
-  },
   beforeEach() {
     mocked(authClient.useSession).mockReturnValue({
       data: mockSession,
@@ -75,17 +86,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-
-    const boardLink = canvas.getByRole("link", { name: BOARD_LINK });
-    const projectsLink = canvas.getByRole("link", { name: PROJECTS_LINK });
-    const reportsLink = canvas.getByRole("link", { name: REPORTS_LINK });
-
-    await expect(boardLink).toHaveAttribute("data-active", "true");
-    await expect(projectsLink).toHaveAttribute("data-active", "false");
-    await expect(reportsLink).toHaveAttribute("data-active", "false");
-  },
+  play: verifyActiveLink(BOARD_LINK),
 };
 
 export const OnProjectsPage: Story = {
@@ -97,17 +98,7 @@ export const OnProjectsPage: Story = {
       },
     },
   },
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-
-    const boardLink = canvas.getByRole("link", { name: BOARD_LINK });
-    const projectsLink = canvas.getByRole("link", { name: PROJECTS_LINK });
-    const reportsLink = canvas.getByRole("link", { name: REPORTS_LINK });
-
-    await expect(boardLink).toHaveAttribute("data-active", "false");
-    await expect(projectsLink).toHaveAttribute("data-active", "true");
-    await expect(reportsLink).toHaveAttribute("data-active", "false");
-  },
+  play: verifyActiveLink(PROJECTS_LINK),
 };
 
 export const OnReportsPage: Story = {
@@ -119,17 +110,7 @@ export const OnReportsPage: Story = {
       },
     },
   },
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-
-    const boardLink = canvas.getByRole("link", { name: BOARD_LINK });
-    const projectsLink = canvas.getByRole("link", { name: PROJECTS_LINK });
-    const reportsLink = canvas.getByRole("link", { name: REPORTS_LINK });
-
-    await expect(boardLink).toHaveAttribute("data-active", "false");
-    await expect(projectsLink).toHaveAttribute("data-active", "false");
-    await expect(reportsLink).toHaveAttribute("data-active", "true");
-  },
+  play: verifyActiveLink(REPORTS_LINK),
 };
 
 export const WithContent: Story = {
@@ -151,14 +132,6 @@ export const WithContent: Story = {
 };
 
 export const LongUserName: Story = {
-  args: {
-    user: {
-      id: "user-456",
-      email: "alexander.maximilian.thompson@example.com",
-      name: "Alexander Maximilian Thompson",
-      image: null,
-    },
-  },
   beforeEach() {
     mocked(authClient.useSession).mockReturnValue({
       data: {

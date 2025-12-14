@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { ThemeProvider } from "next-themes";
 import { expect, fn, mocked, userEvent, within } from "storybook/test";
 import { authClient } from "@/lib/auth-client";
-import AuthenticatedHeader from "../authenticated-header";
+import AuthenticatedHeader from "./authenticated-header";
 
 const mockUser = {
   id: "user-123",
@@ -32,7 +32,7 @@ const USER_MENU_PATTERN = /user menu/i;
 const SIGN_OUT_PATTERN = /sign out/i;
 
 const meta = {
-  title: "Layout/AuthenticatedHeader/Interactions",
+  title: "Layout/Header/Authenticated/Interactions",
   component: AuthenticatedHeader,
   parameters: {
     layout: "fullscreen",
@@ -55,9 +55,6 @@ const meta = {
       </ThemeProvider>
     ),
   ],
-  args: {
-    user: mockUser,
-  },
   beforeEach() {
     mocked(authClient.useSession).mockReturnValue({
       data: mockSession,
