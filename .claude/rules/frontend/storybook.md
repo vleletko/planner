@@ -22,16 +22,24 @@ Feature-based folder structure with matching story titles:
 ```
 components/
 ├── ui/           → title: "UI/Button"
-├── auth/         → title: "Auth/SignInForm"
-│   └── interactions/  → title: "Auth/SignInForm/Interactions"
-├── layout/       → title: "Layout/Header"
-│   └── interactions/  → title: "Layout/.../Interactions"
+├── auth/
+│   ├── sign-in-form.tsx
+│   ├── sign-in-form.stories.tsx              → title: "Auth/SignInForm"
+│   └── sign-in-form.interactions.stories.tsx → title: "Auth/SignInForm/Interactions"
+├── layout/
+│   ├── header.tsx
+│   ├── header.stories.tsx                    → title: "Layout/Header/Authenticated"
+│   └── header.interactions.stories.tsx       → title: "Layout/Header/Authenticated/Interactions"
 └── shared/       → title: "Shared/Loader"
 ```
 
-**Visual stories** stay in component file, **interaction stories** go in `interactions/` subfolder.
+**Naming convention:**
+- Visual stories: `component-name.stories.tsx`
+- Interaction stories: `component-name.interactions.stories.tsx`
 
-Visual stories CAN have `play` functions for **state verification** (assertions without user interaction). Interaction stories use `play` for **user interactions** (clicks, typing).
+Both files stay at the **same level** as the component (no `interactions/` subfolder).
+
+**Visual stories** CAN have `play` functions for **state verification** (assertions without user interaction). **Interaction stories** use `play` for **user interactions** (clicks, typing).
 
 ## Critical Import Rules
 
@@ -113,18 +121,19 @@ export const OnDashboard: Story = {
 };
 ```
 
-### User Interactions (interactions/ subfolder)
+### User Interactions (*.interactions.stories.tsx)
 
-Interaction stories with user actions (clicks, typing) go in `interactions/` subfolder:
+Interaction stories with user actions (clicks, typing) use the `.interactions.stories.tsx` suffix:
 
 ```
 auth/
+├── sign-in-form.tsx
 ├── sign-in-form.stories.tsx              # Visual: Default, Loading, Error
-└── interactions/sign-in-form.stories.tsx # Interactions: SuccessfulSubmit
+└── sign-in-form.interactions.stories.tsx # Interactions: SuccessfulSubmit
 ```
 
 ```tsx
-// interactions/sign-in-form.stories.tsx
+// sign-in-form.interactions.stories.tsx
 const meta = {
   title: "Auth/SignInForm/Interactions",
   component: SignInForm,
