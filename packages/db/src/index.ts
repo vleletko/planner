@@ -30,7 +30,6 @@ export const db = drizzle(pool);
 export { pool };
 
 // Export sql template tag for raw SQL queries
-// biome-ignore lint/performance/noBarrelFile: Database package requires sql utility export
 export { sql } from "drizzle-orm";
 
 // Export schema tables for type inference

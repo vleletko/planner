@@ -5,7 +5,10 @@
   "scripts": {
     "dev": "next dev --port=3001",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build",
+    "test:storybook": "vitest --run"
   },
   "dependencies": {
     "@daveyplate/better-auth-ui": "catalog:",
@@ -51,12 +54,24 @@
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@storybook/addon-a11y": "^10.1.8",
+    "@storybook/addon-docs": "^10.1.8",
+    "@storybook/addon-onboarding": "^10.1.8",
+    "@storybook/addon-themes": "^10.1.8",
+    "@storybook/addon-vitest": "^10.1.8",
+    "@storybook/nextjs-vite": "^10.1.8",
     "@tailwindcss/postcss": "^4.1.10",
     "@tanstack/react-query-devtools": "^5.91.1",
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
+    "@vitest/browser-playwright": "^4.0.15",
+    "@vitest/coverage-v8": "^4.0.15",
+    "playwright": "^1.57.0",
+    "storybook": "^10.1.8",
     "tailwindcss": "^4.1.10",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "vite": "^7.2.7",
+    "vitest": "^4.0.15"
   }
 }

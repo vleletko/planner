@@ -8,7 +8,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
 import { queryClient } from "@/utils/orpc";
-import { ThemeProvider } from "../components/theme-provider";
+import { ThemeProvider } from "../components/layout/theme-provider";
 import { Toaster } from "../components/ui/sonner";
 
 export default function Providers({ children }: { children: React.ReactNode }) {
