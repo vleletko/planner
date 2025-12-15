@@ -86,3 +86,32 @@ export const mockSearchResults = [
     avatar: null,
   },
 ];
+
+// Transferable members for ownership transfer dialog (excludes current owner)
+export type TransferableMember = {
+  id: string;
+  name: string;
+  email: string;
+  avatar: string | null;
+};
+
+export const mockTransferableMembers: TransferableMember[] = [
+  {
+    id: "member-1",
+    name: "Bob Admin",
+    email: "bob@example.com",
+    avatar: null,
+  },
+  {
+    id: "member-2",
+    name: "Charlie Developer",
+    email: "charlie@example.com",
+    avatar: "https://i.pravatar.cc/150?u=charlie",
+  },
+  {
+    id: "member-3",
+    name: "Diana Designer",
+    email: "diana@example.com",
+    avatar: null,
+  },
+];

@@ -1,6 +1,6 @@
 # Story 2.0: Epic 2 UX Design
 
-Status: in-progress
+Status: review
 
 ## Story
 
@@ -17,14 +17,14 @@ so that implementation stories have clear visual specifications to follow.
 - [x] Project overview/dashboard layout
 - [x] Project settings page (Overview tab, Members tab)
 - [x] Member invitation dialog
-- [ ] Ownership transfer dialog
-- [ ] Project deletion confirmation dialog
+- [x] Ownership transfer dialog
+- [x] Project deletion confirmation dialog
 
 ### AC2: User Flows Documented
-- [ ] New user → create first project → land on project dashboard
-- [ ] Owner → invite member → member appears in list
-- [ ] Owner → transfer ownership → confirmation → role change
-- [ ] Admin → delete project → confirmation → redirect
+- [x] New user → create first project → land on project dashboard
+- [x] Owner → invite member → member appears in list
+- [x] Owner → transfer ownership → confirmation → role change
+- [x] Admin → delete project → confirmation → redirect
 
 ### AC3: Interaction States in Storybook
 - [x] Form validation states (default, error, success)
@@ -37,7 +37,7 @@ so that implementation stories have clear visual specifications to follow.
 - [x] Project card component with all props documented
 - [x] Member row component with role variants
 - [x] Role badge component (Owner, Admin, Member)
-- [ ] Confirmation dialog pattern (reusable)
+- [x] Confirmation dialog pattern (reusable)
 
 ## Tasks / Subtasks
 
@@ -91,35 +91,35 @@ so that implementation stories have clear visual specifications to follow.
   - [x] 7.6 Add AlreadyMember story (validation error state)
   - [x] 7.7 Add interaction stories with portal-aware queries
 
-- [ ] Task 8: Create Ownership Transfer Dialog Stories (AC: 1, 3)
-  - [ ] 8.1 Create TransferOwnershipDialog with controlled props
-  - [ ] 8.2 Create WarningBanner component (amber background, left border)
-  - [ ] 8.3 Add Default story (checkbox unchecked, submit disabled)
-  - [ ] 8.4 Add CheckboxChecked story (submit button enabled)
-  - [ ] 8.5 Add Submitting story (button with spinner)
-  - [ ] 8.6 Add interaction stories: checkbox toggle enables button, form submit
+- [x] Task 8: Create Ownership Transfer Dialog Stories (AC: 1, 3)
+  - [x] 8.1 Create TransferOwnershipDialog with controlled props
+  - [x] 8.2 Create WarningBanner component (amber background, left border)
+  - [x] 8.3 Add Default story (checkbox unchecked, submit disabled)
+  - [x] 8.4 Add CheckboxChecked story (submit button enabled)
+  - [x] 8.5 Add Submitting story (button with spinner)
+  - [x] 8.6 Add interaction stories: checkbox toggle enables button, form submit
 
-- [ ] Task 9: Create Project Deletion Dialog Stories (AC: 1, 3)
-  - [ ] 9.1 Create DeleteProjectDialog with controlled props and impact data
-  - [ ] 9.2 Add Default story (name input empty, delete disabled)
-  - [ ] 9.3 Add NameMismatch story (partial input, delete still disabled)
-  - [ ] 9.4 Add NameMatch story (exact match, delete enabled with error styling)
-  - [ ] 9.5 Add Deleting story (button with spinner, input disabled)
-  - [ ] 9.6 Create ImpactSummary component (shows card/member/resource counts)
-  - [ ] 9.7 Add interaction stories: type name to enable delete button
+- [x] Task 9: Create Project Deletion Dialog Stories (AC: 1, 3)
+  - [x] 9.1 Create DeleteProjectDialog with controlled props and impact data
+  - [x] 9.2 Add Default story (name input empty, delete disabled)
+  - [x] 9.3 Add NameMismatch story (partial input, delete still disabled)
+  - [x] 9.4 Add NameMatch story (exact match, delete enabled with error styling)
+  - [x] 9.5 Add Deleting story (button with spinner, input disabled)
+  - [x] 9.6 Create ImpactSummary component (shows card/member/resource counts)
+  - [x] 9.7 Add interaction stories: type name to enable delete button
 
-- [ ] Task 10: Document User Flows (AC: 2)
-  - [ ] 10.1 Create user-flows.mdx in Storybook docs folder
-  - [ ] 10.2 Document flow: New user → Projects (empty) → Create dialog → Dashboard
-  - [ ] 10.3 Document flow: Owner → Settings → Members → Invite → Success toast
-  - [ ] 10.4 Document flow: Owner → Members → Transfer → Confirm checkbox → Role change
-  - [ ] 10.5 Document flow: Admin → Settings → Danger Zone → Type name → Delete
+- [x] Task 10: Document User Flows (AC: 2)
+  - [x] 10.1 Create user-flows.mdx in Storybook docs folder
+  - [x] 10.2 Document flow: New user → Projects (empty) → Create dialog → Dashboard
+  - [x] 10.3 Document flow: Owner → Settings → Members → Invite → Success toast
+  - [x] 10.4 Document flow: Owner → Members → Transfer → Confirm checkbox → Role change
+  - [x] 10.5 Document flow: Admin → Settings → Danger Zone → Type name → Delete
 
-- [ ] Task 11: Final Integration (AC: all)
-  - [ ] 11.1 Verify all components use semantic tokens (bg-background, text-foreground, etc.)
-  - [ ] 11.2 Add component index page grouping all Projects/ stories
-  - [ ] 11.3 Run a11y addon checks: focus management, aria-labels, keyboard navigation
-  - [ ] 11.4 Create design handoff summary listing all component props and usage
+- [x] Task 11: Final Integration (AC: all)
+  - [x] 11.1 Verify all components use semantic tokens (bg-background, text-foreground, etc.)
+  - [x] 11.2 Add component index page grouping all Projects/ stories
+  - [x] 11.3 Run a11y addon checks: focus management, aria-labels, keyboard navigation
+  - [x] 11.4 Create design handoff summary listing all component props and usage
 
 ## Dev Notes
 
@@ -452,6 +452,13 @@ Study these files before implementing - they contain proven patterns:
 - Selection invalidation when search results change
 - 12 visual stories + 8 interaction tests (166 total tests passing)
 
+**Tasks 8-11 - Final Components and Documentation:**
+- Task 8.6: TransferOwnershipDialog interaction stories (6 stories testing select + checkbox + submit flow)
+- Task 9: DeleteProjectDialog with ImpactSummary component, 8 visual stories, 6 interaction stories
+- Task 10: user-flows.mdx documenting all 4 user journeys with acceptance criteria
+- Task 11: index.mdx component overview page, semantic token audit (no hardcoded colors), epic-2-design-handoff.md
+- All 194 Storybook tests passing, full build verification complete
+
 ### File List
 
 **Components Created:**
@@ -475,6 +482,15 @@ Study these files before implementing - they contain proven patterns:
 - `apps/web/src/components/projects/invite-member-dialog.stories.tsx`
 - `apps/web/src/components/projects/invite-member-dialog.interactions.stories.tsx`
 - `apps/web/src/components/projects/hooks/use-invite-user-search.ts`
+- `apps/web/src/components/projects/transfer-ownership-dialog.tsx`
+- `apps/web/src/components/projects/transfer-ownership-dialog.stories.tsx`
+- `apps/web/src/components/projects/transfer-ownership-dialog.interactions.stories.tsx`
+- `apps/web/src/components/projects/delete-project-dialog.tsx`
+- `apps/web/src/components/projects/delete-project-dialog.stories.tsx`
+- `apps/web/src/components/projects/delete-project-dialog.interactions.stories.tsx`
+- `apps/web/src/components/projects/user-flows.mdx`
+- `apps/web/src/components/projects/index.mdx`
+- `docs/sprint-artifacts/epic-2-design-handoff.md`
 
 **UI Components Modified (responsive improvements):**
 - `apps/web/src/components/ui/card.tsx` - responsive gap/padding
@@ -506,6 +522,8 @@ Study these files before implementing - they contain proven patterns:
 
 ## Change Log
 
+- 2025-12-15: Design refinements during review - TransferOwnershipDialog (improved project name visibility, meaningful interaction story names), DeleteProjectDialog (redesigned ImpactSummary with grid layout, mobile responsiveness, larger desktop numbers)
+- 2025-12-15: Tasks 8-11 completed - TransferOwnershipDialog interaction stories, DeleteProjectDialog component + stories, user-flows.mdx, index.mdx, design handoff doc
 - 2025-12-15: Task 7 completed - InviteMemberDialog with debounced search hook, multi-select results, role selector UX improvements
 - 2025-12-14: Design enhancements - "Refined Workspace" aesthetic applied to project settings (avatar, tabs, member rings, form interactions, danger zone)
 - 2025-12-14: Tasks 1-6 completed - all core components created with mobile responsiveness, Card/Input/Textarea UI components updated
