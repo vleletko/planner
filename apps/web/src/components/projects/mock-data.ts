@@ -54,3 +54,35 @@ export const mockImpactData = {
 
 // Project role type
 export type ProjectRole = "owner" | "admin" | "member";
+
+// Mock user data for invite dialog stories
+export const mockFoundUser = {
+  name: "Sarah Developer",
+  email: "sarah@example.com",
+  avatar: null,
+};
+
+// Multiple users for search results
+export const mockSearchResults = [
+  mockFoundUser,
+  {
+    name: "Sam Wilson",
+    email: "sam.wilson@example.com",
+    avatar: null,
+  },
+  {
+    name: "Sandra Lee",
+    email: "sandra.lee@example.com",
+    avatar: "https://i.pravatar.cc/150?u=sandra",
+  },
+  {
+    name: "Steve Rogers",
+    email: "steve.rogers@example.com",
+    avatar: null,
+  },
+  {
+    name: "Samantha Brown",
+    email: "samantha.brown@example.com",
+    avatar: null,
+  },
+];

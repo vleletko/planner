@@ -16,7 +16,7 @@ so that implementation stories have clear visual specifications to follow.
 - [x] Project creation dialog
 - [x] Project overview/dashboard layout
 - [x] Project settings page (Overview tab, Members tab)
-- [ ] Member invitation dialog
+- [x] Member invitation dialog
 - [ ] Ownership transfer dialog
 - [ ] Project deletion confirmation dialog
 
@@ -82,14 +82,14 @@ so that implementation stories have clear visual specifications to follow.
   - [x] 6.3 Create MemberAvatar with fallback initials
   - [x] 6.4 Add stories: OwnerRole, AdminRole, MemberRole, HoverWithActions
 
-- [ ] Task 7: Create Member Invitation Dialog Stories (AC: 1, 3)
-  - [ ] 7.1 Create InviteMemberDialog with controlled props and Toast decorator
-  - [ ] 7.2 Add Default story (dialog open, search field empty)
-  - [ ] 7.3 Add SearchingState story (loading spinner in field)
-  - [ ] 7.4 Add UserFound story (user preview with invite button)
-  - [ ] 7.5 Add UserNotFound story (error message displayed)
-  - [ ] 7.6 Add AlreadyMember story (validation error state)
-  - [ ] 7.7 Add interaction stories with portal-aware queries
+- [x] Task 7: Create Member Invitation Dialog Stories (AC: 1, 3)
+  - [x] 7.1 Create InviteMemberDialog with controlled props and Toast decorator
+  - [x] 7.2 Add Default story (dialog open, shows full UI with multiple results)
+  - [x] 7.3 Add SearchingState story (loading spinner in field)
+  - [x] 7.4 Add UserFound story (user preview with invite button)
+  - [x] 7.5 Add UserNotFound story (error message displayed)
+  - [x] 7.6 Add AlreadyMember story (validation error state)
+  - [x] 7.7 Add interaction stories with portal-aware queries
 
 - [ ] Task 8: Create Ownership Transfer Dialog Stories (AC: 1, 3)
   - [ ] 8.1 Create TransferOwnershipDialog with controlled props
@@ -444,6 +444,14 @@ Study these files before implementing - they contain proven patterns:
 - Forms: teal focus glow, save button hover shadow, pulsing amber "unsaved" indicator
 - Danger Zone: circular icon badge, subtle breathing border, delete button shadow
 
+**Task 7 - InviteMemberDialog:**
+- Debounced search with useInviteUserSearch hook (race condition handling via requestIdRef)
+- Multiple search results support (first 3 visible + "and X more" message)
+- Selectable user cards with visual selection feedback
+- Role selector always visible but disabled until user selected
+- Selection invalidation when search results change
+- 12 visual stories + 8 interaction tests (166 total tests passing)
+
 ### File List
 
 **Components Created:**
@@ -463,6 +471,10 @@ Study these files before implementing - they contain proven patterns:
 - `apps/web/src/components/projects/project-settings/members-tab.stories.tsx`
 - `apps/web/src/components/projects/project-settings/danger-zone.tsx`
 - `apps/web/src/components/projects/project-settings/danger-zone.stories.tsx`
+- `apps/web/src/components/projects/invite-member-dialog.tsx`
+- `apps/web/src/components/projects/invite-member-dialog.stories.tsx`
+- `apps/web/src/components/projects/invite-member-dialog.interactions.stories.tsx`
+- `apps/web/src/components/projects/hooks/use-invite-user-search.ts`
 
 **UI Components Modified (responsive improvements):**
 - `apps/web/src/components/ui/card.tsx` - responsive gap/padding
@@ -494,6 +506,7 @@ Study these files before implementing - they contain proven patterns:
 
 ## Change Log
 
+- 2025-12-15: Task 7 completed - InviteMemberDialog with debounced search hook, multi-select results, role selector UX improvements
 - 2025-12-14: Design enhancements - "Refined Workspace" aesthetic applied to project settings (avatar, tabs, member rings, form interactions, danger zone)
 - 2025-12-14: Tasks 1-6 completed - all core components created with mobile responsiveness, Card/Input/Textarea UI components updated
 - 2025-12-14: Validation improvements applied - mock data factories, dialog props, portal patterns, decorator examples, specific task names
