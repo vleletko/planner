@@ -21,25 +21,16 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import type { TransferableMember } from "./mock-data";
+import { getInitials } from "./utils";
 
 export type TransferOwnershipDialogProps = {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  projectId: string;
   projectName: string;
   currentMembers: TransferableMember[];
   onTransfer?: (newOwnerId: string) => void;
   isSubmitting?: boolean;
 };
-
-function getInitials(name: string): string {
-  return name
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
-}
 
 type WarningBannerProps = {
   children: React.ReactNode;
@@ -88,7 +79,6 @@ function MemberSelectItem({ member }: MemberSelectItemProps) {
 export function TransferOwnershipDialog({
   isOpen,
   onOpenChange,
-  projectId: _projectId,
   projectName,
   currentMembers,
   onTransfer,

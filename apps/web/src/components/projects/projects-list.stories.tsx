@@ -78,6 +78,9 @@ export const EmptyState: Story = {
 };
 
 export const EmptyStateStandalone: Story = {
+  args: {
+    projects: [],
+  },
   render: (args) => (
     <ProjectsEmptyState onCreateProject={args.onCreateProject} />
   ),
@@ -91,6 +94,9 @@ export const Loading: Story = {
 };
 
 export const LoadingStandalone: Story = {
+  args: {
+    projects: [],
+  },
   render: () => <ProjectsListSkeleton />,
 };
 

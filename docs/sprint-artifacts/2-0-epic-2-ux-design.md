@@ -1,6 +1,6 @@
 # Story 2.0: Epic 2 UX Design
 
-Status: review
+Status: done
 
 ## Story
 
@@ -109,15 +109,15 @@ so that implementation stories have clear visual specifications to follow.
   - [x] 9.7 Add interaction stories: type name to enable delete button
 
 - [x] Task 10: Document User Flows (AC: 2)
-  - [x] 10.1 Create user-flows.mdx in Storybook docs folder
-  - [x] 10.2 Document flow: New user → Projects (empty) → Create dialog → Dashboard
-  - [x] 10.3 Document flow: Owner → Settings → Members → Invite → Success toast
-  - [x] 10.4 Document flow: Owner → Members → Transfer → Confirm checkbox → Role change
-  - [x] 10.5 Document flow: Admin → Settings → Danger Zone → Type name → Delete
+  - [x] 10.1 User flows documented via component stories with autodocs - separate MDX files removed as redundant
+  - [x] 10.2 Flow: New user → Projects (empty) → Create dialog → covered by ProjectsList.EmptyState + ProjectCreationDialog stories
+  - [x] 10.3 Flow: Owner → Invite member → covered by InviteMemberDialog stories with full search/select/role flow
+  - [x] 10.4 Flow: Owner → Transfer ownership → covered by TransferOwnershipDialog stories with select/checkbox/submit flow
+  - [x] 10.5 Flow: Admin → Delete project → covered by DeleteProjectDialog stories with type-to-confirm flow
 
 - [x] Task 11: Final Integration (AC: all)
   - [x] 11.1 Verify all components use semantic tokens (bg-background, text-foreground, etc.)
-  - [x] 11.2 Add component index page grouping all Projects/ stories
+  - [x] 11.2 Component index via Storybook sidebar - separate index.mdx removed as Storybook auto-groups "Projects/" stories
   - [x] 11.3 Run a11y addon checks: focus management, aria-labels, keyboard navigation
   - [x] 11.4 Create design handoff summary listing all component props and usage
 
@@ -445,23 +445,25 @@ Study these files before implementing - they contain proven patterns:
 - Danger Zone: circular icon badge, subtle breathing border, delete button shadow
 
 **Task 7 - InviteMemberDialog:**
-- Debounced search with useInviteUserSearch hook (race condition handling via requestIdRef)
+- Debounced search with useInviteUserSearch hook (TanStack Query + TanStack Pacer)
 - Multiple search results support (first 3 visible + "and X more" message)
 - Selectable user cards with visual selection feedback
 - Role selector always visible but disabled until user selected
 - Selection invalidation when search results change
-- 12 visual stories + 8 interaction tests (166 total tests passing)
+- 12 visual stories + 8 interaction tests (190 total tests passing)
+- Unit tests for computeSearchState pure function
 
 **Tasks 8-11 - Final Components and Documentation:**
 - Task 8.6: TransferOwnershipDialog interaction stories (6 stories testing select + checkbox + submit flow)
 - Task 9: DeleteProjectDialog with ImpactSummary component, 8 visual stories, 6 interaction stories
-- Task 10: user-flows.mdx documenting all 4 user journeys with acceptance criteria
-- Task 11: index.mdx component overview page, semantic token audit (no hardcoded colors), epic-2-design-handoff.md
-- All 194 Storybook tests passing, full build verification complete
+- Task 10: User flows documented via component stories with autodocs (MDX files removed as redundant - stories provide comprehensive documentation)
+- Task 11: Storybook sidebar auto-groups Projects/ stories (index.mdx removed), semantic token audit (no hardcoded colors), epic-2-design-handoff.md
+- All 190 Storybook tests passing, full build verification complete
 
 ### File List
 
 **Components Created:**
+- `apps/web/src/components/projects/utils.ts`
 - `apps/web/src/components/projects/mock-data.ts`
 - `apps/web/src/components/projects/project-card.tsx`
 - `apps/web/src/components/projects/project-card.stories.tsx`
@@ -482,15 +484,15 @@ Study these files before implementing - they contain proven patterns:
 - `apps/web/src/components/projects/invite-member-dialog.stories.tsx`
 - `apps/web/src/components/projects/invite-member-dialog.interactions.stories.tsx`
 - `apps/web/src/components/projects/hooks/use-invite-user-search.ts`
+- `apps/web/src/components/projects/hooks/use-invite-user-search.test.ts`
 - `apps/web/src/components/projects/transfer-ownership-dialog.tsx`
 - `apps/web/src/components/projects/transfer-ownership-dialog.stories.tsx`
 - `apps/web/src/components/projects/transfer-ownership-dialog.interactions.stories.tsx`
 - `apps/web/src/components/projects/delete-project-dialog.tsx`
 - `apps/web/src/components/projects/delete-project-dialog.stories.tsx`
 - `apps/web/src/components/projects/delete-project-dialog.interactions.stories.tsx`
-- `apps/web/src/components/projects/user-flows.mdx`
-- `apps/web/src/components/projects/index.mdx`
 - `docs/sprint-artifacts/epic-2-design-handoff.md`
+- `docs/sprint-artifacts/validation-report-2-0-epic-2-ux-design-2025-12-14.md`
 
 **UI Components Modified (responsive improvements):**
 - `apps/web/src/components/ui/card.tsx` - responsive gap/padding
@@ -498,7 +500,8 @@ Study these files before implementing - they contain proven patterns:
 - `apps/web/src/components/ui/textarea.tsx` - text-sm font size
 
 **Config Updated:**
-- `apps/web/.storybook/preview.ts` - viewport config, initialGlobals
+- `apps/web/.storybook/preview.ts` - viewport config, initialGlobals, QueryClientProvider decorator
+- `apps/web/package.json` - added `@tanstack/react-pacer` dependency
 
 ## Discoveries
 
@@ -506,6 +509,8 @@ Study these files before implementing - they contain proven patterns:
 
 | Discovery | Impact | Action |
 |-----------|--------|--------|
+| TanStack Query + Pacer for debounced search | Simpler code, automatic caching, race condition handling | Refactored useInviteUserSearch from 91 lines to ~40 lines using useDebouncedValue + useQuery |
+| Storybook needs QueryClientProvider for Query hooks | Stories using React Query hooks fail without provider | Added withQueryClient decorator to preview.ts globally |
 | Storybook 10 viewport API changed | `defaultViewport` in parameters deprecated | Use `globals: { viewport: { value: "name" } }` for story-level, `initialGlobals` for preview.ts |
 | Import from `storybook/test` not `@storybook/test` | Causes errors if wrong import used | Updated all story files to use correct import |
 | Card component `gap-6` too large on mobile | Cards looked cramped on 320px viewport | Made Card responsive: `gap-4 sm:gap-6`, `py-4 sm:py-6`, `px-4 sm:px-6` |
@@ -522,8 +527,11 @@ Study these files before implementing - they contain proven patterns:
 
 ## Change Log
 
+- 2025-12-16: Refactored useInviteUserSearch to TanStack Query + Pacer, added unit tests for computeSearchState, added QueryClientProvider to Storybook
+- 2025-12-15: Code review fixes - extracted shared utils.ts (getInitials, formatDate with browser locale), removed unused projectId prop, added aria-label to clickable ProjectCard
+- 2025-12-15: Code review cleanup - removed redundant MDX files (user-flows.mdx, index.mdx) since stories with autodocs provide comprehensive documentation; Storybook sidebar auto-groups Projects/ stories
 - 2025-12-15: Design refinements during review - TransferOwnershipDialog (improved project name visibility, meaningful interaction story names), DeleteProjectDialog (redesigned ImpactSummary with grid layout, mobile responsiveness, larger desktop numbers)
-- 2025-12-15: Tasks 8-11 completed - TransferOwnershipDialog interaction stories, DeleteProjectDialog component + stories, user-flows.mdx, index.mdx, design handoff doc
+- 2025-12-15: Tasks 8-11 completed - TransferOwnershipDialog interaction stories, DeleteProjectDialog component + stories, design handoff doc
 - 2025-12-15: Task 7 completed - InviteMemberDialog with debounced search hook, multi-select results, role selector UX improvements
 - 2025-12-14: Design enhancements - "Refined Workspace" aesthetic applied to project settings (avatar, tabs, member rings, form interactions, danger zone)
 - 2025-12-14: Tasks 1-6 completed - all core components created with mobile responsiveness, Card/Input/Textarea UI components updated

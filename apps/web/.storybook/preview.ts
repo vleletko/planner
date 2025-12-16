@@ -1,8 +1,26 @@
 import { withThemeByClassName } from "@storybook/addon-themes";
-import type { Preview } from "@storybook/nextjs-vite";
+import type { Decorator, Preview } from "@storybook/nextjs-vite";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { createElement } from "react";
 import { sb } from "storybook/test";
 
 import "../src/index.css";
+
+// Create a new QueryClient for each story to ensure isolation
+const withQueryClient: Decorator = (Story) => {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: false, // Don't retry in Storybook
+      },
+    },
+  });
+  return createElement(
+    QueryClientProvider,
+    { client: queryClient },
+    createElement(Story)
+  );
+};
 
 // Mock auth client - uses __mocks__/auth-client.ts automatically
 sb.mock(import("../src/lib/auth-client.ts"));
@@ -49,6 +67,7 @@ const preview: Preview = {
     viewport: { value: "desktop" },
   },
   decorators: [
+    withQueryClient,
     withThemeByClassName({
       themes: {
         light: "",

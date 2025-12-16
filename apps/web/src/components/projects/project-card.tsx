@@ -10,6 +10,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import type { ProjectRole } from "./mock-data";
+import { formatDate } from "./utils";
 
 export type ProjectCardProps = {
   name: string;
@@ -28,14 +29,6 @@ const roleConfig: Record<
   admin: { variant: "secondary", label: "Admin" },
   member: { variant: "outline", label: "Member" },
 };
-
-function formatDate(date: Date): string {
-  return date.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
-}
 
 export function ProjectCard({
   name,
@@ -69,7 +62,9 @@ export function ProjectCard({
           onClick();
         }
       }}
-      {...(onClick ? { role: "button", tabIndex: 0 } : {})}
+      {...(onClick
+        ? { role: "button", tabIndex: 0, "aria-label": `Open project ${name}` }
+        : {})}
     >
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between gap-3">

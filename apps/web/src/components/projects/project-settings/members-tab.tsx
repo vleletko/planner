@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import type { ProjectRole } from "../mock-data";
+import { formatDate, getInitials } from "../utils";
 
 export type Member = {
   id: string;
@@ -58,23 +59,6 @@ const roleConfig: Record<
   },
   member: { variant: "outline", label: "Member", ringClass: "" },
 };
-
-function getInitials(name: string): string {
-  return name
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
-}
-
-function formatDate(date: Date): string {
-  return date.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
-}
 
 type MemberRowProps = {
   member: Member;

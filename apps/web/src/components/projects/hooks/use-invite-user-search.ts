@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from "react";
+import { useDebouncedValue } from "@tanstack/react-pacer";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 export type InviteUserResult = {
   name: string;
@@ -31,9 +32,32 @@ export type UseInviteUserSearchReturn = {
 };
 
 const DEFAULT_DEBOUNCE_MS = 500;
-const IDLE_STATE: InviteUserSearchState = { status: "idle" };
-const SEARCHING_STATE: InviteUserSearchState = { status: "searching" };
-const ERROR_STATE: InviteUserSearchState = { status: "error" };
+
+type ComputeSearchStateParams = {
+  debouncedQuery: string;
+  isLoading: boolean;
+  isError: boolean;
+  data: InviteUserResult[] | undefined;
+};
+
+/** Pure function to compute search state from query result */
+export function computeSearchState({
+  debouncedQuery,
+  isLoading,
+  isError,
+  data,
+}: ComputeSearchStateParams): InviteUserSearchState {
+  if (!debouncedQuery) {
+    return { status: "idle" };
+  }
+  if (isLoading) {
+    return { status: "searching" };
+  }
+  if (isError) {
+    return { status: "error" };
+  }
+  return { status: "success", results: data ?? [] };
+}
 
 export function useInviteUserSearch({
   query,
@@ -41,50 +65,30 @@ export function useInviteUserSearch({
   debounceMs = DEFAULT_DEBOUNCE_MS,
   disabled = false,
 }: UseInviteUserSearchOptions): UseInviteUserSearchReturn {
-  const [searchState, setSearchState] =
-    useState<InviteUserSearchState>(IDLE_STATE);
+  const queryClient = useQueryClient();
+  const [debouncedQuery] = useDebouncedValue(query.trim(), {
+    wait: debounceMs,
+  });
 
-  // Track the latest search request to handle race conditions
-  const requestIdRef = useRef(0);
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ["invite-user-search", debouncedQuery],
+    queryFn: () => onSearch?.(debouncedQuery) ?? [],
+    enabled: !disabled && !!onSearch && debouncedQuery.length > 0,
+    staleTime: 30_000, // Fresh for 30s
+    gcTime: 5 * 60_000, // Keep 5min in cache
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+  });
 
-  useEffect(() => {
-    if (disabled || !onSearch) {
-      return;
-    }
-
-    const trimmedQuery = query.trim();
-
-    // Reset to idle if query is empty
-    if (!trimmedQuery) {
-      setSearchState(IDLE_STATE);
-      return;
-    }
-
-    requestIdRef.current += 1;
-    const currentRequestId = requestIdRef.current;
-
-    const timeoutId = setTimeout(async () => {
-      setSearchState(SEARCHING_STATE);
-
-      try {
-        const results = await onSearch(trimmedQuery);
-
-        // Only update if this is still the latest request
-        if (currentRequestId === requestIdRef.current) {
-          setSearchState({ status: "success", results });
-        }
-      } catch {
-        if (currentRequestId === requestIdRef.current) {
-          setSearchState(ERROR_STATE);
-        }
-      }
-    }, debounceMs);
-
-    return () => clearTimeout(timeoutId);
-  }, [query, onSearch, debounceMs, disabled]);
+  const searchState = computeSearchState({
+    debouncedQuery,
+    isLoading,
+    isError,
+    data,
+  });
 
   const reset = () => {
-    setSearchState(IDLE_STATE);
+    queryClient.removeQueries({ queryKey: ["invite-user-search"] });
   };
 
   return { searchState, reset };

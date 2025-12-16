@@ -25,7 +25,6 @@ const meta = {
   ],
   args: {
     isOpen: true,
-    projectId: "project-123",
     projectName: "My Awesome Project",
     currentMembers: mockTransferableMembers,
     onOpenChange: fn(),

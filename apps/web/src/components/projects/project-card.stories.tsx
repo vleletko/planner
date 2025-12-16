@@ -87,6 +87,9 @@ export const NonClickable: Story = {
 };
 
 export const Loading: Story = {
+  args: {
+    ...mockProject,
+  },
   render: () => <ProjectCardSkeleton />,
 };
 

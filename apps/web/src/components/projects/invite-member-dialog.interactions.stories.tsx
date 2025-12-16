@@ -58,7 +58,6 @@ const meta = {
   ],
   args: {
     isOpen: true,
-    projectId: "project-123",
     onOpenChange: fn(),
     onInvite: fn(),
     controlledSearchState: userFoundState,

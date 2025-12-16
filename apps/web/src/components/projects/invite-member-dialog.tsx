@@ -27,6 +27,7 @@ import type {
   InviteUserSearchState,
 } from "./hooks/use-invite-user-search";
 import { useInviteUserSearch } from "./hooks/use-invite-user-search";
+import { getInitials } from "./utils";
 
 export type InviteMemberRole = "admin" | "member";
 
@@ -39,7 +40,6 @@ export type {
 export type InviteMemberDialogProps = {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  projectId: string;
   onInvite?: (data: { email: string; role: InviteMemberRole }) => void;
   /** Async callback to search for users. Returns array of matching users. */
   onSearchUser?: (query: string) => Promise<InviteUserResult[]>;
@@ -47,15 +47,6 @@ export type InviteMemberDialogProps = {
   controlledSearchState?: InviteUserSearchState;
   isSubmitting?: boolean;
 };
-
-function getInitials(name: string): string {
-  return name
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
-}
 
 type IdleStateProps = Record<string, never>;
 
@@ -411,12 +402,7 @@ function RoleSelector({
                     isSelected ? "text-primary" : "text-muted-foreground"
                   )}
                 />
-                <span
-                  className={cn(
-                    "font-medium text-sm",
-                    isSelected ? "text-foreground" : "text-foreground"
-                  )}
-                >
+                <span className="font-medium text-foreground text-sm">
                   {option.label}
                 </span>
               </div>
@@ -440,7 +426,6 @@ function RoleSelector({
 export function InviteMemberDialog({
   isOpen,
   onOpenChange,
-  projectId: _projectId,
   onInvite,
   onSearchUser,
   controlledSearchState,

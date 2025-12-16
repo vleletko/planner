@@ -53,7 +53,7 @@ development_status:
   epic-1b-retrospective: docs/sprint-artifacts/epic-1b-retrospective-2025-12-12.md
 
   epic-2: in-progress
-  2-0-epic-2-ux-design: ready-for-dev
+  2-0-epic-2-ux-design: done
   2-1-project-creation-and-basic-crud: backlog
   2-2-project-access-control-and-permissions: backlog
   2-3-user-invitation-system: backlog
