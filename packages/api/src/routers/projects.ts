@@ -10,6 +10,7 @@ import {
   user,
 } from "@planner/db";
 import { createLogger } from "@planner/logger";
+import { inArray } from "drizzle-orm";
 import { z } from "zod";
 import { protectedProcedure } from "../index";
 import {
@@ -55,7 +56,7 @@ export const projectsRouter = {
               memberCount: count(projectMembers.id),
             })
             .from(projectMembers)
-            .where(sql`${projectMembers.projectId} IN ${projectIds}`)
+            .where(inArray(projectMembers.projectId, projectIds))
             .groupBy(projectMembers.projectId)
         : [];
 
