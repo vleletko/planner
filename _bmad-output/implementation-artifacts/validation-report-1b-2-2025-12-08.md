@@ -1,6 +1,6 @@
 # Validation Report
 
-**Document:** docs/sprint-artifacts/1b-2-opentelemetry-sdk-setup.md
+**Document:** _bmad-output/implementation-artifacts/1b-2-opentelemetry-sdk-setup.md
 **Checklist:** .bmad/bmm/workflows/4-implementation/create-story/checklist.md
 **Date:** 2025-12-08
 **Validator:** Bob (Scrum Master Agent)
@@ -94,5 +94,5 @@ Pass Rate: 1/1 (100%)
 The story now includes comprehensive developer guidance to prevent common implementation issues and ensure flawless execution.
 
 **Next Steps:**
-1. Review the updated story at `docs/sprint-artifacts/1b-2-opentelemetry-sdk-setup.md`
+1. Review the updated story at `_bmad-output/implementation-artifacts/1b-2-opentelemetry-sdk-setup.md`
 2. Run `dev-story` workflow for implementation

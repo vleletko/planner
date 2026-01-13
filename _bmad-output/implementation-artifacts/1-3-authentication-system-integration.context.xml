@@ -6,7 +6,7 @@
     <status>drafted</status>
     <generatedAt>2025-11-13</generatedAt>
     <generator>BMAD Story Context Workflow</generator>
-    <sourceStoryPath>docs/sprint-artifacts/1-3-authentication-system-integration.md</sourceStoryPath>
+    <sourceStoryPath>_bmad-output/implementation-artifacts/1-3-authentication-system-integration.md</sourceStoryPath>
   </metadata>
 
   <story>
@@ -183,19 +183,19 @@
         <snippet>Better-Auth handles authentication endpoints natively at /api/auth/* routes. Frontend uses Better-Auth React client (authClient) to call endpoints directly. ORPC context receives validated session for protected procedures.</snippet>
       </doc>
       <doc>
-        <path>docs/sprint-artifacts/tech-spec-epic-1.md</path>
+        <path>_bmad-output/implementation-artifacts/tech-spec-epic-1.md</path>
         <title>Epic 1 Technical Specification</title>
         <section>Story 1.3 Authentication</section>
         <snippet>User sign-up with email/password validation (min 8 chars). User login with credential validation and session creation. Session persistence across browser refresh. Protected routes redirect unauthenticated users to /login. Forms follow UX design with inline validation and error states.</snippet>
       </doc>
       <doc>
-        <path>docs/sprint-artifacts/tech-spec-epic-1.md</path>
+        <path>_bmad-output/implementation-artifacts/tech-spec-epic-1.md</path>
         <title>Epic 1 Technical Specification</title>
         <section>Dependencies</section>
         <snippet>Better-Auth 1.3.28 for authentication. ORPC 1.10.0 for type-safe API. Drizzle ORM 0.44.2 for database queries. PostgreSQL 16+ for data storage. TanStack React Form for form management.</snippet>
       </doc>
       <doc>
-        <path>docs/sprint-artifacts/1-2-database-setup-and-schema-foundation.md</path>
+        <path>_bmad-output/implementation-artifacts/1-2-database-setup-and-schema-foundation.md</path>
         <title>Story 1.2 Completion Notes</title>
         <section>Better-Auth Configuration</section>
         <snippet>Better-Auth 1.3.28 configured in packages/auth/src/index.ts. User and session tables ready with proper indexes. Password hashing uses scrypt (161-char hashes). Test users available: test@example.com / TestPassword123!, admin@example.com / AdminPassword123!, demo@example.com / DemoPassword123!</snippet>
@@ -351,7 +351,7 @@
     <constraint>
       <type>Schema Management</type>
       <description>DO NOT modify auth schema tables (users, sessions, accounts) directly. These are managed by Better-Auth. Use Better Auth API (auth.api.signUpEmail()) for user creation to ensure proper password hashing and account records.</description>
-      <source>docs/sprint-artifacts/1-2-database-setup-and-schema-foundation.md - Better-Auth Configuration</source>
+      <source>_bmad-output/implementation-artifacts/1-2-database-setup-and-schema-foundation.md - Better-Auth Configuration</source>
     </constraint>
     <constraint>
       <type>Session Security</type>
@@ -361,7 +361,7 @@
     <constraint>
       <type>Password Security</type>
       <description>Password validation: Minimum 8 characters enforced in form validation. Password hashing: scrypt algorithm (Better-Auth default) with 161-character hash output. Passwords stored in accounts table, not users table.</description>
-      <source>docs/sprint-artifacts/tech-spec-epic-1.md - AC3</source>
+      <source>_bmad-output/implementation-artifacts/tech-spec-epic-1.md - AC3</source>
     </constraint>
     <constraint>
       <type>Code Quality</type>
@@ -371,12 +371,12 @@
     <constraint>
       <type>Form Validation UX</type>
       <description>Forms must follow UX design: inline validation with errors on blur, error messages in red (var(--color-error)), submit button disabled when form invalid, clear and actionable error messages.</description>
-      <source>docs/sprint-artifacts/tech-spec-epic-1.md - AC3</source>
+      <source>_bmad-output/implementation-artifacts/tech-spec-epic-1.md - AC3</source>
     </constraint>
     <constraint>
       <type>Testing Strategy</type>
       <description>Story 1.6 will establish comprehensive testing infrastructure (Bun test runner, Playwright E2E). For Story 1.3, validation is manual via browser testing with test users from seed data.</description>
-      <source>docs/sprint-artifacts/1-3-authentication-system-integration.md - Dev Notes</source>
+      <source>_bmad-output/implementation-artifacts/1-3-authentication-system-integration.md - Dev Notes</source>
     </constraint>
     <constraint>
       <type>Accessibility</type>

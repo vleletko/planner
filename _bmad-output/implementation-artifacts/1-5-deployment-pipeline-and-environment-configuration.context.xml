@@ -6,7 +6,7 @@
     <status>drafted</status>
     <generatedAt>2025-11-16</generatedAt>
     <generator>BMAD Story Context Workflow</generator>
-    <sourceStoryPath>docs/sprint-artifacts/1-5-deployment-pipeline-and-environment-configuration.md</sourceStoryPath>
+    <sourceStoryPath>_bmad-output/implementation-artifacts/1-5-deployment-pipeline-and-environment-configuration.md</sourceStoryPath>
   </metadata>
 
   <story>
@@ -92,7 +92,7 @@
         <snippet>Built on: Next.js 16, React 19, ORPC, PostgreSQL, Drizzle ORM, Better-Auth. Internal process management tool for workflow validation.</snippet>
       </doc>
       <doc>
-        <path>docs/sprint-artifacts/tech-spec-epic-1.md</path>
+        <path>_bmad-output/implementation-artifacts/tech-spec-epic-1.md</path>
         <title>Epic Technical Specification: Foundation &amp; Project Infrastructure</title>
         <section>System Architecture Alignment</section>
         <snippet>Monorepo structure with Next.js 16 frontend, ORPC backend API, Better-Auth authentication, Drizzle ORM database layer. Deployment architecture for self-hosted environment.</snippet>

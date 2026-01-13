@@ -102,7 +102,7 @@ This story follows a phased approach where each phase is researched, implemented
 - DOCUMENT all research findings before implementation
 - VERIFY each phase works before moving to next
 
-[Source: docs/sprint-artifacts/1-4-basic-ui-shell-and-theme-system.md#Dev-Agent-Record]
+[Source: _bmad-output/implementation-artifacts/1-4-basic-ui-shell-and-theme-system.md#Dev-Agent-Record]
 
 ### Expected File Paths
 
@@ -251,7 +251,7 @@ This story uses a **gradual improvement pattern** where each phase is researched
 
 **Execution Instructions:**
 1. Complete ALL research tasks for current phase
-2. Document findings in phase research file (`docs/sprint-artifacts/1-5-research/phase-X-*.md`)
+2. Document findings in phase research file (`_bmad-output/implementation-artifacts/1-5-research/phase-X-*.md`)
 3. **STOP and present findings to user**
 4. Wait for user approval/feedback/direction change
 5. Update task list with implementation tasks based on approved research
@@ -293,7 +293,7 @@ This story uses a **gradual improvement pattern** where each phase is researched
 **⚠️ MANDATORY PAUSE POINT:**
 
 - [x] **STOP: Document and present Phase 1 research findings**
-  - [x] Create `docs/sprint-artifacts/1-5-research/phase-1-ci-pipeline.md`
+  - [x] Create `_bmad-output/implementation-artifacts/1-5-research/phase-1-ci-pipeline.md`
   - [x] Document all findings with sources, recommendations, trade-offs
   - [x] Present summary to user with link to full research document
   - [x] **WAIT for user approval/feedback before proceeding**
@@ -383,7 +383,7 @@ This story uses a **gradual improvement pattern** where each phase is researched
 **⚠️ MANDATORY PAUSE POINT:**
 
 - [x] **STOP: Document and present Phase 2 research findings**
-  - [x] Create `docs/sprint-artifacts/1-5-research/phase-2-docker.md`
+  - [x] Create `_bmad-output/implementation-artifacts/1-5-research/phase-2-docker.md`
   - [x] Document all findings with sources, recommendations, trade-offs
   - [x] Present summary to user with link to full research document
   - [x] **WAIT for user approval/feedback before proceeding**
@@ -578,7 +578,7 @@ This story uses a **gradual improvement pattern** where each phase is researched
 **⚠️ MANDATORY PAUSE POINT:**
 
 - [x] **STOP: Document and present Phase 3 research findings**
-  - [x] Create `docs/sprint-artifacts/1-5-research/phase-3-preview-deployments.md`
+  - [x] Create `_bmad-output/implementation-artifacts/1-5-research/phase-3-preview-deployments.md`
   - [x] Document all findings with sources, recommendations, trade-offs
   - [x] Present summary to user with link to full research document
   - [x] **WAIT for user approval/feedback before proceeding**
@@ -1032,7 +1032,7 @@ Added `DROP SCHEMA IF EXISTS drizzle CASCADE;` to `apps/migrate/src/reset.ts` to
 **⚠️ MANDATORY PAUSE POINT:**
 
 - [ ] **STOP: Document and present Phase 4 research findings**
-  - [ ] Create `docs/sprint-artifacts/1-5-research/phase-4-production.md`
+  - [ ] Create `_bmad-output/implementation-artifacts/1-5-research/phase-4-production.md`
   - [ ] Document all findings with sources, recommendations, trade-offs
   - [ ] Present summary to user with link to full research document
   - [ ] **WAIT for user approval/feedback before proceeding**
@@ -1268,24 +1268,24 @@ Each phase follows this cycle:
 
 **Phase 1 (Complete):**
 - ✅ `.github/workflows/ci.yml` - GitHub Actions CI/CD pipeline (verify job)
-- ✅ `docs/sprint-artifacts/1-5-research/phase-1-ci-pipeline.md` - Phase 1 research
+- ✅ `_bmad-output/implementation-artifacts/1-5-research/phase-1-ci-pipeline.md` - Phase 1 research
 
 **Phase 2 (Current):**
-- ✅ `docs/sprint-artifacts/1-5-research/phase-2-docker.md` - Phase 2 research
+- ✅ `_bmad-output/implementation-artifacts/1-5-research/phase-2-docker.md` - Phase 2 research
 - [ ] `.github/actions/setup-bun-workspace/action.yml` - Reusable composite action
 - [ ] `apps/web/Dockerfile` - Single-stage runtime Docker image
 - [ ] `apps/web/.dockerignore` - Docker ignore file
 
 **Phase 3 (Deferred):**
-- [ ] `docs/sprint-artifacts/1-5-research/phase-3-preview-deployments.md` - Phase 3 research
+- [ ] `_bmad-output/implementation-artifacts/1-5-research/phase-3-preview-deployments.md` - Phase 3 research
 - [ ] Dokploy preview configuration (UI-based, not file)
 
 **Phase 4 (Deferred):**
-- [ ] `docs/sprint-artifacts/1-5-research/phase-4-production.md` - Phase 4 research
+- [ ] `_bmad-output/implementation-artifacts/1-5-research/phase-4-production.md` - Phase 4 research
 - [ ] Production deployment strategy (TBD)
 
 **Phase 5 (Optional):**
-- [ ] `docs/sprint-artifacts/1-5-research/phase-5-dependencies.md` - Phase 5 research
+- [ ] `_bmad-output/implementation-artifacts/1-5-research/phase-5-dependencies.md` - Phase 5 research
 - [ ] Dependency management bot configuration
 
 **Files to Update:**
@@ -1357,14 +1357,14 @@ Each phase follows this cycle:
 
 **Epic and Technical Specifications:**
 - [Source: docs/epics/epic-1-foundation-project-infrastructure.md#Story-1.5]
-- [Source: docs/sprint-artifacts/tech-spec-epic-1.md#Story-1.5] (if exists)
+- [Source: _bmad-output/implementation-artifacts/tech-spec-epic-1.md#Story-1.5] (if exists)
 
 **Architecture Documentation:**
 - [Source: docs/architecture.md#Core-Technologies]
 - [Source: docs/architecture.md#Code Quality Standards]
 
 **Previous Story Context:**
-- [Source: docs/sprint-artifacts/1-4-basic-ui-shell-and-theme-system.md#Completion-Notes-List]
+- [Source: _bmad-output/implementation-artifacts/1-4-basic-ui-shell-and-theme-system.md#Completion-Notes-List]
 
 **External Documentation (TO BE RESEARCHED):**
 - Dokploy: https://docs.dokploy.com/
@@ -1382,7 +1382,7 @@ Each phase follows this cycle:
 
 ### Context Reference
 
-- `docs/sprint-artifacts/1-5-deployment-pipeline-and-environment-configuration.context.xml`
+- `_bmad-output/implementation-artifacts/1-5-deployment-pipeline-and-environment-configuration.context.xml`
 
 ### Agent Model Used
 
@@ -1394,7 +1394,7 @@ Each phase follows this cycle:
 
 **Phase 1 Implementation (2025-11-16):**
 - ✅ Completed research on GitHub Actions patterns for Bun monorepos
-- ✅ Created `docs/sprint-artifacts/1-5-research/phase-1-ci-pipeline.md` with comprehensive findings
+- ✅ Created `_bmad-output/implementation-artifacts/1-5-research/phase-1-ci-pipeline.md` with comprehensive findings
 - ✅ Implemented `.github/workflows/ci.yml` with sequential verification job
 - ✅ Configured Bun setup with v2 action, pinned to version 1.3.1
 - ✅ Configured caching: Bun dependencies via `actions/cache@v4` and Turborepo via `rharkor/caching-for-turbo@v2.3.2`
@@ -1425,7 +1425,7 @@ Each phase follows this cycle:
 - ✅ Researched Docker tagging strategy for preview deployments
 - ✅ Discussed with user: Avoid `latest` tag confusion, focus on preview environments
 - ✅ Researched workflow DRY principles with composite actions
-- ✅ Created `docs/sprint-artifacts/1-5-research/phase-2-docker.md` with comprehensive findings
+- ✅ Created `_bmad-output/implementation-artifacts/1-5-research/phase-2-docker.md` with comprehensive findings
 - ✅ User approved build-reuse pattern (Option A)
 - ✅ User approved preview-focused tagging strategy (pr-XX, sha-XXXXXX)
 - ✅ User approved composite action for DRY workflow
@@ -1473,11 +1473,11 @@ Each phase follows this cycle:
 
 **Phase 1:**
 - ✅ Created: `.github/workflows/ci.yml` - GitHub Actions CI pipeline (verify job)
-- ✅ Created: `docs/sprint-artifacts/1-5-research/phase-1-ci-pipeline.md` - Phase 1 research findings
+- ✅ Created: `_bmad-output/implementation-artifacts/1-5-research/phase-1-ci-pipeline.md` - Phase 1 research findings
 - ✅ Modified: `README.md` - Added CI/CD Pipeline section (lines 92-123)
 
 **Phase 2:**
-- ✅ Created: `docs/sprint-artifacts/1-5-research/phase-2-docker.md` - Phase 2 research findings
+- ✅ Created: `_bmad-output/implementation-artifacts/1-5-research/phase-2-docker.md` - Phase 2 research findings
 - ✅ Created: `.github/actions/setup-bun-workspace/action.yml` - Reusable composite action
 - ✅ Created: `apps/web/Dockerfile` - Single-stage runtime Docker image (255MB)
 - ✅ Created: `apps/web/.dockerignore` - Docker ignore rules (whitelist .next/standalone and .next/static)
@@ -1499,7 +1499,7 @@ Each phase follows this cycle:
 
 ## Change Log
 
-- 2025-11-16: Story drafted from Epic 1 Story 1.5 specifications. Established research-first, gradual improvement pattern with mandatory human verification pauses after each research phase. 5 phases: Basic CI, Docker Integration, Dokploy Preview Deployments, Dokploy Production Deployment, Dependency Management. Key decisions: CI runs on all PRs/branches (not just main), self-hosted deployment via Dokploy (NOT Vercel), Docker-based deployment with Next.js standalone mode, integration tests on preview deployments. All implementation tasks deferred until research phase completes AND user approves for each phase. Research findings documented in dedicated files (`docs/sprint-artifacts/1-5-research/phase-X-*.md`) to serve as baseline for verification and implementation. Research tasks are Dokploy-focused to leverage platform features (preview environments, zero-downtime deployments, health checks, rollbacks).
+- 2025-11-16: Story drafted from Epic 1 Story 1.5 specifications. Established research-first, gradual improvement pattern with mandatory human verification pauses after each research phase. 5 phases: Basic CI, Docker Integration, Dokploy Preview Deployments, Dokploy Production Deployment, Dependency Management. Key decisions: CI runs on all PRs/branches (not just main), self-hosted deployment via Dokploy (NOT Vercel), Docker-based deployment with Next.js standalone mode, integration tests on preview deployments. All implementation tasks deferred until research phase completes AND user approves for each phase. Research findings documented in dedicated files (`_bmad-output/implementation-artifacts/1-5-research/phase-X-*.md`) to serve as baseline for verification and implementation. Research tasks are Dokploy-focused to leverage platform features (preview environments, zero-downtime deployments, health checks, rollbacks).
 
 - 2025-11-17: Phase 2 research completed and approved. Key research findings: (1) Build-reuse pattern selected over Docker-in-Docker for 5-10x performance improvement by leveraging existing Bun+Turbo caching; (2) Preview-focused tagging strategy (`pr-XX` for deployments, `sha-XXXXXX` for rollback) with production tagging deferred to Phase 4 to avoid `latest` confusion; (3) GitHub Container Registry (GHCR) selected for free, rate-limit-free integration with Dokploy; (4) Composite action pattern (`.github/actions/setup-bun-workspace/`) to DRY up duplicated setup steps in workflow; (5) Single-stage runtime Dockerfile targeting <200MB image size with Next.js standalone output, Bun slim runtime, non-root user security hardening. Updated story with detailed implementation tasks for Phase 2 including composite action creation, Dockerfile creation, workflow updates, and comprehensive verification steps. Ready to begin Phase 2 implementation.
 

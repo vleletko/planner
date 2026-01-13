@@ -1,6 +1,6 @@
 # Validation Report
 
-**Document:** docs/sprint-artifacts/2-0-epic-2-ux-design.md
+**Document:** _bmad-output/implementation-artifacts/2-0-epic-2-ux-design.md
 **Checklist:** .bmad/bmm/workflows/4-implementation/create-story/checklist.md
 **Date:** 2025-12-14
 
@@ -63,5 +63,5 @@ All recommendations have been implemented. Story is ready for development.
 
 ## Next Steps
 
-1. Review the updated story at `docs/sprint-artifacts/2-0-epic-2-ux-design.md`
+1. Review the updated story at `_bmad-output/implementation-artifacts/2-0-epic-2-ux-design.md`
 2. Run `dev-story` workflow for implementation

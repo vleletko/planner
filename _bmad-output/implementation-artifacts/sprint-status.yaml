@@ -2,7 +2,7 @@
 # project: planner
 # project_key: planner
 # tracking_system: file-system
-# story_location: "{project-root}/docs/stories"
+# story_location: "{project-root}/_bmad-output/implementation-artifacts"
 
 # STATUS DEFINITIONS:
 # ==================
@@ -20,7 +20,7 @@
 #
 # Retrospective Status:
 #   - optional: Can be completed but not required
-#   - completed: Retrospective has been done by *retrospective
+#   - done: Retrospective has been done by *retrospective
 #
 # WORKFLOW NOTES:
 # ===============
@@ -32,7 +32,7 @@ generated: 2025-11-11
 project: planner
 project_key: planner
 tracking_system: file-system
-story_location: "{project-root}/docs/stories"
+story_location: "{project-root}/_bmad-output/implementation-artifacts"
 
 development_status:
   epic-1: contexted
@@ -43,18 +43,18 @@ development_status:
   1-5-deployment-pipeline-and-environment-configuration: done
   1-6a-unit-testing-infrastructure: done
   1-6b-e2e-testing-infrastructure: done
-  epic-1-retrospective: docs/sprint-artifacts/epic-1-retrospective-2025-12-07.md
+  epic-1-retrospective: done
 
   epic-1b: contexted
   1b-1-observability-research-decision: done
   1b-2-opentelemetry-sdk-setup: done
   1b-3-structured-logging-via-otel: done
   1b-4-error-handling-spans: done
-  epic-1b-retrospective: docs/sprint-artifacts/epic-1b-retrospective-2025-12-12.md
+  epic-1b-retrospective: done
 
   epic-2: in-progress
   2-0-epic-2-ux-design: done
-  2-1-project-creation-and-basic-crud: backlog
+  2-1-project-creation-and-basic-crud: done
   2-2-project-access-control-and-permissions: backlog
   2-3-user-invitation-system: backlog
   2-4-ownership-transfer: backlog
@@ -128,3 +128,7 @@ development_status:
   10-4-configuration-validation-and-health-check: backlog
   10-5-configuration-templates-library: backlog
   epic-10-retrospective: optional
+
+retrospective_artifacts:
+  epic-1: _bmad-output/implementation-artifacts/epic-1-retrospective-2025-12-07.md
+  epic-1b: _bmad-output/implementation-artifacts/epic-1b-retrospective-2025-12-12.md

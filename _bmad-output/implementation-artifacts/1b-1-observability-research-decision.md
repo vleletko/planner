@@ -43,7 +43,7 @@ So that we make an informed decision on libraries, exporters, and backends befor
    - Recommend architecture for single-app Dokploy deployment
 
 7. **Deliverables**
-   - Research document: `docs/sprint-artifacts/1b-1-observability-research.md`
+   - Research document: `_bmad-output/implementation-artifacts/1b-1-observability-research.md`
    - Follow template structure in Dev Notes below
    - User approval before Story 1B.2
 
@@ -86,7 +86,7 @@ So that we make an informed decision on libraries, exporters, and backends befor
   - [x] 5.4: Recommend: defer backend or minimal setup? Recommend collector pattern.
 
 - [x] Task 6: Create Research Document (AC: #7)
-  - [x] 6.1: Create `docs/sprint-artifacts/1b-1-observability-research.md` using template
+  - [x] 6.1: Create `_bmad-output/implementation-artifacts/1b-1-observability-research.md` using template
   - [x] 6.2: Compile findings with sources/links
   - [x] 6.3: Include code examples for recommended approach
   - [x] 6.4: Add decision summary table
@@ -240,7 +240,7 @@ Use this structure for `1b-1-observability-research.md`:
 ### Project Structure
 
 ```
-docs/sprint-artifacts/
+_bmad-output/implementation-artifacts/
 ├── 1b-1-observability-research-decision.md  # This story
 └── 1b-1-observability-research.md           # Research output (Task 6)
 
@@ -257,7 +257,7 @@ packages/api/src/lib/
 
 - [Source: docs/architecture.md#ADR-007] - Pino logging decision
 - [Source: docs/epics/epic-1b-observability.md] - Epic overview
-- [Source: docs/sprint-artifacts/epic-1-retrospective-2025-12-07.md] - AI-3 research-first workflow
+- [Source: _bmad-output/implementation-artifacts/epic-1-retrospective-2025-12-07.md] - AI-3 research-first workflow
 - [OpenTelemetry JS](https://opentelemetry.io/docs/languages/js/)
 - [Next.js Instrumentation](https://nextjs.org/docs/app/building-your-application/optimizing/instrumentation)
 - [@vercel/otel](https://www.npmjs.com/package/@vercel/otel)
@@ -268,8 +268,8 @@ packages/api/src/lib/
 
 ### Context Reference
 
-- Story file: `docs/sprint-artifacts/1b-1-observability-research-decision.md`
-- Research output: `docs/sprint-artifacts/1b-1-observability-research.md`
+- Story file: `_bmad-output/implementation-artifacts/1b-1-observability-research-decision.md`
+- Research output: `_bmad-output/implementation-artifacts/1b-1-observability-research.md`
 
 ### Agent Model Used
 
@@ -292,7 +292,7 @@ Claude Opus 4.5 (claude-opus-4-5-20251101)
 
 ### File List
 
-- `docs/sprint-artifacts/1b-1-observability-research.md` (created)
+- `_bmad-output/implementation-artifacts/1b-1-observability-research.md` (created)
 
 ## Discoveries
 

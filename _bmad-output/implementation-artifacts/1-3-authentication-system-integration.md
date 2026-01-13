@@ -18,7 +18,7 @@ This story integrates the authentication system into the Planner application, bu
 - Better-Auth integration leverages existing schema from Story 1.2
 
 **Technical Requirements:**
-From [docs/sprint-artifacts/tech-spec-epic-1.md#Story-1.3]:
+From [_bmad-output/implementation-artifacts/tech-spec-epic-1.md#Story-1.3]:
 - User sign-up with email/password validation (minimum 8 characters)
 - User login with credential validation and session creation
 - Session persistence across browser refresh
@@ -86,7 +86,7 @@ From Story 1.2 validation:
 - DO NOT modify auth schema tables (users, sessions, accounts) - they are managed by Better Auth
 - VALIDATE environment variables (AUTH_SECRET, AUTH_URL) before runtime
 
-[Source: docs/sprint-artifacts/1-2-database-setup-and-schema-foundation.md#Dev-Agent-Record]
+[Source: _bmad-output/implementation-artifacts/1-2-database-setup-and-schema-foundation.md#Dev-Agent-Record]
 
 ### Expected File Paths
 
@@ -184,7 +184,7 @@ apps/web/
    - And the submit button is disabled until valid
    - And error messages are clear and actionable
 
-[Source: docs/sprint-artifacts/tech-spec-epic-1.md#AC3]
+[Source: _bmad-output/implementation-artifacts/tech-spec-epic-1.md#AC3]
 
 ## Tasks / Subtasks
 
@@ -258,7 +258,7 @@ apps/web/
 - Passwords stored in `accounts` table, not `users` table
 - Account records automatically created with `providerId: "credential"`
 
-[Source: docs/sprint-artifacts/1-2-database-setup-and-schema-foundation.md#Better-Auth-Configuration]
+[Source: _bmad-output/implementation-artifacts/1-2-database-setup-and-schema-foundation.md#Better-Auth-Configuration]
 
 **ORPC Context Integration:**
 - Context creation in `packages/api/src/context.ts`
@@ -284,7 +284,7 @@ apps/web/
 ❌ unverified@example.com / UnverifiedPassword123! (not verified)
 ```
 
-[Source: docs/sprint-artifacts/1-2-database-setup-and-schema-foundation.md#Database-Scripts-and-Commands]
+[Source: _bmad-output/implementation-artifacts/1-2-database-setup-and-schema-foundation.md#Database-Scripts-and-Commands]
 
 **Testing Tools:**
 - Browser: Chrome DevTools for cookie inspection
@@ -362,9 +362,9 @@ apps/web/
 ### References
 
 **Epic and Technical Specifications:**
-- [Source: docs/sprint-artifacts/tech-spec-epic-1.md#Story-1.3]
-- [Source: docs/sprint-artifacts/tech-spec-epic-1.md#AC3]
-- [Source: docs/sprint-artifacts/tech-spec-epic-1.md#Authentication-Flow]
+- [Source: _bmad-output/implementation-artifacts/tech-spec-epic-1.md#Story-1.3]
+- [Source: _bmad-output/implementation-artifacts/tech-spec-epic-1.md#AC3]
+- [Source: _bmad-output/implementation-artifacts/tech-spec-epic-1.md#Authentication-Flow]
 
 **Architecture Documentation:**
 - [Source: docs/architecture.md#Authentication-Flow]
@@ -372,9 +372,9 @@ apps/web/
 - [Source: docs/architecture.md#Integration-Points > Authentication-Flow]
 
 **Previous Story Context:**
-- [Source: docs/sprint-artifacts/1-2-database-setup-and-schema-foundation.md#Better-Auth-Configuration]
-- [Source: docs/sprint-artifacts/1-2-database-setup-and-schema-foundation.md#Database-Scripts-and-Commands]
-- [Source: docs/sprint-artifacts/1-2-database-setup-and-schema-foundation.md#Completion-Notes-List]
+- [Source: _bmad-output/implementation-artifacts/1-2-database-setup-and-schema-foundation.md#Better-Auth-Configuration]
+- [Source: _bmad-output/implementation-artifacts/1-2-database-setup-and-schema-foundation.md#Database-Scripts-and-Commands]
+- [Source: _bmad-output/implementation-artifacts/1-2-database-setup-and-schema-foundation.md#Completion-Notes-List]
 
 **Code Files:**
 - [Source: packages/auth/src/index.ts:1-19]
@@ -394,7 +394,7 @@ apps/web/
 
 ### Context Reference
 
-- `docs/sprint-artifacts/1-3-authentication-system-integration.context.xml` (generated 2025-11-13)
+- `_bmad-output/implementation-artifacts/1-3-authentication-system-integration.context.xml` (generated 2025-11-13)
 
 ### Agent Model Used
 
@@ -701,7 +701,7 @@ This review validates the authentication system integration for Story 1.3. The i
 - Better-Auth Docs: https://better-auth.com
 - Architecture: docs/architecture.md#Authentication-Flow
 - Testing Guide: docs/authentication-testing-guide.md
-- Tech Spec: docs/sprint-artifacts/tech-spec-epic-1.md#Story-1.3
+- Tech Spec: _bmad-output/implementation-artifacts/tech-spec-epic-1.md#Story-1.3
 
 ---
 

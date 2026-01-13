@@ -129,7 +129,7 @@ session: {
 - VALIDATE theme transitions are smooth (200ms) and non-jarring
 - TEST responsive layout on both mobile and desktop viewports
 
-[Source: docs/sprint-artifacts/1-3-authentication-system-integration.md#Dev-Agent-Record]
+[Source: _bmad-output/implementation-artifacts/1-3-authentication-system-integration.md#Dev-Agent-Record]
 
 ### Expected File Paths
 
@@ -628,7 +628,7 @@ Manual browser testing to validate all acceptance criteria
 - [Source: docs/epics/epic-1-foundation-project-infrastructure.md#Story-1.4]
 - [Source: docs/epics/epic-1-foundation-project-infrastructure.md#Story-1.4 > UX Design Section]
 - [Source: docs/epics/epic-1-foundation-project-infrastructure.md#Story-1.4 > Design Token References]
-- [Source: docs/sprint-artifacts/tech-spec-epic-1.md#Story-1.4] (if exists)
+- [Source: _bmad-output/implementation-artifacts/tech-spec-epic-1.md#Story-1.4] (if exists)
 
 **UX Design Documentation:**
 - [Source: docs/ux-design-specification.md] (check if exists - primary UX design reference)
@@ -639,8 +639,8 @@ Manual browser testing to validate all acceptance criteria
 - [Source: docs/architecture.md#Code Quality Standards]
 
 **Previous Story Context:**
-- [Source: docs/sprint-artifacts/1-3-authentication-system-integration.md#Better-Auth-Configuration]
-- [Source: docs/sprint-artifacts/1-3-authentication-system-integration.md#Completion-Notes-List]
+- [Source: _bmad-output/implementation-artifacts/1-3-authentication-system-integration.md#Better-Auth-Configuration]
+- [Source: _bmad-output/implementation-artifacts/1-3-authentication-system-integration.md#Completion-Notes-List]
 
 **Code Files:**
 - [Source: apps/web/src/components/header.tsx]
@@ -659,7 +659,7 @@ Manual browser testing to validate all acceptance criteria
 
 ### Context Reference
 
-- `docs/sprint-artifacts/1-4-basic-ui-shell-and-theme-system.context.xml`
+- `_bmad-output/implementation-artifacts/1-4-basic-ui-shell-and-theme-system.context.xml`
 
 ### Agent Model Used
 

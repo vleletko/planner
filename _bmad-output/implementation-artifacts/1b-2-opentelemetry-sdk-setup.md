@@ -350,8 +350,8 @@ process.on("SIGTERM", () => {
 
 ### References
 
-- [Source: docs/sprint-artifacts/1b-1-observability-research.md] - Research document (approved)
-- [Source: docs/sprint-artifacts/1b-1-observability-research-decision.md] - Research story (done)
+- [Source: _bmad-output/implementation-artifacts/1b-1-observability-research.md] - Research document (approved)
+- [Source: _bmad-output/implementation-artifacts/1b-1-observability-research-decision.md] - Research story (done)
 - [Source: docs/epics/epic-1b-observability.md#Story 1B.2] - Epic requirements
 - [OpenTelemetry JS SDK](https://opentelemetry.io/docs/languages/js/)
 - [Next.js Instrumentation](https://nextjs.org/docs/app/guides/instrumentation)

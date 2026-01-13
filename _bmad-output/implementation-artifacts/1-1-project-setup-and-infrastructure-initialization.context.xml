@@ -6,7 +6,7 @@
     <status>drafted</status>
     <generatedAt>2025-11-11</generatedAt>
     <generator>BMAD Story Context Workflow</generator>
-    <sourceStoryPath>docs/sprint-artifacts/1-1-project-setup-and-infrastructure-initialization.md</sourceStoryPath>
+    <sourceStoryPath>_bmad-output/implementation-artifacts/1-1-project-setup-and-infrastructure-initialization.md</sourceStoryPath>
   </metadata>
 
   <story>
@@ -52,7 +52,7 @@
         <snippet>Establish core technical foundation with Next.js 16, React 19, TypeScript 5 in strict mode. Monorepo structure using Turborepo 2.5.4 and Bun 1.3.1 with four packages: web (Next.js), api (ORPC), db (Drizzle), auth (Better-Auth).</snippet>
       </doc>
       <doc>
-        <path>docs/sprint-artifacts/tech-spec-epic-1.md</path>
+        <path>_bmad-output/implementation-artifacts/tech-spec-epic-1.md</path>
         <title>Epic Technical Specification: Foundation &amp; Project Infrastructure</title>
         <section>Detailed Design &gt; Services and Modules</section>
         <snippet>Monorepo architecture with Next.js 16 frontend, ORPC 1.10 type-safe API layer, Better-Auth 1.3.28 session management, Drizzle ORM 0.44.2 database layer. Ultracite 6.3.2 + Biome 2.3.4 for code quality enforcement.</snippet>

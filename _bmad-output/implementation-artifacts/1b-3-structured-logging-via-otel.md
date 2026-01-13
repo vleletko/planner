@@ -197,15 +197,15 @@ packages/api/
 
 ### References
 
-- [Source: docs/sprint-artifacts/1b-1-observability-research.md#Logging Strategy] - Pino + OTEL decision
-- [Source: docs/sprint-artifacts/1b-2-opentelemetry-sdk-setup.md] - Logger package setup
+- [Source: _bmad-output/implementation-artifacts/1b-1-observability-research.md#Logging Strategy] - Pino + OTEL decision
+- [Source: _bmad-output/implementation-artifacts/1b-2-opentelemetry-sdk-setup.md] - Logger package setup
 - [Source: docs/epics/epic-1b-observability.md#Story 1B.3] - Epic requirements
 - [OpenTelemetry Pino Instrumentation](https://github.com/open-telemetry/opentelemetry-js-contrib/tree/main/plugins/node/opentelemetry-instrumentation-pino)
 
 ## Dev Agent Record
 
 ### Context Reference
-- Story file: docs/sprint-artifacts/1b-3-structured-logging-via-otel.md
+- Story file: _bmad-output/implementation-artifacts/1b-3-structured-logging-via-otel.md
 - Previous story: 1b-2-opentelemetry-sdk-setup (logger package, OTEL instrumentation)
 
 ### Agent Model Used

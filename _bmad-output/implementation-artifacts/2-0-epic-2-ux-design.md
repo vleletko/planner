@@ -491,8 +491,8 @@ Study these files before implementing - they contain proven patterns:
 - `apps/web/src/components/projects/delete-project-dialog.tsx`
 - `apps/web/src/components/projects/delete-project-dialog.stories.tsx`
 - `apps/web/src/components/projects/delete-project-dialog.interactions.stories.tsx`
-- `docs/sprint-artifacts/epic-2-design-handoff.md`
-- `docs/sprint-artifacts/validation-report-2-0-epic-2-ux-design-2025-12-14.md`
+- `_bmad-output/implementation-artifacts/epic-2-design-handoff.md`
+- `_bmad-output/implementation-artifacts/validation-report-2-0-epic-2-ux-design-2025-12-14.md`
 
 **UI Components Modified (responsive improvements):**
 - `apps/web/src/components/ui/card.tsx` - responsive gap/padding

@@ -193,14 +193,14 @@ Already installed:
 ### References
 
 - [Source: docs/epics/epic-1b-observability.md#Story 1B.4] - Epic requirements
-- [Source: docs/sprint-artifacts/1b-3-structured-logging-via-otel.md] - Previous story context
-- [Source: docs/sprint-artifacts/1b-1-observability-research.md] - OTEL patterns
+- [Source: _bmad-output/implementation-artifacts/1b-3-structured-logging-via-otel.md] - Previous story context
+- [Source: _bmad-output/implementation-artifacts/1b-1-observability-research.md] - OTEL patterns
 - [OpenTelemetry Span API](https://opentelemetry.io/docs/languages/js/instrumentation/#recording-exceptions)
 
 ## Dev Agent Record
 
 ### Context Reference
-- Story file: docs/sprint-artifacts/1b-4-error-handling-spans.md
+- Story file: _bmad-output/implementation-artifacts/1b-4-error-handling-spans.md
 - Previous story: 1b-3-structured-logging-via-otel (logger package, error middleware)
 
 ### Agent Model Used
