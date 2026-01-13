@@ -29,8 +29,9 @@ export const db = drizzle(pool);
 // Export pool for advanced use cases (e.g., transactions)
 export { pool };
 
-// Export sql template tag for raw SQL queries
-export { sql } from "drizzle-orm";
+// Export sql template tag and operators for queries
+export { and, count, eq, inArray, sql } from "drizzle-orm";
 
 // Export schema tables for type inference
 export { account, session, user, verification } from "./schema/auth";
+export { projectMembers, projects } from "./schema/projects";

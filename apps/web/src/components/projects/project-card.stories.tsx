@@ -27,12 +27,14 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   args: {
+    projectKey: mockProject.key,
     ...mockProject,
   },
 };
 
 export const WithoutDescription: Story = {
   args: {
+    projectKey: mockProject.key,
     ...mockProject,
     description: undefined,
   },
@@ -40,6 +42,7 @@ export const WithoutDescription: Story = {
 
 export const LongTitle: Story = {
   args: {
+    projectKey: mockProject.key,
     ...mockProject,
     name: "Enterprise Resource Planning System Implementation Project",
   },
@@ -47,6 +50,7 @@ export const LongTitle: Story = {
 
 export const LongDescription: Story = {
   args: {
+    projectKey: mockProject.key,
     ...mockProject,
     description:
       "This is a comprehensive project management system designed to help teams track their work items through various workflow stages with validation rules and custom configurations for each transition point.",
@@ -55,18 +59,21 @@ export const LongDescription: Story = {
 
 export const AdminRole: Story = {
   args: {
+    projectKey: mockProjects[1].key,
     ...mockProjects[1],
   },
 };
 
 export const MemberRole: Story = {
   args: {
+    projectKey: mockProjects[2].key,
     ...mockProjects[2],
   },
 };
 
 export const SingleMember: Story = {
   args: {
+    projectKey: mockProject.key,
     ...mockProject,
     memberCount: 1,
   },
@@ -74,6 +81,7 @@ export const SingleMember: Story = {
 
 export const ManyMembers: Story = {
   args: {
+    projectKey: mockProject.key,
     ...mockProject,
     memberCount: 42,
   },
@@ -81,6 +89,7 @@ export const ManyMembers: Story = {
 
 export const NonClickable: Story = {
   args: {
+    projectKey: mockProject.key,
     ...mockProject,
     onClick: undefined,
   },
@@ -88,6 +97,7 @@ export const NonClickable: Story = {
 
 export const Loading: Story = {
   args: {
+    projectKey: mockProject.key,
     ...mockProject,
   },
   render: () => <ProjectCardSkeleton />,
@@ -95,6 +105,7 @@ export const Loading: Story = {
 
 export const Mobile: Story = {
   args: {
+    projectKey: mockProject.key,
     ...mockProject,
   },
   globals: {
@@ -111,6 +122,7 @@ export const Mobile: Story = {
 
 export const Tablet: Story = {
   args: {
+    projectKey: mockProject.key,
     ...mockProject,
   },
   globals: {
@@ -127,6 +139,7 @@ export const Tablet: Story = {
 
 export const Desktop: Story = {
   args: {
+    projectKey: mockProject.key,
     ...mockProject,
   },
   globals: {

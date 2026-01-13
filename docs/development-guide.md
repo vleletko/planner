@@ -170,6 +170,21 @@ export const appRouter = {
 }
 ```
 
+**Using procedures in components:**
+
+```typescript
+// apps/web/src/components/users-list.tsx
+import { orpc } from '@/utils/orpc'
+import { useQuery } from '@tanstack/react-query'
+
+function UsersList() {
+  const { data: users } = useQuery(orpc.getUsers.queryOptions())
+  // TypeScript knows `users` is the return type of getUsers
+}
+```
+
+See `docs/api-contracts.md` for complete client usage patterns.
+
 #### 3. Database Changes (`packages/db`)
 
 **Process:**

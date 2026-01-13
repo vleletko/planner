@@ -1,0 +1,39 @@
+# Workflow Status
+#
+# Tracks progress through BMM methodology phases.
+# Implementation execution is tracked separately via sprint artifacts.
+#
+# Status values:
+# - required / optional / recommended / conditional
+# - {file-path} for completed work
+# - skipped
+
+generated: "2026-01-13"
+project: "planner"
+project_type: "software"
+project_level: 3
+selected_track: "method"
+field_type: "brownfield"
+workflow_path: "method-brownfield.yaml"
+
+workflow_status:
+  # Phase 0: Documentation (Brownfield)
+  document-project: docs/index.md  # agent: analyst
+
+  # Phase 1: Analysis (Optional)
+  brainstorm-project: skipped  # agent: analyst
+  research: skipped  # agent: analyst
+  product-brief: skipped  # agent: analyst
+
+  # Phase 2: Planning
+  prd: docs/PRD.md  # agent: pm
+  create-ux-design: docs/ux-design-specification.md  # agent: ux-designer (if_has_ui)
+
+  # Phase 3: Solutioning
+  create-architecture: docs/architecture.md  # agent: architect
+  create-epics-and-stories: docs/epics/index.md  # agent: pm
+  test-design: _bmad-output/test-design-system.md  # agent: tea
+  implementation-readiness: docs/implementation-readiness-report-2025-11-10.md  # agent: architect
+
+  # Phase 4: Implementation
+  sprint-planning: _bmad-output/implementation-artifacts/sprint-status.yaml  # agent: sm

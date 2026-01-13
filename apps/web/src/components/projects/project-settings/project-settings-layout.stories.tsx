@@ -31,6 +31,7 @@ const meta = {
           initialDescription="Track all marketing initiatives and their performance metrics for Q1 2025."
           initialName="Marketing Campaign Q1"
           onSave={fn()}
+          projectKey="MKT"
         />
         <DangerZone
           onDeleteProject={fn()}

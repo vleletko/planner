@@ -8,8 +8,8 @@ if (!process.env.DATABASE_URL) {
 export default defineConfig({
   // Schema lives in @planner/db package
   schema: "../../packages/db/src/schema",
-  // Migrations output to this app
-  out: "./src/migrations",
+  // Migrations live in @planner/db package
+  out: "../../packages/db/src/migrations",
   dialect: "postgresql",
   dbCredentials: {
     url: process.env.DATABASE_URL,

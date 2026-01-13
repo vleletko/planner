@@ -1,3 +1,4 @@
+import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import dotenv from "dotenv";
@@ -58,7 +59,16 @@ async function main() {
     // Step 2: Run migrations
     console.log("\n⏳ Running migrations...");
     const db = drizzle(pool);
-    await migrate(db, { migrationsFolder: join(__dirname, "migrations") });
+
+    const require = createRequire(import.meta.url);
+    const dbPackageJsonPath = require.resolve("@planner/db/package.json");
+    const migrationsFolder = join(
+      dirname(dbPackageJsonPath),
+      "src",
+      "migrations"
+    );
+
+    await migrate(db, { migrationsFolder });
     console.log("✅ Migrations complete");
 
     // Step 3: Run seeding

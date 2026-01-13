@@ -28,6 +28,7 @@ const manyProjects = [
   ...mockProjects,
   {
     id: "project-101",
+    key: "MKTG",
     name: "Marketing Campaign Tracker",
     description:
       "Track all ongoing marketing initiatives and their performance metrics",
@@ -37,6 +38,7 @@ const manyProjects = [
   },
   {
     id: "project-102",
+    key: "QPL",
     name: "Q1 Product Launch",
     description: "Coordinate the launch of new product features for Q1",
     memberCount: 12,
@@ -45,6 +47,7 @@ const manyProjects = [
   },
   {
     id: "project-103",
+    key: "INFRA",
     name: "Infrastructure Migration",
     description: "AWS to GCP migration project",
     memberCount: 4,

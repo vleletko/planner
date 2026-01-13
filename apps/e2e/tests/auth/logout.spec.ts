@@ -28,7 +28,13 @@ test.describe("Logout", () => {
     await expect(authenticatedPage).toHaveURL(POST_LOGOUT_URL_PATTERN);
 
     // Try to access dashboard directly
-    await authenticatedPage.goto("/dashboard");
+    // Use waitUntil: 'commit' to handle immediate redirects (especially in WebKit)
+    // The server may redirect before the page fully loads
+    try {
+      await authenticatedPage.goto("/dashboard", { waitUntil: "commit" });
+    } catch {
+      // Navigation may be interrupted by redirect - this is expected behavior
+    }
 
     // Should be redirected to login
     await loginPage.expectToBeOnLoginPage();

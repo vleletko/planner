@@ -6,7 +6,8 @@ export const IGNORED_ERRORS: RegExp[] = [
   /Failed to load resource.*favicon/, // Common favicon 404
   /Failed to load resource.*401/, // Expected 401 during invalid credential tests
   /Failed to load resource.*UNAUTHORIZED/, // Expected 401 during invalid credential tests
-  // Add others as discovered
+  /Failed to fetch RSC payload.*Falling back to browser navigation/, // Expected during auth redirects in Next.js
+  /__nextjs_original-stack-frames.*access control/, // WebKit-specific cross-origin frame access issue
 ];
 
 /**

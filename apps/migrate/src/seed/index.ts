@@ -1,7 +1,9 @@
 import { randomBytes, randomUUID, scrypt } from "node:crypto";
 import { account, user } from "@planner/db/schema/auth";
+import { projectMembers, projects } from "@planner/db/schema/projects";
 import { eq } from "drizzle-orm";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
+import { type SeedProjectData, TEST_PROJECTS } from "./projects";
 import { type SeedUserData, TEST_USERS } from "./test";
 
 /**
@@ -99,6 +101,111 @@ async function seedUser(
 }
 
 /**
+ * Seed a single project directly into the database
+ */
+async function seedProject(
+  db: NodePgDatabase,
+  projectData: SeedProjectData
+): Promise<boolean> {
+  try {
+    // Check if project already exists by key (idempotent)
+    const existing = await db
+      .select()
+      .from(projects)
+      .where(eq(projects.key, projectData.key))
+      .limit(1);
+
+    if (existing.length > 0) {
+      console.log(`  ⏭️  Project exists: ${projectData.key}`);
+      return false;
+    }
+
+    // Look up owner user by email
+    const ownerResult = await db
+      .select()
+      .from(user)
+      .where(eq(user.email, projectData.ownerEmail))
+      .limit(1);
+
+    if (ownerResult.length === 0) {
+      console.log(
+        `  ⚠️  Owner not found: ${projectData.ownerEmail}, skipping ${projectData.key}`
+      );
+      return false;
+    }
+
+    const owner = ownerResult[0];
+    const projectId = randomUUID();
+
+    // Insert project
+    await db.insert(projects).values({
+      id: projectId,
+      key: projectData.key,
+      name: projectData.name,
+      description: projectData.description,
+      ownerId: owner.id,
+    });
+
+    // Insert project_member with role='owner'
+    await db.insert(projectMembers).values({
+      projectId,
+      userId: owner.id,
+      role: "owner",
+    });
+
+    // Insert additional members if specified
+    if (projectData.members && projectData.members.length > 0) {
+      for (const member of projectData.members) {
+        const memberResult = await db
+          .select()
+          .from(user)
+          .where(eq(user.email, member.email))
+          .limit(1);
+
+        if (memberResult.length === 0) {
+          console.log(`    ⚠️  Member not found: ${member.email}, skipping`);
+          continue;
+        }
+
+        await db.insert(projectMembers).values({
+          projectId,
+          userId: memberResult[0].id,
+          role: member.role,
+        });
+        console.log(`    👤 Added member: ${member.email} (${member.role})`);
+      }
+    }
+
+    console.log(`  ✅ Created: ${projectData.key} - ${projectData.name}`);
+    return true;
+  } catch (error) {
+    console.error(`  ❌ Failed: ${projectData.key}`, error);
+    return false;
+  }
+}
+
+/**
+ * Seed test projects
+ */
+async function seedProjectsProfile(db: NodePgDatabase): Promise<void> {
+  console.log("\n📁 Seeding test projects...");
+
+  let created = 0;
+  let existing = 0;
+
+  for (const projectData of TEST_PROJECTS) {
+    const wasCreated = await seedProject(db, projectData);
+    if (wasCreated) {
+      created += 1;
+    } else {
+      existing += 1;
+    }
+  }
+
+  console.log(`📊 Summary: ${created} created, ${existing} existing/skipped`);
+}
+
+/**
  * Seed test users
  */
 async function seedTestProfile(db: NodePgDatabase): Promise<void> {
@@ -122,6 +229,9 @@ async function seedTestProfile(db: NodePgDatabase): Promise<void> {
   console.log("  • admin@example.com / AdminPassword123!");
   console.log("  • demo@example.com / DemoPassword123!");
   console.log("  • unverified@example.com / UnverifiedPassword123!");
+
+  // Seed projects after users (projects need owners)
+  await seedProjectsProfile(db);
 }
 
 /**

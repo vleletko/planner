@@ -87,6 +87,21 @@ export const AsMember: Story = {
   },
 };
 
+export const ReadOnly: Story = {
+  args: {
+    isReadOnly: true,
+    currentUserRole: "member",
+  },
+};
+
+export const ReadOnlyManyMembers: Story = {
+  args: {
+    isReadOnly: true,
+    currentUserRole: "member",
+    members: manyMembers,
+  },
+};
+
 export const EmptyState: Story = {
   args: {
     members: [],

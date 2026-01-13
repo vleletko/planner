@@ -1,4 +1,5 @@
-import { Settings, Users } from "lucide-react";
+import { ArrowLeft, Settings, Users } from "lucide-react";
+import Link from "next/link";
 import type { ReactNode } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -25,6 +26,16 @@ export function ProjectSettingsLayout({
 }: ProjectSettingsLayoutProps) {
   return (
     <div className="mx-auto w-full max-w-3xl px-4 sm:px-0">
+      {/* Back Link */}
+      <Link
+        aria-label="Back to projects"
+        className="mb-4 inline-flex items-center gap-1.5 text-muted-foreground text-sm transition-colors hover:text-foreground"
+        href="/projects"
+      >
+        <ArrowLeft aria-hidden="true" className="size-4" />
+        <span>Back to projects</span>
+      </Link>
+
       {/* Header */}
       <div className="relative mb-4 pb-4 sm:mb-6 sm:pb-5">
         <div className="flex items-center gap-3 sm:gap-4">

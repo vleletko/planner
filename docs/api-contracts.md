@@ -21,7 +21,14 @@ Type-safe RPC via **ORPC** - procedures defined in `packages/api/src/routers/ind
 **Protected (requires auth):**
 - `privateData` - Returns user data
 
-See router file for complete procedure definitions.
+**Projects Router** (`packages/api/src/routers/projects.ts`):
+- `projects.list` - List user's projects with member counts
+- `projects.get` - Get single project by ID (with membership check)
+- `projects.create` - Create new project (validates key/name uniqueness)
+- `projects.update` - Update project (owner/admin only, key immutable)
+- `projects.checkKeyAvailable` - Check if project key is available
+
+See router files for complete procedure definitions.
 
 ---
 
@@ -111,16 +118,38 @@ Types flow automatically to the client.
 
 **Setup:** `apps/web/src/utils/orpc.ts`
 
+The project uses `@orpc/tanstack-query` for seamless TanStack Query integration with automatic query key management.
+
 **In components:**
 ```typescript
-import { client } from '@/utils/orpc'
+import { orpc } from '@/utils/orpc'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 
-// Direct call
-const result = await client.myProcedure({ id: "123" })
+// Queries - auto-generated queryKey
+const { data } = useQuery(orpc.projects.list.queryOptions())
 
-// With TanStack Query
+// Queries with input
+const { data } = useQuery(
+  orpc.projects.get.queryOptions({ input: { projectId } })
+)
+
+// Mutations
+const queryClient = useQueryClient()
+const mutation = useMutation({
+  mutationFn: (input) => orpc.projects.create.call(input),
+  onSuccess: () => {
+    queryClient.invalidateQueries({ queryKey: ["projects"] })
+  },
+})
+```
+
+**When to use raw TanStack Query:**
+For advanced scenarios (debounced search, custom caching), use raw queries:
+```typescript
 const { data } = useQuery({
-  queryKey: ['myProcedure', id],
-  queryFn: () => client.myProcedure({ id }),
+  queryKey: ['custom-search', debouncedQuery],
+  queryFn: () => onSearch?.(debouncedQuery),
+  staleTime: 30_000,
+  enabled: debouncedQuery.length > 0,
 })
 ```

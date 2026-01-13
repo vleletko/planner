@@ -5,6 +5,7 @@ import { ProjectCard, ProjectCardSkeleton } from "./project-card";
 
 export type Project = {
   id: string;
+  key: string;
   name: string;
   description?: string;
   memberCount: number;
@@ -45,7 +46,12 @@ export function ProjectsList({
           }}
         >
           <ProjectCard
-            {...project}
+            createdAt={project.createdAt}
+            description={project.description}
+            memberCount={project.memberCount}
+            name={project.name}
+            projectKey={project.key}
+            role={project.role}
             {...(onProjectClick
               ? { onClick: () => onProjectClick(project.id) }
               : {})}

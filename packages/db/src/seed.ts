@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import dotenv from "dotenv";
@@ -5,6 +6,7 @@ import { eq } from "drizzle-orm";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
+import { projectMembers, projects } from "./schema/projects";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -161,6 +163,126 @@ async function seedAuthUsers(db: NodePgDatabase) {
 }
 
 /**
+ * Project data interface for seeding
+ */
+type SeedProjectData = {
+  key: string;
+  name: string;
+  description?: string;
+  ownerEmail: string;
+};
+
+/**
+ * Test projects for seeding
+ * Sample projects for testing project management features
+ */
+const TEST_PROJECTS: SeedProjectData[] = [
+  {
+    key: "MKT",
+    name: "Marketing Campaign Q1",
+    description: "Planning and execution for Q1 marketing initiatives",
+    ownerEmail: "test@example.com",
+  },
+  {
+    key: "PROD",
+    name: "Product Launch",
+    description: "New product launch coordination",
+    ownerEmail: "test@example.com",
+  },
+  {
+    key: "DEMO",
+    name: "Demo Project",
+    ownerEmail: "demo@example.com",
+  },
+];
+
+/**
+ * Seed a single project directly into the database
+ */
+async function seedProject(
+  db: NodePgDatabase,
+  projectData: SeedProjectData
+): Promise<boolean> {
+  const { user } = await import("@planner/db/schema/auth");
+
+  try {
+    // Check if project already exists by key (idempotent)
+    const existing = await db
+      .select()
+      .from(projects)
+      .where(eq(projects.key, projectData.key))
+      .limit(1);
+
+    if (existing.length > 0) {
+      console.log(`  ⏭️  Project exists: ${projectData.key}`);
+      return false;
+    }
+
+    // Look up owner user by email
+    const ownerResult = await db
+      .select()
+      .from(user)
+      .where(eq(user.email, projectData.ownerEmail))
+      .limit(1);
+
+    if (ownerResult.length === 0) {
+      console.log(
+        `  ⚠️  Owner not found: ${projectData.ownerEmail}, skipping ${projectData.key}`
+      );
+      return false;
+    }
+
+    const owner = ownerResult[0];
+    const projectId = randomUUID();
+
+    // Insert project
+    await db.insert(projects).values({
+      id: projectId,
+      key: projectData.key,
+      name: projectData.name,
+      description: projectData.description,
+      ownerId: owner.id,
+    });
+
+    // Insert project_member with role='owner'
+    await db.insert(projectMembers).values({
+      projectId,
+      userId: owner.id,
+      role: "owner",
+    });
+
+    console.log(`  ✅ Created: ${projectData.key} - ${projectData.name}`);
+    return true;
+  } catch (error) {
+    console.error(`  ❌ Failed: ${projectData.key}`, error);
+    return false;
+  }
+}
+
+/**
+ * Seed test projects
+ */
+async function seedProjects(db: NodePgDatabase): Promise<void> {
+  console.log("\n📁 Seeding test projects...");
+
+  let created = 0;
+  let existing = 0;
+
+  for (const projectData of TEST_PROJECTS) {
+    const wasCreated = await seedProject(db, projectData);
+    if (wasCreated) {
+      created += 1;
+    } else {
+      existing += 1;
+    }
+  }
+
+  console.log(
+    `📊 Projects summary: ${created} created, ${existing} existing/skipped`
+  );
+}
+
+/**
  * Main seed function
  * Orchestrates all seeding operations
  */
@@ -178,6 +300,9 @@ async function seed() {
     // Seed authentication users (idempotent)
     await seedAuthUsers(db);
 
+    // Seed projects (after users, since projects need owners)
+    await seedProjects(db);
+
     console.log("\n✅ All seeding completed successfully");
     console.log("\n📝 Test credentials (verified):");
     console.log("  • test@example.com / TestPassword123!");
@@ -185,6 +310,10 @@ async function seed() {
     console.log("  • demo@example.com / DemoPassword123!");
     console.log("\n📝 Test credentials (unverified):");
     console.log("  • unverified@example.com / UnverifiedPassword123!");
+    console.log("\n📁 Test projects:");
+    console.log("  • MKT - Marketing Campaign Q1 (test@example.com)");
+    console.log("  • PROD - Product Launch (test@example.com)");
+    console.log("  • DEMO - Demo Project (demo@example.com)");
   } catch (error) {
     console.error("\n❌ Seeding failed:", error);
     process.exit(1);

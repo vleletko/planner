@@ -1,6 +1,7 @@
 import { auth } from "@planner/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { ProjectsContent } from "./projects-content";
 
 export default async function ProjectsPage() {
   const session = await auth.api.getSession({
@@ -12,9 +13,8 @@ export default async function ProjectsPage() {
   }
 
   return (
-    <div>
-      <h1>Projects</h1>
-      <p>Projects page - Coming soon</p>
+    <div className="container mx-auto px-4 py-8">
+      <ProjectsContent />
     </div>
   );
 }

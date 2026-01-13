@@ -32,6 +32,7 @@ export type Member = {
 export type MembersTabProps = {
   members: Member[];
   currentUserRole: ProjectRole;
+  isReadOnly?: boolean;
   onInviteMember?: () => void;
   onRemoveMember?: (memberId: string) => void;
   onTransferOwnership?: (memberId: string) => void;
@@ -241,14 +242,16 @@ function MemberActions({
 export function MembersTab({
   members,
   currentUserRole,
+  isReadOnly = false,
   onInviteMember,
   onRemoveMember,
   onTransferOwnership,
   onChangeRole,
 }: MembersTabProps) {
+  // In read-only mode, disable all management actions
   const canManageMembers =
-    currentUserRole === "owner" || currentUserRole === "admin";
-  const isOwner = currentUserRole === "owner";
+    !isReadOnly && (currentUserRole === "owner" || currentUserRole === "admin");
+  const isOwner = !isReadOnly && currentUserRole === "owner";
 
   return (
     <div className="space-y-6">

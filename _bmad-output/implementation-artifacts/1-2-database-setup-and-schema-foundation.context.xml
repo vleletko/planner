@@ -1,0 +1,274 @@
+<story-context id=".bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>1</epicId>
+    <storyId>2</storyId>
+    <title>Database Setup and Schema Foundation</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-12</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>_bmad-output/implementation-artifacts/1-2-database-setup-and-schema-foundation.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>a developer</asA>
+    <iWant>PostgreSQL database connected with Drizzle ORM and migration system</iWant>
+    <soThat>we can store and query application data</soThat>
+    <tasks>- Task 1: Configure Drizzle Kit and verify drizzle.config.ts
+- Task 2: Set up database connection with pooling
+- Task 3: Verify and enhance existing auth schema
+- Task 4: Create migration system
+- Task 5: Create database seed script
+- Task 6: Configure database scripts in package.json
+- Task 7: Set up local PostgreSQL with Docker
+- Task 8: Create .env configuration
+- Task 9: End-to-end validation</tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="AC1">
+      <description>PostgreSQL database connection succeeds</description>
+      <given>the project infrastructure from Story 1.1</given>
+      <when>I start the development environment</when>
+      <then>the application connects to PostgreSQL database successfully</then>
+      <and>connection pooling is configured</and>
+    </criterion>
+
+    <criterion id="AC2">
+      <description>Drizzle ORM is fully configured</description>
+      <details>
+        - Drizzle ORM has database connection pooling
+        - Type-safe query builder is available
+        - Migration scripts exist in /packages/db/src/migrations folder
+        - Schema files are organized by domain in /packages/db/src/schema/
+      </details>
+    </criterion>
+
+    <criterion id="AC3">
+      <description>Initial schema is complete</description>
+      <details>
+        - Users table extends Better-Auth schema (existing in auth.ts)
+        - Created/updated timestamp tracking is implemented
+        - Proper indexes are defined on frequently queried fields
+      </details>
+    </criterion>
+
+    <criterion id="AC4">
+      <description>Migration commands work</description>
+      <details>
+        - I can run pnpm db:migrate to apply migrations
+        - Migration history is tracked in the database
+        - Migrations are idempotent (safe to run multiple times)
+      </details>
+    </criterion>
+
+    <criterion id="AC5">
+      <description>Seed command works</description>
+      <details>
+        - I can run pnpm db:seed to populate development data
+        - Seed data includes test users for development
+        - Seeding is idempotent (safe to run multiple times)
+      </details>
+    </criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <artifact>
+        <path>docs/epics/epic-1-foundation-project-infrastructure.md</path>
+        <title>Epic 1: Story 1.2 Requirements</title>
+        <section>Story 1.2: Database Setup and Schema Foundation</section>
+        <snippet>Drizzle ORM configured with database connection pooling, type-safe query builder, migration scripts in /packages/db/src/migrations folder, schema files organized by domain. Initial schema includes Users table extending Better-Auth schema, created/updated timestamp tracking, proper indexes on frequently queried fields.</snippet>
+      </artifact>
+
+      <artifact>
+        <path>docs/architecture.md</path>
+        <title>Architecture - Database Layer</title>
+        <section>Database Layer &amp; Technology Stack</section>
+        <snippet>Database: PostgreSQL (latest stable), ORM: Drizzle 0.44.2, Schema location: packages/db/src/schema/, Migration folder: packages/db/src/migrations/, Drizzle Kit for migration generation. Connection string via environment variables. Better-Auth tables exist in packages/db/src/schema/auth.ts</snippet>
+      </artifact>
+
+      <artifact>
+        <path>docs/architecture.md</path>
+        <title>Architecture - Data Architecture</title>
+        <section>Database Connection Pattern</section>
+        <snippet>Use node-postgres (pg) connection pool for PostgreSQL connections. Connection string loaded from DATABASE_URL environment variable. Pool configuration should set reasonable limits (max connections, idle timeout). Export single database client instance from packages/db/src/index.ts</snippet>
+      </artifact>
+
+      <artifact>
+        <path>docs/architecture.md</path>
+        <title>Architecture - Migration Strategy</title>
+        <section>Migration Strategy</section>
+        <snippet>Migrations version-controlled in packages/db/src/migrations/ folder. Each migration timestamped and immutable once applied. Migration tracking table created by Drizzle in PostgreSQL. Use db:generate to create new migrations, db:migrate to apply pending migrations, db:push for rapid prototyping</snippet>
+      </artifact>
+
+      <artifact>
+        <path>.claude/CLAUDE.md</path>
+        <title>Ultracite Code Standards</title>
+        <section>Type Safety &amp; Modern JavaScript</section>
+        <snippet>Use explicit types for function parameters and return values. Prefer const over let, never var. Use template literals for strings. Proper error handling with try-catch blocks. All code must pass bun run check with 0 errors</snippet>
+      </artifact>
+    </docs>
+    <code>
+      <artifact>
+        <path>packages/db/src/index.ts</path>
+        <kind>database client</kind>
+        <symbol>db</symbol>
+        <lines>1-3</lines>
+        <reason>Current database client export - needs enhancement with connection pooling configuration</reason>
+      </artifact>
+
+      <artifact>
+        <path>packages/db/src/schema/auth.ts</path>
+        <kind>schema</kind>
+        <symbol>user, session, account, verification</symbol>
+        <lines>1-52</lines>
+        <reason>Existing Better-Auth schema tables - DO NOT OVERWRITE. Verify timestamp fields exist (createdAt, updatedAt already present on user table)</reason>
+      </artifact>
+
+      <artifact>
+        <path>packages/db/drizzle.config.ts</path>
+        <kind>configuration</kind>
+        <symbol>defineConfig</symbol>
+        <lines>1-15</lines>
+        <reason>Existing Drizzle Kit configuration - needs verification that migration output path is correct (currently src/migrations, should be ./drizzle per architecture)</reason>
+      </artifact>
+
+      <artifact>
+        <path>packages/db/package.json</path>
+        <kind>package configuration</kind>
+        <symbol>scripts</symbol>
+        <lines>14-23</lines>
+        <reason>Database scripts already defined: db:push, db:studio, db:generate, db:migrate, db:start, db:stop - verify these work end-to-end</reason>
+      </artifact>
+
+      <artifact>
+        <path>apps/web/.env.example</path>
+        <kind>environment template</kind>
+        <symbol>DATABASE_URL</symbol>
+        <lines>1-9</lines>
+        <reason>Environment variable template exists with DATABASE_URL=postgresql://postgres:postgres@localhost:5432/planner - use this for local development</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <node>
+        <package name="drizzle-orm" version="^0.44.2" />
+        <package name="drizzle-kit" version="^0.31.2" devDependency="true" />
+        <package name="pg" version="^8.14.1" purpose="PostgreSQL client with connection pooling" />
+        <package name="@types/pg" version="^8.11.11" devDependency="true" />
+        <package name="dotenv" version="catalog:" purpose="Environment variable loading" />
+        <package name="zod" version="catalog:" purpose="Schema validation" />
+        <package name="typescript" version="^5" peerDependency="true" />
+      </node>
+
+      <system>
+        <requirement name="PostgreSQL" version="16 or latest stable" purpose="Database server" />
+        <requirement name="Docker" version="latest" purpose="Running PostgreSQL container" />
+        <requirement name="Bun" version="1.3.1+" purpose="Package manager and runtime" />
+      </system>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint type="architecture">
+      DO NOT modify Better-Auth schema tables in packages/db/src/schema/auth.ts - they are managed by Better-Auth
+    </constraint>
+
+    <constraint type="architecture">
+      Migration folder is packages/db/src/migrations (configured in drizzle.config.ts) - this is the current working configuration
+    </constraint>
+
+    <constraint type="architecture">
+      Export single database client instance from packages/db/src/index.ts - all API routers import from @planner/db
+    </constraint>
+
+    <constraint type="architecture">
+      Use node-postgres (pg) connection pool with reasonable limits: max 10-20 connections, 30s idle timeout, 10s connection timeout
+    </constraint>
+
+    <constraint type="development">
+      All code must pass bun run check with 0 errors (Ultracite/Biome linting)
+    </constraint>
+
+    <constraint type="development">
+      TypeScript strict mode enforced - no any types, proper null/undefined handling with optional chaining
+    </constraint>
+
+    <constraint type="development">
+      Never commit .env files - ensure in .gitignore. Always provide .env.example templates
+    </constraint>
+
+    <constraint type="testing">
+      Migrations must be idempotent (safe to run multiple times)
+    </constraint>
+
+    <constraint type="testing">
+      Seed script must be idempotent (check if data exists before inserting)
+    </constraint>
+  </constraints>
+  <interfaces>
+    <interface>
+      <name>Database Client Export</name>
+      <kind>drizzle client instance</kind>
+      <signature>export const db = drizzle(connectionString, options)</signature>
+      <path>packages/db/src/index.ts</path>
+    </interface>
+
+    <interface>
+      <name>User Table Schema</name>
+      <kind>drizzle table</kind>
+      <signature>pgTable("user", { id, name, email, emailVerified, image, createdAt, updatedAt })</signature>
+      <path>packages/db/src/schema/auth.ts</path>
+    </interface>
+
+    <interface>
+      <name>Drizzle Kit Configuration</name>
+      <kind>configuration export</kind>
+      <signature>defineConfig({ schema, out, dialect, dbCredentials })</signature>
+      <path>packages/db/drizzle.config.ts</path>
+    </interface>
+  </interfaces>
+  <tests>
+    <standards>
+      Story 1.6 will establish comprehensive testing infrastructure (Bun test runner, Playwright E2E). For Story 1.2, validation is manual via running commands. Database testing uses end-to-end validation by executing db:migrate, db:seed, db:studio commands and verifying results. TypeScript strict mode provides compile-time validation. Bun run check must pass with 0 errors.
+    </standards>
+
+    <locations>
+      - packages/db/src/*.test.ts (unit tests, to be added in Story 1.6)
+      - Manual validation via command execution (Story 1.2 approach)
+    </locations>
+
+    <ideas>
+      <test criterion="AC1">
+        - Start PostgreSQL with bun run db:start (runs docker compose up -d)
+        - Verify connection succeeds without errors
+        - Check connection pool is configured (review db client code)
+        - Stop with bun run db:stop when needed
+      </test>
+
+      <test criterion="AC2">
+        - Verify drizzle.config.ts loads DATABASE_URL correctly
+        - Test bun run db:generate creates migration files in src/migrations
+        - Verify schema exports are typed correctly (TypeScript compilation)
+      </test>
+
+      <test criterion="AC3">
+        - Review auth.ts schema - verify createdAt/updatedAt exist on user table
+        - Check indexes are defined using .index() method where needed
+      </test>
+
+      <test criterion="AC4">
+        - Run bun run db:generate to create initial migration
+        - Run bun run db:migrate to apply migration
+        - Verify migration tracking table exists in PostgreSQL
+        - Re-run bun run db:migrate (should be idempotent, no errors)
+      </test>
+
+      <test criterion="AC5">
+        - Create seed.ts with test users
+        - Run bun run db:seed to populate data
+        - Verify data exists via bun run db:studio or psql
+        - Re-run bun run db:seed (should be idempotent, no duplicate data)
+      </test>
+    </ideas>
+  </tests>
+</story-context>

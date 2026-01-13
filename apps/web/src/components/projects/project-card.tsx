@@ -13,6 +13,7 @@ import type { ProjectRole } from "./mock-data";
 import { formatDate } from "./utils";
 
 export type ProjectCardProps = {
+  projectKey: string;
   name: string;
   description?: string;
   memberCount: number;
@@ -31,6 +32,7 @@ const roleConfig: Record<
 };
 
 export function ProjectCard({
+  projectKey,
   name,
   description,
   memberCount,
@@ -68,9 +70,14 @@ export function ProjectCard({
     >
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between gap-3">
-          <CardTitle className="line-clamp-1 font-semibold text-sm tracking-tight sm:text-base">
-            {name}
-          </CardTitle>
+          <div className="flex min-w-0 flex-col gap-1">
+            <span className="inline-flex w-fit rounded bg-muted px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground uppercase tracking-wider">
+              {projectKey}
+            </span>
+            <CardTitle className="line-clamp-1 font-semibold text-sm tracking-tight sm:text-base">
+              {name}
+            </CardTitle>
+          </div>
           <Badge
             className="shrink-0 font-medium text-[10px] uppercase tracking-wider"
             variant={variant}
