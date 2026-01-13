@@ -4,13 +4,13 @@ import {
   count,
   db,
   eq,
+  inArray,
   projectMembers,
   projects,
   sql,
   user,
 } from "@planner/db";
 import { createLogger } from "@planner/logger";
-import { inArray } from "drizzle-orm";
 import { z } from "zod";
 import { protectedProcedure } from "../index";
 import {

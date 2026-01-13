@@ -30,7 +30,7 @@ export const db = drizzle(pool);
 export { pool };
 
 // Export sql template tag and operators for queries
-export { and, count, eq, sql } from "drizzle-orm";
+export { and, count, eq, inArray, sql } from "drizzle-orm";
 
 // Export schema tables for type inference
 export { account, session, user, verification } from "./schema/auth";
