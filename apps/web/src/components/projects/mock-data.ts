@@ -1,10 +1,13 @@
 // Mock project data for stories
+const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
+
 export const mockProject = {
   id: "project-123",
+  key: "MKT",
   name: "My Project",
   description: "A sample project for testing",
   memberCount: 3,
-  createdAt: new Date("2025-01-15"),
+  createdAt: new Date(Date.now() - SEVEN_DAYS_MS),
   role: "owner" as const,
 };
 
@@ -13,22 +16,26 @@ export const mockProjects = [
   {
     ...mockProject,
     id: "project-456",
+    key: "PROD",
     name: "Second Project",
     role: "admin" as const,
   },
   {
     ...mockProject,
     id: "project-789",
+    key: "DEMO",
     name: "Third Project",
     role: "member" as const,
   },
 ];
 
 // Mock member data for stories
+const TWO_DAYS_MS = 2 * 24 * 60 * 60 * 1000;
+
 export const mockMember = {
   user: { name: "John Doe", email: "john@example.com", avatar: null },
   role: "member" as const,
-  addedAt: new Date("2025-01-20"),
+  addedAt: new Date(Date.now() - TWO_DAYS_MS),
 };
 
 export const mockMembers = [

@@ -19,6 +19,7 @@ const meta = {
     ),
   ],
   args: {
+    projectKey: "MKT",
     initialName: "Marketing Campaign Q1",
     initialDescription:
       "Track all marketing initiatives and their performance metrics for Q1 2025.",
@@ -59,5 +60,19 @@ export const LongDescription: Story = {
 export const Mobile: Story = {
   globals: {
     viewport: { value: "mobile1" },
+  },
+};
+
+export const ReadOnly: Story = {
+  args: {
+    isReadOnly: true,
+  },
+};
+
+export const ReadOnlyWithLongDescription: Story = {
+  args: {
+    isReadOnly: true,
+    initialDescription:
+      "This is a comprehensive marketing campaign tracking system designed to help our team monitor all ongoing marketing initiatives across multiple channels. We track performance metrics, budget allocation, and ROI for each campaign.",
   },
 };

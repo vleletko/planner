@@ -54,7 +54,7 @@ So that we make an informed decision on libraries, exporters, and backends.
    - Dokploy deployment considerations
 
 **Deliverables:**
-- Research document: `docs/sprint-artifacts/1b-1-observability-research.md`
+- Research document: `_bmad-output/implementation-artifacts/1b-1-observability-research.md`
 - Recommendation with rationale
 - User approval before implementation
 
@@ -226,7 +226,7 @@ So that I can debug issues effectively in any environment.
 - [OpenTelemetry JS Documentation](https://opentelemetry.io/docs/languages/js/)
 - [Next.js Instrumentation](https://nextjs.org/docs/app/building-your-application/optimizing/instrumentation)
 - [Vercel OTEL Package](https://www.npmjs.com/package/@vercel/otel)
-- Epic 1 Retrospective: `docs/sprint-artifacts/epic-1-retrospective-2025-12-07.md`
+- Epic 1 Retrospective: `_bmad-output/implementation-artifacts/epic-1-retrospective-2025-12-07.md`
 
 ---
 

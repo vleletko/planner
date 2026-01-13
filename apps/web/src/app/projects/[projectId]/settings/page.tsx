@@ -1,9 +1,15 @@
 import { auth } from "@planner/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { ProjectsContent } from "./projects-content";
+import { ProjectSettingsContent } from "./project-settings-content";
 
-export default async function ProjectsPage() {
+type ProjectSettingsPageProps = {
+  params: Promise<{ projectId: string }>;
+};
+
+export default async function ProjectSettingsPage({
+  params,
+}: ProjectSettingsPageProps) {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
@@ -12,9 +18,11 @@ export default async function ProjectsPage() {
     redirect("/auth/sign-in");
   }
 
+  const { projectId } = await params;
+
   return (
     <div className="container mx-auto px-4 py-8">
-      <ProjectsContent />
+      <ProjectSettingsContent projectId={projectId} />
     </div>
   );
 }

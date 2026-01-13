@@ -4,7 +4,8 @@
   "private": true,
   "type": "module",
   "exports": {
-    "./seed/test": "./src/seed/test.ts"
+    "./seed/test": "./src/seed/test.ts",
+    "./seed/projects": "./src/seed/projects.ts"
   },
   "scripts": {
     "start": "bun run src/index.ts",
