@@ -61,7 +61,7 @@ export const projectsRouter = {
         : [];
 
     const memberCountMap = new Map(
-      memberCounts.map((mc) => [mc.projectId, mc.memberCount])
+      memberCounts.map((mc) => [mc.projectId, Number(mc.memberCount)])
     );
 
     return result.map((p) => ({
@@ -256,7 +256,7 @@ export const projectsRouter = {
           name: project.ownerName,
           email: project.ownerEmail,
         },
-        memberCount: memberCountResult.memberCount,
+        memberCount: Number(memberCountResult?.memberCount ?? 0),
         role: membership[0].role,
       };
     }),
