@@ -1,6 +1,7 @@
 import { TEST_PROJECTS } from "@planner/migrate/seed/projects";
-import { testUser } from "../../src/fixtures/auth.fixture";
+import { demoUser, testUser } from "../../src/fixtures/auth.fixture";
 import { expect, test } from "../../src/fixtures/test.fixture";
+import { LoginPage } from "../../src/poms/login.page";
 import { ProjectSettingsPage } from "../../src/poms/project-settings.page";
 import { ProjectsPage } from "../../src/poms/projects.page";
 
@@ -23,6 +24,8 @@ const SAVE_BUTTON_REGEX = /save/i;
 const PROJECT_NAME_LABEL_REGEX = /project name/i;
 const PROJECT_KEY_LABEL_REGEX = /project key/i;
 const KEY_FORMAT_ERROR_REGEX = /must start with a letter|uppercase letters/i;
+const PROJECT_SETTINGS_URL_ID_REGEX = /\/projects\/([^/]+)\/settings/;
+const ERROR_LOADING_SETTINGS_REGEX = /error loading settings/i;
 
 /**
  * Generate a unique project name that produces a unique auto-generated key.
@@ -169,6 +172,69 @@ test.describe("Project Creation", () => {
 });
 
 test.describe("Project Access", () => {
+  test("non-member cannot access project settings", async ({ browser }) => {
+    // First, get a projectId that test@example.com is NOT a member of.
+    // Use demo user's seeded project to obtain a real, seeded project ID.
+    const demoContext = await browser.newContext();
+    const demoPage = await demoContext.newPage();
+
+    const demoLoginPage = new LoginPage(demoPage);
+    await demoLoginPage.goto();
+    await demoLoginPage.loginAndExpectDashboard(
+      demoUser.email,
+      demoUser.password
+    );
+
+    const demoProjectsPage = new ProjectsPage(demoPage);
+    await demoProjectsPage.goto();
+    await demoProjectsPage.expectToBeOnProjectsPage();
+    await demoProjectsPage.clickProjectByKey("DEMO");
+
+    const demoProjectSettingsPage = new ProjectSettingsPage(demoPage);
+    await demoProjectSettingsPage.expectToBeOnSettingsPage();
+
+    const demoProjectUrl = demoPage.url();
+    const match = demoProjectUrl.match(PROJECT_SETTINGS_URL_ID_REGEX);
+    if (!match?.[1]) {
+      throw new Error(`Could not parse projectId from URL: ${demoProjectUrl}`);
+    }
+    const demoProjectId = match[1];
+
+    await demoContext.close();
+
+    // Now, try to access that project as the test user.
+    // Use a separate context to avoid console error enforcement for expected 403s.
+    const testContext = await browser.newContext();
+    const testPage = await testContext.newPage();
+
+    const testLoginPage = new LoginPage(testPage);
+    await testLoginPage.goto();
+    await testLoginPage.loginAndExpectDashboard(
+      testUser.email,
+      testUser.password
+    );
+
+    await testPage.goto(`/projects/${demoProjectId}/settings`);
+
+    // Wait for the settings error UI to render (dev server may compile on first hit).
+    await expect(
+      testPage.getByRole("heading", { name: ERROR_LOADING_SETTINGS_REGEX })
+    ).toBeVisible({ timeout: 30_000 });
+
+    await expect(
+      testPage.getByText(
+        "You don't have access to this project. Contact project owner.",
+        { exact: true }
+      )
+    ).toBeVisible();
+
+    // Ensure the user has a way out.
+    await expect(
+      testPage.getByRole("button", { name: BACK_TO_PROJECTS_REGEX })
+    ).toBeVisible();
+
+    await testContext.close();
+  });
   test("project card click navigates to settings", async ({
     authenticatedPage,
   }) => {

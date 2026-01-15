@@ -13,6 +13,11 @@ import {
 import { createLogger } from "@planner/logger";
 import { z } from "zod";
 import { protectedProcedure } from "../index";
+import { PROJECT_PERMISSIONS } from "../lib/authz/project";
+import {
+  requireProjectMember,
+  requireProjectRole,
+} from "../lib/authz/project.server";
 import {
   PROJECT_CONSTRAINTS,
   PROJECT_KEY_REGEX,
@@ -196,23 +201,10 @@ export const projectsRouter = {
     .handler(async ({ context, input }) => {
       const userId = context.session.user.id;
 
-      // Check user is member
-      const membership = await db
-        .select({ role: projectMembers.role })
-        .from(projectMembers)
-        .where(
-          and(
-            eq(projectMembers.projectId, input.projectId),
-            eq(projectMembers.userId, userId)
-          )
-        )
-        .limit(1);
-
-      if (membership.length === 0) {
-        throw new ORPCError("FORBIDDEN", {
-          message: "You don't have access to this project",
-        });
-      }
+      const { role } = await requireProjectMember({
+        projectId: input.projectId,
+        userId,
+      });
 
       // Get project with owner info
       const result = await db
@@ -257,7 +249,7 @@ export const projectsRouter = {
           email: project.ownerEmail,
         },
         memberCount: Number(memberCountResult?.memberCount ?? 0),
-        role: membership[0].role,
+        role,
       };
     }),
 
@@ -284,30 +276,13 @@ export const projectsRouter = {
     .handler(async ({ context, input }) => {
       const userId = context.session.user.id;
 
-      // Verify user is owner or admin
-      const membership = await db
-        .select({ role: projectMembers.role })
-        .from(projectMembers)
-        .where(
-          and(
-            eq(projectMembers.projectId, input.projectId),
-            eq(projectMembers.userId, userId)
-          )
-        )
-        .limit(1);
-
-      if (membership.length === 0) {
-        throw new ORPCError("FORBIDDEN", {
-          message: "You don't have access to this project",
-        });
-      }
-
-      const userRole = membership[0].role;
-      if (userRole !== "owner" && userRole !== "admin") {
-        throw new ORPCError("FORBIDDEN", {
-          message: "Only owner or admin can edit project",
-        });
-      }
+      await requireProjectRole({
+        projectId: input.projectId,
+        userId,
+        allowedRoles: ["owner", "admin"],
+        permission: PROJECT_PERMISSIONS.PROJECT_UPDATE,
+        action: "edit project settings",
+      });
 
       // Get project to check existence and get ownerId for name uniqueness
       const project = await db
