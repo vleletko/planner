@@ -56,7 +56,7 @@ development_status:
   2-0-epic-2-ux-design: done
   2-1-project-creation-and-basic-crud: done
   2-2-project-access-control-and-permissions: done
-  2-3-user-invitation-system: backlog
+  2-3-user-invitation-system: review
   2-4-ownership-transfer: backlog
   2-5-project-deletion-with-safety-checks: backlog
   epic-2-retrospective: optional

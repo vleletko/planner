@@ -25,6 +25,41 @@ import {
 
 const log = createLogger("projects-router");
 
+function toIsoString(value: unknown): string {
+  if (value instanceof Date) {
+    return value.toISOString();
+  }
+
+  if (typeof value === "string" || typeof value === "number") {
+    const date = new Date(value);
+    if (!Number.isNaN(date.getTime())) {
+      return date.toISOString();
+    }
+  }
+
+  log.error({ value }, "Invalid date value for joinedAt");
+  throw new Error("Invalid joinedAt value returned from database");
+}
+
+const UNIQUE_PROJECT_MEMBER_CONSTRAINT = "unique_project_member";
+
+function isUniqueViolation(error: unknown, constraint?: string): boolean {
+  if (!error || typeof error !== "object") {
+    return false;
+  }
+
+  const { code, constraint: errorConstraint } = error as {
+    code?: string;
+    constraint?: string;
+  };
+
+  if (code !== "23505") {
+    return false;
+  }
+
+  return constraint ? errorConstraint === constraint : true;
+}
+
 /**
  * Projects router - handles all project CRUD operations
  */
@@ -350,5 +385,289 @@ export const projectsRouter = {
       log.info({ projectId: input.projectId, userId }, "Project updated");
 
       return updated;
+    }),
+
+  /**
+   * List project members
+   */
+  listMembers: protectedProcedure
+    .input(z.object({ projectId: z.string() }))
+    .handler(async ({ context, input }) => {
+      const userId = context.session.user.id;
+
+      await requireProjectMember({ projectId: input.projectId, userId });
+
+      const members = await db
+        .select({
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          image: user.image,
+          role: projectMembers.role,
+          joinedAt: projectMembers.joinedAt,
+        })
+        .from(projectMembers)
+        .innerJoin(user, eq(user.id, projectMembers.userId))
+        .where(eq(projectMembers.projectId, input.projectId))
+        .orderBy(sql`${projectMembers.joinedAt} ASC`);
+
+      return members.map((member) => ({
+        user: {
+          id: member.id,
+          name: member.name,
+          email: member.email,
+          image: member.image,
+        },
+        role: member.role,
+        joinedAt: toIsoString(member.joinedAt),
+      }));
+    }),
+
+  /**
+   * Search users by email/name for invitation
+   */
+  searchInviteCandidates: protectedProcedure
+    .input(z.object({ projectId: z.string(), query: z.string() }))
+    .handler(async ({ context, input }) => {
+      const userId = context.session.user.id;
+
+      await requireProjectRole({
+        projectId: input.projectId,
+        userId,
+        allowedRoles: ["owner", "admin"],
+        permission: PROJECT_PERMISSIONS.MEMBERS_INVITE,
+      });
+
+      const query = input.query.trim();
+      if (query.length < 2) {
+        throw new ORPCError("BAD_REQUEST", {
+          message: "Search query must be at least 2 characters",
+        });
+      }
+
+      const search = `%${query.toLowerCase()}%`;
+
+      const results = await db
+        .select({
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          avatar: user.image,
+          isMember: sql<boolean>`(${projectMembers.userId} is not null)`.as(
+            "isMember"
+          ),
+        })
+        .from(user)
+        .leftJoin(
+          projectMembers,
+          and(
+            eq(projectMembers.userId, user.id),
+            eq(projectMembers.projectId, input.projectId)
+          )
+        )
+        .where(
+          sql`(lower(${user.email}) like ${search} or lower(${user.name}) like ${search})`
+        )
+        .orderBy(sql`${user.email} ASC`)
+        .limit(10);
+
+      return results;
+    }),
+
+  /**
+   * Invite a user to the project (immediate membership)
+   */
+  inviteMember: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.string(),
+        userId: z.string(),
+        role: z.enum(["member", "admin"]).optional(),
+      })
+    )
+    .handler(async ({ context, input }) => {
+      const inviterId = context.session.user.id;
+
+      await requireProjectRole({
+        projectId: input.projectId,
+        userId: inviterId,
+        allowedRoles: ["owner", "admin"],
+        permission: PROJECT_PERMISSIONS.MEMBERS_INVITE,
+      });
+
+      const role = input.role ?? "member";
+
+      const existingUser = await db
+        .select({ id: user.id })
+        .from(user)
+        .where(eq(user.id, input.userId))
+        .limit(1);
+
+      if (existingUser.length === 0) {
+        throw new ORPCError("BAD_REQUEST", {
+          message: "User not found",
+        });
+      }
+
+      const existingMember = await db
+        .select({ id: projectMembers.id })
+        .from(projectMembers)
+        .where(
+          and(
+            eq(projectMembers.projectId, input.projectId),
+            eq(projectMembers.userId, input.userId)
+          )
+        )
+        .limit(1);
+
+      if (existingMember.length > 0) {
+        throw new ORPCError("BAD_REQUEST", {
+          message: "User is already a member",
+        });
+      }
+
+      let member: {
+        id: string;
+        userId: string;
+        role: "owner" | "admin" | "member";
+        joinedAt: Date;
+      };
+
+      try {
+        const [createdMember] = await db
+          .insert(projectMembers)
+          .values({
+            projectId: input.projectId,
+            userId: input.userId,
+            role,
+            invitedBy: inviterId,
+          })
+          .returning({
+            id: projectMembers.id,
+            userId: projectMembers.userId,
+            role: projectMembers.role,
+            joinedAt: projectMembers.joinedAt,
+          });
+        member = createdMember;
+      } catch (error) {
+        if (isUniqueViolation(error, UNIQUE_PROJECT_MEMBER_CONSTRAINT)) {
+          throw new ORPCError("BAD_REQUEST", {
+            message: "User is already a member",
+          });
+        }
+        throw error;
+      }
+
+      return {
+        id: member.id,
+        userId: member.userId,
+        role: member.role,
+        joinedAt: toIsoString(member.joinedAt),
+      };
+    }),
+
+  /**
+   * Change member role
+   */
+  changeMemberRole: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.string(),
+        userId: z.string(),
+        role: z.enum(["member", "admin"]),
+      })
+    )
+    .handler(async ({ context, input }) => {
+      const actorId = context.session.user.id;
+
+      await requireProjectRole({
+        projectId: input.projectId,
+        userId: actorId,
+        allowedRoles: ["owner", "admin"],
+        permission: PROJECT_PERMISSIONS.MEMBERS_CHANGE_ROLE,
+      });
+
+      const membership = await db
+        .select({ id: projectMembers.id, role: projectMembers.role })
+        .from(projectMembers)
+        .where(
+          and(
+            eq(projectMembers.projectId, input.projectId),
+            eq(projectMembers.userId, input.userId)
+          )
+        )
+        .limit(1);
+
+      if (membership.length === 0) {
+        throw new ORPCError("NOT_FOUND", {
+          message: "User is not a member of this project",
+        });
+      }
+
+      if (membership[0].role === "owner") {
+        throw new ORPCError("BAD_REQUEST", {
+          message: "Cannot change project owner role",
+        });
+      }
+
+      await db
+        .update(projectMembers)
+        .set({
+          role: input.role,
+        })
+        .where(eq(projectMembers.id, membership[0].id));
+
+      return { success: true, role: input.role };
+    }),
+
+  /**
+   * Remove a member from the project
+   */
+  removeMember: protectedProcedure
+    .input(z.object({ projectId: z.string(), userId: z.string() }))
+    .handler(async ({ context, input }) => {
+      const actorId = context.session.user.id;
+
+      await requireProjectRole({
+        projectId: input.projectId,
+        userId: actorId,
+        allowedRoles: ["owner", "admin"],
+        permission: PROJECT_PERMISSIONS.MEMBERS_REMOVE,
+      });
+
+      if (input.userId === actorId) {
+        throw new ORPCError("BAD_REQUEST", {
+          message: "Cannot remove yourself",
+        });
+      }
+
+      const membership = await db
+        .select({ id: projectMembers.id, role: projectMembers.role })
+        .from(projectMembers)
+        .where(
+          and(
+            eq(projectMembers.projectId, input.projectId),
+            eq(projectMembers.userId, input.userId)
+          )
+        )
+        .limit(1);
+
+      if (membership.length === 0) {
+        throw new ORPCError("NOT_FOUND", {
+          message: "User is not a member of this project",
+        });
+      }
+
+      if (membership[0].role === "owner") {
+        throw new ORPCError("BAD_REQUEST", {
+          message: "Cannot remove project owner",
+        });
+      }
+
+      await db
+        .delete(projectMembers)
+        .where(eq(projectMembers.id, membership[0].id));
+
+      return { success: true };
     }),
 };

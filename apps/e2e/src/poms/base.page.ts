@@ -15,26 +15,34 @@ export abstract class BasePage {
   }
 
   async expectSuccessToast(message: string | RegExp) {
-    // Try data-type='success' first, fall back to any toast with the message
-    const successToast = this.toastRegion.locator("[data-type='success']");
-    const hasSuccessType = await successToast.count();
+    // Try data-type='success' first, fall back to any toast with the message.
+    // Filter by text to avoid strict-mode errors when multiple toasts exist.
+    const successToasts = this.toastRegion.locator("[data-type='success']");
+    const hasSuccessType = await successToasts.count();
+
     if (hasSuccessType > 0) {
-      await expect(successToast).toContainText(message);
-    } else {
-      // Fallback: look for any toast with the message
-      await expect(this.toastRegion).toContainText(message);
+      const matchingToast = successToasts.filter({ hasText: message }).first();
+      await expect(matchingToast).toBeVisible();
+      return;
     }
+
+    // Fallback: look for any toast with the message
+    await expect(this.toastRegion).toContainText(message);
   }
 
   async expectErrorToast(message: string | RegExp) {
-    // Try data-type='error' first, fall back to any toast with the message
-    const errorToast = this.toastRegion.locator("[data-type='error']");
-    const hasErrorType = await errorToast.count();
+    // Try data-type='error' first, fall back to any toast with the message.
+    // Filter by text to avoid strict-mode errors when multiple toasts exist.
+    const errorToasts = this.toastRegion.locator("[data-type='error']");
+    const hasErrorType = await errorToasts.count();
+
     if (hasErrorType > 0) {
-      await expect(errorToast).toContainText(message);
-    } else {
-      // Fallback: look for any toast with the message
-      await expect(this.toastRegion).toContainText(message);
+      const matchingToast = errorToasts.filter({ hasText: message }).first();
+      await expect(matchingToast).toBeVisible();
+      return;
     }
+
+    // Fallback: look for any toast with the message
+    await expect(this.toastRegion).toContainText(message);
   }
 }
