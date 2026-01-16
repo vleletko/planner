@@ -32,9 +32,19 @@ const idleState: InviteUserSearchState = { status: "idle" };
 
 // Mock search function for full flow test
 const createMockSearch = () =>
-  fn(async (query: string) => {
-    // Simulate API delay
-    await new Promise((resolve) => setTimeout(resolve, 500));
+  fn(async (query: string, signal?: AbortSignal) => {
+    // Simulate API delay (abort-aware)
+    await new Promise<void>((resolve, reject) => {
+      const timeout = setTimeout(() => resolve(), 500);
+      signal?.addEventListener(
+        "abort",
+        () => {
+          clearTimeout(timeout);
+          reject(new DOMException("Aborted", "AbortError"));
+        },
+        { once: true }
+      );
+    });
 
     if (query.includes("sarah")) {
       return [mockFoundUser];

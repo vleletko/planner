@@ -40,12 +40,22 @@ export type {
 export type InviteMemberDialogProps = {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  onInvite?: (data: { email: string; role: InviteMemberRole }) => void;
+  onInvite?: (data: {
+    email: string;
+    role: InviteMemberRole;
+    userId?: string;
+  }) => void;
   /** Async callback to search for users. Returns array of matching users. */
-  onSearchUser?: (query: string) => Promise<InviteUserResult[]>;
+  onSearchUser?: (
+    query: string,
+    signal?: AbortSignal
+  ) => Promise<InviteUserResult[]>;
+  /** Optional query key prefix for search cache scoping */
+  searchQueryKeyPrefix?: unknown[];
   // Controlled state for Storybook (overrides hook)
   controlledSearchState?: InviteUserSearchState;
   isSubmitting?: boolean;
+  submitError?: string | null;
 };
 
 type IdleStateProps = Record<string, never>;
@@ -428,8 +438,10 @@ export function InviteMemberDialog({
   onOpenChange,
   onInvite,
   onSearchUser,
+  searchQueryKeyPrefix,
   controlledSearchState,
   isSubmitting = false,
+  submitError,
 }: InviteMemberDialogProps) {
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<InviteMemberRole>("member");
@@ -443,6 +455,7 @@ export function InviteMemberDialog({
       query: email,
       onSearch: onSearchUser,
       disabled: controlledSearchState !== undefined,
+      queryKeyPrefix: searchQueryKeyPrefix,
     });
 
   // Use controlled state if provided, otherwise use hook state
@@ -489,6 +502,7 @@ export function InviteMemberDialog({
     onInvite?.({
       email: selectedUser.email,
       role,
+      ...(selectedUser.id ? { userId: selectedUser.id } : {}),
     });
   };
 
@@ -497,7 +511,7 @@ export function InviteMemberDialog({
   return (
     <Dialog onOpenChange={handleOpenChange} open={isOpen}>
       <DialogContent className="sm:max-w-[440px]">
-        <form onSubmit={handleSubmit}>
+        <form noValidate onSubmit={handleSubmit}>
           <DialogHeader className="text-left">
             <DialogTitle className="font-semibold text-lg tracking-tight sm:text-xl">
               Invite team member
@@ -523,6 +537,7 @@ export function InviteMemberDialog({
                   )}
                 </div>
                 <Input
+                  autoCapitalize="none"
                   autoComplete="off"
                   className={cn(
                     "h-11 pr-4 pl-10",
@@ -531,9 +546,11 @@ export function InviteMemberDialog({
                   )}
                   disabled={isSubmitting}
                   id="invite-email"
+                  inputMode="email"
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="Enter email address..."
-                  type="email"
+                  spellCheck={false}
+                  type="text"
                   value={email}
                 />
               </div>
@@ -548,6 +565,12 @@ export function InviteMemberDialog({
                 selectedUser={selectedUser}
               />
             </div>
+
+            {submitError ? (
+              <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-destructive text-sm">
+                {submitError}
+              </div>
+            ) : null}
 
             {/* Role Selector - Always visible, disabled until user is selected */}
             <RoleSelector
