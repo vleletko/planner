@@ -1,6 +1,6 @@
 # Story 2.3: User Invitation System
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. If available, run validate-create-story before dev-story. -->
 
