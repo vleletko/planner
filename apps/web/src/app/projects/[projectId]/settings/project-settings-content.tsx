@@ -7,7 +7,10 @@ import { type ReactNode, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import type { InviteUserResult } from "@/components/projects/hooks/use-invite-user-search";
 import { InviteMemberDialog } from "@/components/projects/invite-member-dialog";
-import type { ProjectRole } from "@/components/projects/mock-data";
+import type {
+  ProjectRole,
+  TransferableMember,
+} from "@/components/projects/mock-data";
 import type { Member } from "@/components/projects/project-settings/members-tab";
 import { MembersTab } from "@/components/projects/project-settings/members-tab";
 import { OverviewTab } from "@/components/projects/project-settings/overview-tab";
@@ -15,6 +18,7 @@ import {
   ProjectSettingsLayout,
   type ProjectSettingsTab,
 } from "@/components/projects/project-settings/project-settings-layout";
+import { TransferOwnershipDialog } from "@/components/projects/transfer-ownership-dialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -88,6 +92,7 @@ export function ProjectSettingsContent({
     null
   );
   const [memberToRemove, setMemberToRemove] = useState<Member | null>(null);
+  const [isTransferOpen, setIsTransferOpen] = useState(false);
 
   const inviteMutation = useMutation({
     mutationFn: (data: { userId: string; role: "admin" | "member" }) =>
@@ -145,6 +150,22 @@ export function ProjectSettingsContent({
     },
   });
 
+  const transferMutation = useMutation({
+    mutationFn: (newOwnerId: string) =>
+      orpc.projects.transferOwnership.call({ projectId, newOwnerId }),
+    onSuccess: async (data) => {
+      await queryClient.invalidateQueries({
+        queryKey: membersQueryOptions.queryKey,
+      });
+      await queryClient.invalidateQueries({ queryKey: ["projects"] });
+      toast.success(`Ownership transferred to ${data.newOwner.name}`);
+      setIsTransferOpen(false);
+    },
+    onError: (err) => {
+      toast.error(err.message || "Failed to transfer ownership");
+    },
+  });
+
   const members: Member[] = (membersData ?? []).map((member) => ({
     id: member.user.id,
     name: member.user.name,
@@ -153,6 +174,16 @@ export function ProjectSettingsContent({
     role: member.role,
     addedAt: new Date(member.joinedAt),
   }));
+
+  // Compute transferable members (exclude owner)
+  const transferableMembers: TransferableMember[] = members
+    .filter((m) => m.role !== "owner")
+    .map((m) => ({
+      id: m.id,
+      name: m.name,
+      email: m.email,
+      avatar: m.avatar ?? null,
+    }));
 
   const handleInviteSearch = (
     query: string,
@@ -263,6 +294,7 @@ export function ProjectSettingsContent({
           onChangeRole={handleChangeRole}
           onInviteMember={() => setIsInviteOpen(true)}
           onRemoveMember={handleRequestRemove}
+          onTransferOwnership={() => setIsTransferOpen(true)}
         />
       );
     }
@@ -324,6 +356,15 @@ export function ProjectSettingsContent({
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
+
+          <TransferOwnershipDialog
+            currentMembers={transferableMembers}
+            isOpen={isTransferOpen}
+            isSubmitting={transferMutation.isPending}
+            onOpenChange={setIsTransferOpen}
+            onTransfer={(newOwnerId) => transferMutation.mutate(newOwnerId)}
+            projectName={project.name}
+          />
         </div>
       }
       onTabChange={setActiveTab}

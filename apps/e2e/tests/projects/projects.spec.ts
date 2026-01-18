@@ -1,6 +1,6 @@
 import { TEST_PROJECTS } from "@planner/migrate/seed/projects";
 import type { Browser, BrowserContext, Page } from "@playwright/test";
-import { demoUser, testUser } from "../../src/fixtures/auth.fixture";
+import { adminUser, demoUser, testUser } from "../../src/fixtures/auth.fixture";
 import { expect, test } from "../../src/fixtures/test.fixture";
 import { LoginPage } from "../../src/poms/login.page";
 import { ProjectSettingsPage } from "../../src/poms/project-settings.page";
@@ -36,6 +36,10 @@ const USER_ALREADY_MEMBER_REGEX = /already a member/i;
 const USER_NOT_FOUND_REGEX = /user not found/i;
 const CANNOT_REMOVE_OWNER_REGEX = /project owner/i;
 const CANNOT_REMOVE_SELF_REGEX = /cannot remove yourself/i;
+
+// Ownership transfer validation patterns
+const TRANSFER_TO_SELF_REGEX = /cannot transfer ownership to yourself/i;
+const TRANSFER_TO_NON_MEMBER_REGEX = /not a member of this project/i;
 
 /**
  * Generate a unique project name that produces a unique auto-generated key.
@@ -260,6 +264,414 @@ async function openFirstUserProjectSettings(page: Page): Promise<{
 
   return { project, projectSettingsPage };
 }
+
+async function createTestProject(
+  page: Page,
+  options?: {
+    projectName?: string;
+    addDemoUserAs?: "admin" | "member" | "none";
+  }
+): Promise<{
+  projectId: string;
+  projectName: string;
+  projectSettingsPage: ProjectSettingsPage;
+}> {
+  const projectsPage = await openCreateProjectDialog(page);
+  const projectName = options?.projectName || generateUniqueProjectName();
+  await projectsPage.fillProjectForm(projectName);
+  await projectsPage.waitForKeyValidation();
+  await projectsPage.submitCreateForm();
+  await projectsPage.expectCreateSuccess();
+
+  const projectSettingsPage = new ProjectSettingsPage(page);
+
+  if (
+    options?.addDemoUserAs === "admin" ||
+    options?.addDemoUserAs === "member"
+  ) {
+    await projectSettingsPage.gotoMembersTab();
+    await projectSettingsPage.inviteMemberByEmailFragment(
+      "demo",
+      demoUser.email,
+      options.addDemoUserAs
+    );
+  }
+
+  const settingsUrl = page.url();
+  const match = settingsUrl.match(PROJECT_SETTINGS_URL_ID_REGEX);
+  if (!match?.[1]) {
+    throw new Error(`Could not parse projectId from URL: ${settingsUrl}`);
+  }
+
+  return {
+    projectId: match[1],
+    projectName,
+    projectSettingsPage,
+  };
+}
+
+async function deleteProject(page: Page, projectId: string): Promise<void> {
+  const res = await callRpc(page, "/api/rpc/projects/delete", { projectId });
+  if (!res.ok) {
+    throw new Error(`Failed to delete project: ${JSON.stringify(res.body)}`);
+  }
+}
+
+function getProjectId(page: Page): string {
+  const settingsUrl = page.url();
+  const match = settingsUrl.match(PROJECT_SETTINGS_URL_ID_REGEX);
+  if (!match?.[1]) {
+    throw new Error(`Could not parse projectId from URL: ${settingsUrl}`);
+  }
+  return match[1];
+}
+
+test.describe("Project Ownership Transfer", () => {
+  test.describe("UI Visibility", () => {
+    test("owner can access transfer ownership from member dropdown", async ({
+      authenticatedPage,
+    }) => {
+      const { projectSettingsPage } = await createTestProject(
+        authenticatedPage,
+        { addDemoUserAs: "member" }
+      );
+
+      await projectSettingsPage.openTransferOwnershipDialogForMember(
+        demoUser.name
+      );
+      await projectSettingsPage.closeTransferOwnershipDialog();
+
+      await deleteProject(
+        authenticatedPage,
+        await getProjectId(authenticatedPage)
+      );
+    });
+
+    test("admin does not see transfer ownership button", async ({
+      authenticatedPage,
+      browser,
+    }) => {
+      // Create a fresh project with demoUser as admin and adminUser as member
+      const { projectSettingsPage, projectId } = await createTestProject(
+        authenticatedPage,
+        { addDemoUserAs: "admin" }
+      );
+
+      // Add adminUser as a regular member so the admin has someone to act on
+      await projectSettingsPage.inviteMemberByEmailFragment(
+        "admin@",
+        adminUser.email,
+        "member"
+      );
+
+      // Login as demoUser (admin)
+      const demoContext = await browser.newContext();
+      const demoPage = await demoContext.newPage();
+      const demoLoginPage = new LoginPage(demoPage);
+      await demoLoginPage.goto();
+      await demoLoginPage.loginAndExpectDashboard(
+        demoUser.email,
+        demoUser.password
+      );
+
+      // Navigate directly to the project settings page
+      const demoSettingsPage = new ProjectSettingsPage(demoPage);
+      await demoPage.goto(`/projects/${projectId}/settings`);
+      await demoSettingsPage.gotoMembersTab();
+
+      await expect(demoPage.getByText("Team Members")).toBeVisible({
+        timeout: 10_000,
+      });
+
+      // Verify Admin User is visible in the list
+      await expect(demoPage.getByText(adminUser.email)).toBeVisible({
+        timeout: 10_000,
+      });
+
+      // Admin can open the member's dropdown, but should NOT see "Transfer ownership"
+      await demoSettingsPage.expectTransferOwnershipMenuItemNotVisible(
+        adminUser.name
+      );
+
+      await demoContext.close();
+
+      // Cleanup
+      await deleteProject(authenticatedPage, projectId);
+    });
+
+    test("member does not see transfer ownership button", async ({
+      authenticatedPage,
+      browser,
+    }) => {
+      const { projectSettingsPage } = await openProjectSettingsByKey(
+        authenticatedPage,
+        "MKT"
+      );
+      await projectSettingsPage.gotoMembersTab();
+
+      await expect(authenticatedPage.getByText("Team Members")).toBeVisible({
+        timeout: 10_000,
+      });
+
+      await projectSettingsPage.removeMemberIfPresent(
+        demoUser.email,
+        demoUser.name
+      );
+      await projectSettingsPage.removeMemberIfPresent(
+        adminUser.email,
+        adminUser.name
+      );
+
+      await projectSettingsPage.inviteMemberByEmailFragment(
+        "demo",
+        demoUser.email,
+        "member"
+      );
+
+      const demoContext = await browser.newContext();
+      const demoPage = await demoContext.newPage();
+      const demoLoginPage = new LoginPage(demoPage);
+      await demoLoginPage.goto();
+      await demoLoginPage.loginAndExpectDashboard(
+        demoUser.email,
+        demoUser.password
+      );
+
+      const demoProjectsPage = new ProjectsPage(demoPage);
+      await demoProjectsPage.goto();
+      await demoPage.getByText("MKT").first().click();
+
+      const demoSettingsPage = new ProjectSettingsPage(demoPage);
+      await demoSettingsPage.gotoMembersTab();
+
+      await expect(demoPage.getByText("Team Members")).toBeVisible({
+        timeout: 10_000,
+      });
+
+      // Members have no actions dropdown at all, so verify no actions button exists
+      await demoSettingsPage.expectMemberActionsButtonNotVisible(testUser.name);
+
+      await demoContext.close();
+    });
+  });
+
+  test.describe("Dialog Behavior", () => {
+    test("dropdown shows only non-owner members", async ({
+      authenticatedPage,
+    }) => {
+      const { projectSettingsPage, projectId } = await createTestProject(
+        authenticatedPage,
+        { addDemoUserAs: "member" }
+      );
+
+      await projectSettingsPage.openTransferOwnershipDialogForMember(
+        demoUser.name
+      );
+      await projectSettingsPage.expectMemberInTransferDropdown(demoUser.name);
+      await projectSettingsPage.expectMemberNotInTransferDropdown(
+        testUser.name
+      );
+      await projectSettingsPage.closeTransferOwnershipDialog();
+
+      await deleteProject(authenticatedPage, projectId);
+    });
+
+    test("submit button disabled until checkbox checked", async ({
+      authenticatedPage,
+    }) => {
+      const { projectSettingsPage, projectId } = await createTestProject(
+        authenticatedPage,
+        { addDemoUserAs: "member" }
+      );
+
+      await projectSettingsPage.openTransferOwnershipDialogForMember(
+        demoUser.name
+      );
+      await projectSettingsPage.expectTransferSubmitButtonDisabled();
+      await projectSettingsPage.selectNewOwner(demoUser.name);
+      await projectSettingsPage.expectTransferSubmitButtonDisabled();
+      await projectSettingsPage.checkTransferConfirmation();
+      await projectSettingsPage.expectTransferSubmitButtonEnabled();
+      await projectSettingsPage.closeTransferOwnershipDialog();
+
+      await deleteProject(authenticatedPage, projectId);
+    });
+
+    test("cancel closes dialog without changes", async ({
+      authenticatedPage,
+    }) => {
+      const { projectSettingsPage, projectId } = await createTestProject(
+        authenticatedPage,
+        { addDemoUserAs: "member" }
+      );
+
+      await projectSettingsPage.openTransferOwnershipDialogForMember(
+        demoUser.name
+      );
+      await projectSettingsPage.selectNewOwner(demoUser.name);
+      await projectSettingsPage.checkTransferConfirmation();
+      await projectSettingsPage.closeTransferOwnershipDialog();
+
+      // Verify roles are unchanged
+      await projectSettingsPage.expectMemberRole(testUser.email, "Owner");
+      await projectSettingsPage.expectMemberRole(demoUser.email, "Member");
+
+      await deleteProject(authenticatedPage, projectId);
+    });
+  });
+
+  test.describe("Transfer Flow", () => {
+    test("complete ownership transfer flow", async ({
+      authenticatedPage,
+      browser,
+    }) => {
+      // Setup: create project with demoUser as member
+      const { projectSettingsPage, projectId } = await createTestProject(
+        authenticatedPage,
+        { addDemoUserAs: "member" }
+      );
+
+      // Execute transfer
+      await projectSettingsPage.openTransferOwnershipDialogForMember(
+        demoUser.name
+      );
+      await projectSettingsPage.selectNewOwner(demoUser.name);
+      await projectSettingsPage.checkTransferConfirmation();
+      await projectSettingsPage.submitTransfer();
+      await projectSettingsPage.expectTransferSuccess(demoUser.name);
+
+      // Verify old owner (testUser) is now Member
+      await authenticatedPage.reload();
+      await projectSettingsPage.gotoMembersTab();
+      await projectSettingsPage.expectMemberRole(testUser.email, "Member");
+
+      // Verify old owner cannot see Transfer menu (members don't see actions)
+      await projectSettingsPage.expectMemberActionsButtonNotVisible(
+        demoUser.name
+      );
+
+      // Verify new owner (demoUser) perspective
+      const { context: newOwnerContext, page: newOwnerPage } =
+        await newLoggedInPage(browser, demoUser);
+      const newOwnerSettingsPage = new ProjectSettingsPage(newOwnerPage);
+      await newOwnerPage.goto(`/projects/${projectId}/settings`);
+      await newOwnerSettingsPage.gotoMembersTab();
+      await newOwnerSettingsPage.expectMemberRole(demoUser.email, "Owner");
+      await newOwnerSettingsPage.expectTransferOwnershipMenuItemVisible(
+        testUser.name
+      );
+
+      // Cleanup (new owner must delete)
+      await deleteProject(newOwnerPage, projectId);
+      await newOwnerContext.close();
+    });
+  });
+
+  test.describe("Edge Cases", () => {
+    test("owner-only project has no transferable members", async ({
+      authenticatedPage,
+    }) => {
+      const { projectSettingsPage, projectId } =
+        await createTestProject(authenticatedPage);
+      await projectSettingsPage.gotoMembersTab();
+
+      // Only owner exists - verify only 1 member row
+      const memberCount = await authenticatedPage
+        .locator('[class*="divide-y"] > div.group')
+        .count();
+      expect(memberCount).toBe(1);
+      await projectSettingsPage.expectMemberRole(testUser.email, "Owner");
+
+      await deleteProject(authenticatedPage, projectId);
+    });
+  });
+
+  test.describe("API Validation", () => {
+    test("rejects transfer to self with BAD_REQUEST", async ({
+      authenticatedPage,
+    }) => {
+      const { projectId } = await createTestProject(authenticatedPage, {
+        addDemoUserAs: "member",
+      });
+      const me = await callRpc(authenticatedPage, "/api/rpc/privateData");
+      const currentUserId = (me.body as { json?: { user?: { id?: string } } })
+        ?.json?.user?.id;
+
+      if (!currentUserId) {
+        throw new Error(
+          `Could not resolve current user id: ${JSON.stringify(me.body)}`
+        );
+      }
+
+      const result = await callRpc(
+        authenticatedPage,
+        "/api/rpc/projects/transferOwnership",
+        {
+          projectId,
+          newOwnerId: currentUserId,
+        }
+      );
+
+      expect(result.ok).toBe(false);
+      expect(result.status).toBe(400);
+      expect(readOrpcMessage(result.body)).toMatch(TRANSFER_TO_SELF_REGEX);
+
+      await deleteProject(authenticatedPage, projectId);
+    });
+
+    test("rejects transfer to non-member with NOT_FOUND", async ({
+      authenticatedPage,
+    }) => {
+      const { projectId } = await createTestProject(authenticatedPage);
+
+      const result = await callRpc(
+        authenticatedPage,
+        "/api/rpc/projects/transferOwnership",
+        {
+          projectId,
+          newOwnerId: "nonexistent-user-id",
+        }
+      );
+
+      expect(result.ok).toBe(false);
+      expect(result.status).toBe(404);
+      expect(readOrpcMessage(result.body)).toMatch(
+        TRANSFER_TO_NON_MEMBER_REGEX
+      );
+
+      await deleteProject(authenticatedPage, projectId);
+    });
+
+    test("rejects non-owner caller with FORBIDDEN", async ({
+      authenticatedPage,
+      browser,
+    }) => {
+      const { projectId } = await createTestProject(authenticatedPage, {
+        addDemoUserAs: "admin",
+      });
+      const { context: adminContext, page: adminPage } = await newLoggedInPage(
+        browser,
+        demoUser
+      );
+
+      const result = await callRpc(
+        adminPage,
+        "/api/rpc/projects/transferOwnership",
+        {
+          projectId,
+          newOwnerId: "any-user-id",
+        }
+      );
+
+      expect(result.ok).toBe(false);
+      expect(result.status).toBe(403);
+      expect(readOrpcMessage(result.body)).toMatch(PERMISSION_DENIED_REGEX);
+
+      await adminContext.close();
+      await deleteProject(authenticatedPage, projectId);
+    });
+  });
+});
 
 test.describe("Project Access", () => {
   test("non-member cannot access project settings", async ({ browser }) => {

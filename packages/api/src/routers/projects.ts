@@ -621,6 +621,132 @@ export const projectsRouter = {
     }),
 
   /**
+   * Transfer project ownership to another member
+   * Only the current owner can transfer ownership
+   */
+  transferOwnership: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.string(),
+        newOwnerId: z.string(),
+      })
+    )
+    .handler(async ({ context, input }) => {
+      const currentOwnerId = context.session.user.id;
+
+      await requireProjectRole({
+        projectId: input.projectId,
+        userId: currentOwnerId,
+        allowedRoles: ["owner"],
+        permission: PROJECT_PERMISSIONS.PROJECT_TRANSFER_OWNERSHIP,
+      });
+
+      // Validation: Cannot transfer to self
+      if (input.newOwnerId === currentOwnerId) {
+        throw new ORPCError("BAD_REQUEST", {
+          message: "Cannot transfer ownership to yourself",
+        });
+      }
+
+      // Validate new owner is an existing project member
+      const newOwnerMembership = await db
+        .select({ id: projectMembers.id, role: projectMembers.role })
+        .from(projectMembers)
+        .where(
+          and(
+            eq(projectMembers.projectId, input.projectId),
+            eq(projectMembers.userId, input.newOwnerId)
+          )
+        )
+        .limit(1);
+
+      if (newOwnerMembership.length === 0) {
+        throw new ORPCError("NOT_FOUND", {
+          message: "User is not a member of this project",
+        });
+      }
+
+      // Validation: New owner should not already be owner
+      if (newOwnerMembership[0].role === "owner") {
+        throw new ORPCError("BAD_REQUEST", {
+          message: "User is already the owner",
+        });
+      }
+
+      // Get current owner membership for update
+      const currentOwnerMembership = await db
+        .select({ id: projectMembers.id })
+        .from(projectMembers)
+        .where(
+          and(
+            eq(projectMembers.projectId, input.projectId),
+            eq(projectMembers.userId, currentOwnerId)
+          )
+        )
+        .limit(1);
+
+      // Atomic role swap in transaction
+      const updatedProject = await db.transaction(async (tx) => {
+        // 1. Update projects.ownerId
+        const [project] = await tx
+          .update(projects)
+          .set({
+            ownerId: input.newOwnerId,
+            updatedAt: new Date(),
+          })
+          .where(eq(projects.id, input.projectId))
+          .returning({
+            id: projects.id,
+            key: projects.key,
+            name: projects.name,
+          });
+
+        // 2. Update old owner's role to member
+        await tx
+          .update(projectMembers)
+          .set({ role: "member" })
+          .where(eq(projectMembers.id, currentOwnerMembership[0].id));
+
+        // 3. Update new owner's role to owner
+        await tx
+          .update(projectMembers)
+          .set({ role: "owner" })
+          .where(eq(projectMembers.id, newOwnerMembership[0].id));
+
+        return project;
+      });
+
+      // Get new owner details for response
+      const [newOwner] = await db
+        .select({
+          id: user.id,
+          name: user.name,
+          email: user.email,
+        })
+        .from(user)
+        .where(eq(user.id, input.newOwnerId))
+        .limit(1);
+
+      log.info(
+        {
+          projectId: input.projectId,
+          previousOwnerId: currentOwnerId,
+          newOwnerId: input.newOwnerId,
+        },
+        "Project ownership transferred"
+      );
+
+      return {
+        project: updatedProject,
+        newOwner: {
+          id: newOwner.id,
+          name: newOwner.name,
+          email: newOwner.email,
+        },
+      };
+    }),
+
+  /**
    * Remove a member from the project
    */
   removeMember: protectedProcedure
@@ -667,6 +793,20 @@ export const projectsRouter = {
       await db
         .delete(projectMembers)
         .where(eq(projectMembers.id, membership[0].id));
+
+      return { success: true };
+    }),
+
+  /**
+   * Delete project
+   * API-only for E2E test cleanup (no UI implemented yet)
+   */
+  delete: protectedProcedure
+    .input(z.object({ projectId: z.string() }))
+    .handler(async ({ input }) => {
+      await db.delete(projects).where(eq(projects.id, input.projectId));
+
+      log.info({ projectId: input.projectId }, "Project deleted");
 
       return { success: true };
     }),

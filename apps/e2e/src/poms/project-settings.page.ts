@@ -12,9 +12,9 @@ const SAVED_PATTERN = /saved|updated|success/i;
 const LOCKED_PATTERN = /locked/i;
 const UNSAVED_CHANGES_PATTERN = /unsaved changes/i;
 
-const MEMBERS_TAB_PATTERN = /members/i;
-const TEAM_MEMBERS_PATTERN = /team members/i;
-const INVITE_MEMBER_BUTTON_PATTERN = /invite member/i;
+export const MEMBERS_TAB_PATTERN = /members/i;
+export const TEAM_MEMBERS_PATTERN = /team members/i;
+export const INVITE_MEMBER_BUTTON_PATTERN = /invite member/i;
 const EMAIL_ADDRESS_LABEL_PATTERN = /email address/i;
 const SEND_INVITE_BUTTON_PATTERN = /send invite/i;
 const ADDED_TO_PROJECT_PATTERN = /added to project/i;
@@ -24,13 +24,21 @@ const INVITE_DIALOG_PATTERN = /invite team member/i;
 const CANCEL_BUTTON_PATTERN = /cancel/i;
 const MEMBER_ACTIONS_BUTTON_PREFIX = "Actions for ";
 const ROLE_ADMIN_OPTION_PATTERN = /admin\s+can manage members/i;
+const ROLE_MEMBER_OPTION_PATTERN = /member\s+can view and edit/i;
 const REMOVE_FROM_PROJECT_MENU_ITEM_PATTERN = /remove from project/i;
 const REMOVE_CONFIRM_BUTTON_PATTERN = /^remove$/i;
 const PROMOTE_TO_ADMIN_MENU_ITEM_PATTERN = /promote to admin/i;
 const DEMOTE_TO_MEMBER_MENU_ITEM_PATTERN = /demote to member/i;
+export const SELECT_NEW_OWNER_LABEL_PATTERN = /select new owner/i;
+
+// Ownership transfer patterns
+export const TRANSFER_OWNERSHIP_BUTTON_PATTERN = /transfer ownership/i;
+const TRANSFER_OWNERSHIP_DIALOG_PATTERN = /transfer ownership/i;
+const CONFIRM_TRANSFER_CHECKBOX_PATTERN = /cannot be undone/i;
+const TRANSFER_SUCCESS_PATTERN = /ownership transferred/i;
 
 /**
- * Page Object Model for the project settings page
+ * Page Object Model for Project Settings page
  */
 export class ProjectSettingsPage extends BasePage {
   readonly projectKeyInput: Locator;
@@ -65,7 +73,7 @@ export class ProjectSettingsPage extends BasePage {
   async expectProjectKeyReadOnly() {
     // The key field should be both disabled and read-only
     await expect(this.projectKeyInput).toBeDisabled();
-    // Also verify the "Locked" indicator is visible
+    // Also verify "Locked" indicator is visible
     await expect(this.page.getByText(LOCKED_PATTERN)).toBeVisible();
   }
 
@@ -104,10 +112,27 @@ export class ProjectSettingsPage extends BasePage {
     await expect(this.saveButton).toBeEnabled();
   }
 
+  /**
+   * Returns the member row containing the given email.
+   * The members list is inside a CardContent with divide-y class.
+   */
   private memberRowByEmail(email: string): Locator {
+    // Find rows in the members list (CardContent > divide-y container > row divs)
     return this.page
-      .locator("div", {
-        has: this.page.getByText(email).first(),
+      .locator('[class*="divide-y"] > div.group', {
+        has: this.page.getByText(email),
+      })
+      .first();
+  }
+
+  /**
+   * Returns the member row containing the given name.
+   * Uses the same structure as memberRowByEmail but matches by name.
+   */
+  private memberRowByName(name: string): Locator {
+    return this.page
+      .locator('[class*="divide-y"] > div.group', {
+        has: this.page.getByText(name, { exact: true }),
       })
       .first();
   }
@@ -133,18 +158,7 @@ export class ProjectSettingsPage extends BasePage {
     await this.page
       .getByRole("button", { name: INVITE_MEMBER_BUTTON_PATTERN })
       .click();
-
     await expect(this.inviteDialog()).toBeVisible();
-  }
-
-  async inviteMemberByEmailFragment(
-    fragment: string,
-    candidateEmail: string,
-    role: "member" | "admin" = "member"
-  ): Promise<void> {
-    await this.openInviteMemberDialog();
-    await this.selectInviteCandidateByEmail(fragment, candidateEmail, role);
-    await this.submitInviteAndExpectSuccess();
   }
 
   private async selectInviteCandidateByEmail(
@@ -161,11 +175,10 @@ export class ProjectSettingsPage extends BasePage {
     await expect(candidate).toBeVisible({ timeout: 30_000 });
     await candidate.click();
 
-    if (role === "admin") {
-      await dialog
-        .getByRole("button", { name: ROLE_ADMIN_OPTION_PATTERN })
-        .click();
-    }
+    // Explicitly select the role to avoid relying on default state
+    const rolePattern =
+      role === "admin" ? ROLE_ADMIN_OPTION_PATTERN : ROLE_MEMBER_OPTION_PATTERN;
+    await dialog.getByRole("button", { name: rolePattern }).click();
   }
 
   async submitInviteAndExpectSuccess(): Promise<void> {
@@ -182,6 +195,16 @@ export class ProjectSettingsPage extends BasePage {
       .getByRole("button", { name: SEND_INVITE_BUTTON_PATTERN })
       .click();
     await this.expectInviteDialogError(message);
+  }
+
+  async inviteMemberByEmailFragment(
+    fragment: string,
+    candidateEmail: string,
+    role: "member" | "admin" = "member"
+  ): Promise<void> {
+    await this.openInviteMemberDialog();
+    await this.selectInviteCandidateByEmail(fragment, candidateEmail, role);
+    await this.submitInviteAndExpectSuccess();
   }
 
   async inviteExistingMemberExpectingError(
@@ -216,9 +239,15 @@ export class ProjectSettingsPage extends BasePage {
   }
 
   async openMemberActionsMenu(memberName: string): Promise<void> {
-    const actionsButton = this.memberActionsButton(memberName);
+    // Hover on the entire member row - this triggers group-hover
+    // which makes the actions button visible (it has opacity-0 by default)
+    const memberRow = this.memberRowByName(memberName);
+    await memberRow.scrollIntoViewIfNeeded();
+    await memberRow.hover();
 
-    await actionsButton.hover();
+    // Now the button should be visible
+    const actionsButton = this.memberActionsButton(memberName);
+    await expect(actionsButton).toBeVisible({ timeout: 5000 });
     await actionsButton.click();
   }
 
@@ -238,7 +267,6 @@ export class ProjectSettingsPage extends BasePage {
     await this.page
       .getByRole("button", { name: REMOVE_CONFIRM_BUTTON_PATTERN })
       .click();
-
     await this.expectSuccessToast(REMOVED_FROM_PROJECT_PATTERN);
     await expect(memberEmail).not.toBeVisible();
   }
@@ -248,7 +276,6 @@ export class ProjectSettingsPage extends BasePage {
     await this.page
       .getByRole("menuitem", { name: PROMOTE_TO_ADMIN_MENU_ITEM_PATTERN })
       .click();
-
     await this.expectSuccessToast(ROLE_UPDATED_PATTERN);
   }
 
@@ -257,7 +284,6 @@ export class ProjectSettingsPage extends BasePage {
     await this.page
       .getByRole("menuitem", { name: DEMOTE_TO_MEMBER_MENU_ITEM_PATTERN })
       .click();
-
     await this.expectSuccessToast(ROLE_UPDATED_PATTERN);
   }
 
@@ -281,5 +307,143 @@ export class ProjectSettingsPage extends BasePage {
 
   isMemberListed(memberEmail: string): Promise<boolean> {
     return this.page.getByText(memberEmail).first().isVisible();
+  }
+
+  // Ownership transfer dialog methods
+  transferOwnershipDialog(): Locator {
+    return this.page.getByRole("dialog", {
+      name: TRANSFER_OWNERSHIP_DIALOG_PATTERN,
+    });
+  }
+
+  async openTransferOwnershipDialogForMember(
+    memberName: string
+  ): Promise<void> {
+    await this.openMemberActionsMenu(memberName);
+
+    await this.page
+      .getByRole("menuitem", { name: TRANSFER_OWNERSHIP_BUTTON_PATTERN })
+      .click();
+
+    await expect(this.transferOwnershipDialog()).toBeVisible();
+  }
+
+  async selectNewOwner(memberName: string): Promise<void> {
+    const dialog = this.transferOwnershipDialog();
+    await dialog
+      .getByRole("combobox", { name: SELECT_NEW_OWNER_LABEL_PATTERN })
+      .click();
+
+    // Listbox is rendered as portal outside dialog, search on page level
+    const option = this.page.getByRole("option", {
+      name: new RegExp(memberName, "i"),
+    });
+    await expect(option).toBeVisible();
+    await option.click();
+  }
+
+  async checkTransferConfirmation(): Promise<void> {
+    const dialog = this.transferOwnershipDialog();
+    await dialog
+      .getByRole("checkbox", { name: CONFIRM_TRANSFER_CHECKBOX_PATTERN })
+      .check();
+  }
+
+  async submitTransfer(): Promise<void> {
+    const dialog = this.transferOwnershipDialog();
+    await dialog
+      .getByRole("button", { name: TRANSFER_OWNERSHIP_BUTTON_PATTERN })
+      .click();
+    await expect(this.transferOwnershipDialog()).not.toBeVisible();
+  }
+
+  async expectTransferSuccess(newOwnerName?: string): Promise<void> {
+    const pattern = newOwnerName
+      ? new RegExp(`ownership transferred to ${newOwnerName}`, "i")
+      : TRANSFER_SUCCESS_PATTERN;
+    await this.expectSuccessToast(pattern);
+  }
+
+  async closeTransferOwnershipDialog(): Promise<void> {
+    const dialog = this.transferOwnershipDialog();
+    await dialog.getByRole("button", { name: CANCEL_BUTTON_PATTERN }).click();
+    await expect(dialog).not.toBeVisible();
+  }
+
+  async expectTransferSubmitButtonDisabled(): Promise<void> {
+    const dialog = this.transferOwnershipDialog();
+    await expect(
+      dialog.getByRole("button", { name: TRANSFER_OWNERSHIP_BUTTON_PATTERN })
+    ).toBeDisabled();
+  }
+
+  async expectTransferSubmitButtonEnabled(): Promise<void> {
+    const dialog = this.transferOwnershipDialog();
+    await expect(
+      dialog.getByRole("button", { name: TRANSFER_OWNERSHIP_BUTTON_PATTERN })
+    ).toBeEnabled();
+  }
+
+  async expectMemberInTransferDropdown(memberName: string): Promise<void> {
+    const dialog = this.transferOwnershipDialog();
+    await dialog
+      .getByRole("combobox", { name: SELECT_NEW_OWNER_LABEL_PATTERN })
+      .click();
+    // Listbox is rendered as portal outside dialog, search on page level
+    await expect(
+      this.page.getByRole("option", { name: new RegExp(memberName, "i") })
+    ).toBeVisible();
+    await this.page.keyboard.press("Escape");
+  }
+
+  async expectMemberNotInTransferDropdown(memberName: string): Promise<void> {
+    const dialog = this.transferOwnershipDialog();
+    await dialog
+      .getByRole("combobox", { name: SELECT_NEW_OWNER_LABEL_PATTERN })
+      .click();
+    // Listbox is rendered as portal outside dialog, search on page level
+    await expect(
+      this.page.getByRole("option", { name: new RegExp(memberName, "i") })
+    ).not.toBeVisible();
+    await this.page.keyboard.press("Escape");
+  }
+
+  async getTransferableOptionsCount(): Promise<number> {
+    const dialog = this.transferOwnershipDialog();
+    await dialog
+      .getByRole("combobox", { name: SELECT_NEW_OWNER_LABEL_PATTERN })
+      .click();
+    // Listbox is rendered as portal outside dialog, search on page level
+    const count = await this.page.getByRole("option").count();
+    await this.page.keyboard.press("Escape");
+    return count;
+  }
+
+  async expectTransferOwnershipMenuItemVisible(
+    memberName: string
+  ): Promise<void> {
+    await this.openMemberActionsMenu(memberName);
+
+    await expect(
+      this.page.getByRole("menuitem", {
+        name: TRANSFER_OWNERSHIP_BUTTON_PATTERN,
+      })
+    ).toBeVisible({ timeout: 10_000 });
+
+    await this.page.keyboard.press("Escape");
+  }
+
+  async expectTransferOwnershipMenuItemNotVisible(
+    memberName: string
+  ): Promise<void> {
+    await this.openMemberActionsMenu(memberName);
+
+    await expect(
+      this.page.getByRole("menuitem", {
+        name: TRANSFER_OWNERSHIP_BUTTON_PATTERN,
+      })
+    ).not.toBeVisible();
+
+    await this.page.keyboard.press("Escape");
   }
 }
