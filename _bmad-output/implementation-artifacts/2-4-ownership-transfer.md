@@ -522,3 +522,4 @@ Claude Opus 4.5 (claude-opus-4-5-20251101)
 - `_bmad-output/implementation-artifacts/sprint-status.yaml` - Updated story status to `done`
 
 **Created:**
+
