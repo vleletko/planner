@@ -10,6 +10,7 @@ export type SeedUserData = {
   email: string;
   password: string;
   emailVerified?: boolean;
+  role?: "user" | "admin";
 };
 
 /**
@@ -33,6 +34,7 @@ export const TEST_USERS: SeedUserData[] = [
     email: "admin@example.com",
     password: "AdminPassword123!",
     emailVerified: true,
+    role: "admin",
   },
   {
     name: "Demo User",

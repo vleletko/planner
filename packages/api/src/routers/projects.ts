@@ -4,7 +4,10 @@ import {
   count,
   db,
   eq,
+  ilike,
   inArray,
+  isNotNull,
+  isNull,
   projectMembers,
   projects,
   sql,
@@ -13,10 +16,12 @@ import {
 import { createLogger } from "@planner/logger";
 import { z } from "zod";
 import { protectedProcedure } from "../index";
-import { PROJECT_PERMISSIONS } from "../lib/authz/project";
 import {
-  requireProjectMember,
-  requireProjectRole,
+  requireCanDelete,
+  requireCanManageMembers,
+  requireCanTransferOwnership,
+  requireCanUpdate,
+  requireCanView,
 } from "../lib/authz/project.server";
 import {
   PROJECT_CONSTRAINTS,
@@ -41,7 +46,10 @@ function toIsoString(value: unknown): string {
   throw new Error("Invalid joinedAt value returned from database");
 }
 
+// Constraint names for friendly error messages
 const UNIQUE_PROJECT_MEMBER_CONSTRAINT = "unique_project_member";
+const UNIQUE_PROJECT_KEY_CONSTRAINT = "projects_key_unique";
+const UNIQUE_PROJECT_NAME_CONSTRAINT = "unique_project_name_per_user";
 
 function isUniqueViolation(error: unknown, constraint?: string): boolean {
   if (!error || typeof error !== "object") {
@@ -67,53 +75,98 @@ export const projectsRouter = {
   /**
    * List all projects for the current user
    * Returns projects where the user is a member
+   * Supports optional filtering by name and status (archived projects require admin)
    */
-  list: protectedProcedure.handler(async ({ context }) => {
-    const userId = context.session.user.id;
+  list: protectedProcedure
+    .input(
+      z
+        .object({
+          name: z.string().optional(),
+          status: z.enum(["active", "archived", "all"]).optional(),
+        })
+        .optional()
+    )
+    .handler(async ({ context, input }) => {
+      const userId = context.session.user.id;
+      const nameFilter = input?.name?.trim();
+      const statusFilter = input?.status ?? "active";
 
-    const result = await db
-      .select({
-        id: projects.id,
-        key: projects.key,
-        name: projects.name,
-        description: projects.description,
-        createdAt: projects.createdAt,
-        role: projectMembers.role,
-        ownerId: projects.ownerId,
-      })
-      .from(projects)
-      .innerJoin(projectMembers, eq(projectMembers.projectId, projects.id))
-      .where(eq(projectMembers.userId, userId))
-      .orderBy(sql`${projects.createdAt} DESC`);
+      // For archived/all status, verify user is system admin
+      if (statusFilter !== "active") {
+        const userRecord = await db
+          .select({ role: user.role })
+          .from(user)
+          .where(eq(user.id, userId))
+          .limit(1);
 
-    // Get member counts for each project
-    const projectIds = result.map((p) => p.id);
-    const memberCounts =
-      projectIds.length > 0
-        ? await db
-            .select({
-              projectId: projectMembers.projectId,
-              memberCount: count(projectMembers.id),
-            })
-            .from(projectMembers)
-            .where(inArray(projectMembers.projectId, projectIds))
-            .groupBy(projectMembers.projectId)
-        : [];
+        if (userRecord.length === 0 || userRecord[0].role !== "admin") {
+          throw new ORPCError("FORBIDDEN", {
+            message: "System admin access required to view archived projects",
+          });
+        }
+      }
 
-    const memberCountMap = new Map(
-      memberCounts.map((mc) => [mc.projectId, Number(mc.memberCount)])
-    );
+      // Build WHERE conditions dynamically
+      const conditions = [eq(projectMembers.userId, userId)];
 
-    return result.map((p) => ({
-      id: p.id,
-      key: p.key,
-      name: p.name,
-      description: p.description,
-      createdAt: p.createdAt,
-      role: p.role,
-      memberCount: memberCountMap.get(p.id) ?? 1,
-    }));
-  }),
+      // Name filter (case-insensitive)
+      if (nameFilter && nameFilter.length > 0) {
+        conditions.push(ilike(projects.name, `%${nameFilter}%`));
+      }
+
+      // Status filter
+      if (statusFilter === "active") {
+        conditions.push(isNull(projects.deletedAt));
+      } else if (statusFilter === "archived") {
+        conditions.push(isNotNull(projects.deletedAt));
+      }
+      // "all" - no deletedAt filter
+
+      const result = await db
+        .select({
+          id: projects.id,
+          key: projects.key,
+          name: projects.name,
+          description: projects.description,
+          createdAt: projects.createdAt,
+          deletedAt: projects.deletedAt,
+          role: projectMembers.role,
+          ownerId: projects.ownerId,
+        })
+        .from(projects)
+        .innerJoin(projectMembers, eq(projectMembers.projectId, projects.id))
+        .where(and(...conditions))
+        .orderBy(sql`${projects.createdAt} DESC`);
+
+      // Get member counts for each project
+      const projectIds = result.map((p) => p.id);
+      const memberCounts =
+        projectIds.length > 0
+          ? await db
+              .select({
+                projectId: projectMembers.projectId,
+                memberCount: count(projectMembers.id),
+              })
+              .from(projectMembers)
+              .where(inArray(projectMembers.projectId, projectIds))
+              .groupBy(projectMembers.projectId)
+          : [];
+
+      const memberCountMap = new Map(
+        memberCounts.map((mc) => [mc.projectId, Number(mc.memberCount)])
+      );
+
+      return result.map((p) => ({
+        id: p.id,
+        key: p.key,
+        name: p.name,
+        description: p.description,
+        createdAt: p.createdAt,
+        deletedAt: p.deletedAt,
+        role: p.role,
+        memberCount: memberCountMap.get(p.id) ?? 1,
+      }));
+    }),
 
   /**
    * Check if a project key is available
@@ -143,7 +196,8 @@ export const projectsRouter = {
 
   /**
    * Create a new project
-   * Validates key uniqueness and name uniqueness per user
+   * Key and name uniqueness enforced by DB constraints for race-condition safety.
+   * checkKeyAvailable query provides UX feedback while typing (different purpose).
    */
   create: protectedProcedure
     .input(
@@ -167,81 +221,69 @@ export const projectsRouter = {
     .handler(async ({ context, input }) => {
       const userId = context.session.user.id;
 
-      // Check key uniqueness
-      const existingKey = await db
-        .select({ id: projects.id })
-        .from(projects)
-        .where(eq(projects.key, input.key))
-        .limit(1);
+      try {
+        // Create project and add owner as member in a single transaction
+        // Constraint violations are caught and converted to friendly errors
+        const newProject = await db.transaction(async (tx) => {
+          const [project] = await tx
+            .insert(projects)
+            .values({
+              key: input.key,
+              name: input.name,
+              description: input.description,
+              ownerId: userId,
+            })
+            .returning({
+              id: projects.id,
+              key: projects.key,
+              name: projects.name,
+            });
 
-      if (existingKey.length > 0) {
-        throw new ORPCError("BAD_REQUEST", {
-          message: "Project key already exists",
-        });
-      }
-
-      // Check name uniqueness per user
-      const existingName = await db
-        .select({ id: projects.id })
-        .from(projects)
-        .where(and(eq(projects.ownerId, userId), eq(projects.name, input.name)))
-        .limit(1);
-
-      if (existingName.length > 0) {
-        throw new ORPCError("BAD_REQUEST", {
-          message: "Project name must be unique",
-        });
-      }
-
-      // Create project and add owner as member in a single transaction
-      const newProject = await db.transaction(async (tx) => {
-        const [project] = await tx
-          .insert(projects)
-          .values({
-            key: input.key,
-            name: input.name,
-            description: input.description,
-            ownerId: userId,
-          })
-          .returning({
-            id: projects.id,
-            key: projects.key,
-            name: projects.name,
+          // Add owner as project member
+          await tx.insert(projectMembers).values({
+            projectId: project.id,
+            userId,
+            role: "owner",
           });
 
-        // Add owner as project member
-        await tx.insert(projectMembers).values({
-          projectId: project.id,
-          userId,
-          role: "owner",
+          return project;
         });
 
-        return project;
-      });
+        log.info(
+          { projectId: newProject.id, key: input.key, userId },
+          "Project created"
+        );
 
-      log.info(
-        { projectId: newProject.id, key: input.key, userId },
-        "Project created"
-      );
-
-      return newProject;
+        return newProject;
+      } catch (error) {
+        // Convert constraint violations to friendly error messages
+        if (isUniqueViolation(error, UNIQUE_PROJECT_KEY_CONSTRAINT)) {
+          throw new ORPCError("BAD_REQUEST", {
+            message: "Project key already exists",
+          });
+        }
+        if (isUniqueViolation(error, UNIQUE_PROJECT_NAME_CONSTRAINT)) {
+          throw new ORPCError("BAD_REQUEST", {
+            message: "Project name must be unique",
+          });
+        }
+        throw error;
+      }
     }),
 
   /**
    * Get a single project by ID
-   * Verifies user is a member of the project
+   * Verifies user is a member of the project (system admins can access any project)
    */
   get: protectedProcedure
     .input(z.object({ projectId: z.string() }))
     .handler(async ({ context, input }) => {
-      const userId = context.session.user.id;
+      const { role } = await requireCanView(
+        input.projectId,
+        context.session.user
+      );
 
-      const { role } = await requireProjectMember({
-        projectId: input.projectId,
-        userId,
-      });
-
-      // Get project with owner info
+      // Get project with owner info (exclude soft-deleted)
       const result = await db
         .select({
           id: projects.id,
@@ -255,7 +297,9 @@ export const projectsRouter = {
         })
         .from(projects)
         .innerJoin(user, eq(user.id, projects.ownerId))
-        .where(eq(projects.id, input.projectId))
+        .where(
+          and(eq(projects.id, input.projectId), isNull(projects.deletedAt))
+        )
         .limit(1);
 
       if (result.length === 0) {
@@ -290,7 +334,7 @@ export const projectsRouter = {
 
   /**
    * Update a project
-   * Owner or admin can update. Key is immutable.
+   * Owner or admin can update. Key is immutable. System admins can update any project.
    */
   update: protectedProcedure
     .input(
@@ -309,21 +353,15 @@ export const projectsRouter = {
       })
     )
     .handler(async ({ context, input }) => {
-      const userId = context.session.user.id;
+      await requireCanUpdate(input.projectId, context.session.user);
 
-      await requireProjectRole({
-        projectId: input.projectId,
-        userId,
-        allowedRoles: ["owner", "admin"],
-        permission: PROJECT_PERMISSIONS.PROJECT_UPDATE,
-        action: "edit project settings",
-      });
-
-      // Get project to check existence and get ownerId for name uniqueness
+      // Get project to check existence and get ownerId for name uniqueness (exclude soft-deleted)
       const project = await db
         .select({ ownerId: projects.ownerId })
         .from(projects)
-        .where(eq(projects.id, input.projectId))
+        .where(
+          and(eq(projects.id, input.projectId), isNull(projects.deletedAt))
+        )
         .limit(1);
 
       if (project.length === 0) {
@@ -334,6 +372,7 @@ export const projectsRouter = {
 
       // Check name uniqueness if name is being changed
       // Use project owner's ID (not editing user) for uniqueness scope
+      // Only check against active (non-deleted) projects
       if (input.name) {
         const existingName = await db
           .select({ id: projects.id })
@@ -342,7 +381,8 @@ export const projectsRouter = {
             and(
               eq(projects.ownerId, project[0].ownerId),
               eq(projects.name, input.name),
-              sql`${projects.id} != ${input.projectId}`
+              sql`${projects.id} != ${input.projectId}`,
+              isNull(projects.deletedAt)
             )
           )
           .limit(1);
@@ -382,20 +422,22 @@ export const projectsRouter = {
           updatedAt: projects.updatedAt,
         });
 
-      log.info({ projectId: input.projectId, userId }, "Project updated");
+      log.info(
+        { projectId: input.projectId, userId: context.session.user.id },
+        "Project updated"
+      );
 
       return updated;
     }),
 
   /**
    * List project members
+   * System admins can view members of any project.
    */
   listMembers: protectedProcedure
     .input(z.object({ projectId: z.string() }))
     .handler(async ({ context, input }) => {
-      const userId = context.session.user.id;
-
-      await requireProjectMember({ projectId: input.projectId, userId });
+      await requireCanView(input.projectId, context.session.user);
 
       const members = await db
         .select({
@@ -425,18 +467,16 @@ export const projectsRouter = {
 
   /**
    * Search users by email/name for invitation
+   * System admins can search for any project.
    */
   searchInviteCandidates: protectedProcedure
     .input(z.object({ projectId: z.string(), query: z.string() }))
     .handler(async ({ context, input }) => {
-      const userId = context.session.user.id;
-
-      await requireProjectRole({
-        projectId: input.projectId,
-        userId,
-        allowedRoles: ["owner", "admin"],
-        permission: PROJECT_PERMISSIONS.MEMBERS_INVITE,
-      });
+      await requireCanManageMembers(
+        input.projectId,
+        context.session.user,
+        "invite"
+      );
 
       const query = input.query.trim();
       if (query.length < 2) {
@@ -476,6 +516,7 @@ export const projectsRouter = {
 
   /**
    * Invite a user to the project (immediate membership)
+   * System admins can invite to any project.
    */
   inviteMember: protectedProcedure
     .input(
@@ -488,12 +529,11 @@ export const projectsRouter = {
     .handler(async ({ context, input }) => {
       const inviterId = context.session.user.id;
 
-      await requireProjectRole({
-        projectId: input.projectId,
-        userId: inviterId,
-        allowedRoles: ["owner", "admin"],
-        permission: PROJECT_PERMISSIONS.MEMBERS_INVITE,
-      });
+      await requireCanManageMembers(
+        input.projectId,
+        context.session.user,
+        "invite"
+      );
 
       const role = input.role ?? "member";
 
@@ -568,6 +608,7 @@ export const projectsRouter = {
 
   /**
    * Change member role
+   * System admins can change roles in any project.
    */
   changeMemberRole: protectedProcedure
     .input(
@@ -578,14 +619,11 @@ export const projectsRouter = {
       })
     )
     .handler(async ({ context, input }) => {
-      const actorId = context.session.user.id;
-
-      await requireProjectRole({
-        projectId: input.projectId,
-        userId: actorId,
-        allowedRoles: ["owner", "admin"],
-        permission: PROJECT_PERMISSIONS.MEMBERS_CHANGE_ROLE,
-      });
+      await requireCanManageMembers(
+        input.projectId,
+        context.session.user,
+        "change_role"
+      );
 
       const membership = await db
         .select({ id: projectMembers.id, role: projectMembers.role })
@@ -634,12 +672,7 @@ export const projectsRouter = {
     .handler(async ({ context, input }) => {
       const currentOwnerId = context.session.user.id;
 
-      await requireProjectRole({
-        projectId: input.projectId,
-        userId: currentOwnerId,
-        allowedRoles: ["owner"],
-        permission: PROJECT_PERMISSIONS.PROJECT_TRANSFER_OWNERSHIP,
-      });
+      await requireCanTransferOwnership(input.projectId, context.session.user);
 
       // Validation: Cannot transfer to self
       if (input.newOwnerId === currentOwnerId) {
@@ -748,18 +781,18 @@ export const projectsRouter = {
 
   /**
    * Remove a member from the project
+   * System admins can remove members from any project.
    */
   removeMember: protectedProcedure
     .input(z.object({ projectId: z.string(), userId: z.string() }))
     .handler(async ({ context, input }) => {
       const actorId = context.session.user.id;
 
-      await requireProjectRole({
-        projectId: input.projectId,
-        userId: actorId,
-        allowedRoles: ["owner", "admin"],
-        permission: PROJECT_PERMISSIONS.MEMBERS_REMOVE,
-      });
+      await requireCanManageMembers(
+        input.projectId,
+        context.session.user,
+        "remove"
+      );
 
       if (input.userId === actorId) {
         throw new ORPCError("BAD_REQUEST", {
@@ -798,16 +831,199 @@ export const projectsRouter = {
     }),
 
   /**
-   * Delete project
-   * API-only for E2E test cleanup (no UI implemented yet)
+   * Get project impact summary for delete confirmation dialog
+   * Returns counts of resources that will be affected by deletion
+   * System admins can view impact for any project.
+   */
+  getImpact: protectedProcedure
+    .input(z.object({ projectId: z.string() }))
+    .handler(async ({ context, input }) => {
+      await requireCanDelete(input.projectId, context.session.user);
+
+      // Verify project exists and is not deleted
+      const project = await db
+        .select({ id: projects.id })
+        .from(projects)
+        .where(
+          and(eq(projects.id, input.projectId), isNull(projects.deletedAt))
+        )
+        .limit(1);
+
+      if (project.length === 0) {
+        throw new ORPCError("NOT_FOUND", {
+          message: "Project not found",
+        });
+      }
+
+      // Get member count
+      const [memberResult] = await db
+        .select({ count: count(projectMembers.id) })
+        .from(projectMembers)
+        .where(eq(projectMembers.projectId, input.projectId));
+
+      return {
+        cardCount: 0, // Cards don't exist yet (Epic 3+)
+        memberCount: Number(memberResult?.count ?? 0),
+        resourceCount: 0, // Resources don't exist yet (Epic 3+)
+      };
+    }),
+
+  /**
+   * Soft-delete (archive) a project
+   * Owner or system admin. Sets deletedAt timestamp, project can be restored within 30 days.
    */
   delete: protectedProcedure
     .input(z.object({ projectId: z.string() }))
-    .handler(async ({ input }) => {
-      await db.delete(projects).where(eq(projects.id, input.projectId));
+    .handler(async ({ context, input }) => {
+      await requireCanDelete(input.projectId, context.session.user);
 
-      log.info({ projectId: input.projectId }, "Project deleted");
+      // Verify project exists and is not already deleted
+      const project = await db
+        .select({ id: projects.id, deletedAt: projects.deletedAt })
+        .from(projects)
+        .where(eq(projects.id, input.projectId))
+        .limit(1);
+
+      if (project.length === 0) {
+        throw new ORPCError("NOT_FOUND", {
+          message: "Project not found",
+        });
+      }
+
+      if (project[0].deletedAt !== null) {
+        throw new ORPCError("BAD_REQUEST", {
+          message: "Project is already archived",
+        });
+      }
+
+      // Soft-delete: set deletedAt timestamp
+      await db
+        .update(projects)
+        .set({ deletedAt: new Date(), updatedAt: new Date() })
+        .where(eq(projects.id, input.projectId));
+
+      log.info(
+        { projectId: input.projectId, userId: context.session.user.id },
+        "Project archived"
+      );
 
       return { success: true };
+    }),
+
+  /**
+   * List archived (soft-deleted) projects
+   * System admin only - shows projects pending permanent deletion
+   */
+  listArchived: protectedProcedure.handler(async ({ context }) => {
+    const userId = context.session.user.id;
+
+    // Fetch user role from database (admin plugin adds role column)
+    const userRecord = await db
+      .select({ role: user.role })
+      .from(user)
+      .where(eq(user.id, userId))
+      .limit(1);
+
+    if (userRecord.length === 0 || userRecord[0].role !== "admin") {
+      throw new ORPCError("FORBIDDEN", {
+        message: "System admin access required",
+      });
+    }
+
+    const archivedProjects = await db
+      .select({
+        id: projects.id,
+        key: projects.key,
+        name: projects.name,
+        description: projects.description,
+        ownerId: projects.ownerId,
+        createdAt: projects.createdAt,
+        deletedAt: projects.deletedAt,
+        ownerName: user.name,
+        ownerEmail: user.email,
+      })
+      .from(projects)
+      .innerJoin(user, eq(user.id, projects.ownerId))
+      .where(isNotNull(projects.deletedAt))
+      .orderBy(sql`${projects.deletedAt} DESC`);
+
+    return archivedProjects.map((p) => ({
+      id: p.id,
+      key: p.key,
+      name: p.name,
+      description: p.description,
+      createdAt: p.createdAt,
+      deletedAt: p.deletedAt,
+      owner: {
+        id: p.ownerId,
+        name: p.ownerName,
+        email: p.ownerEmail,
+      },
+    }));
+  }),
+
+  /**
+   * Restore an archived project
+   * System admin only - removes deletedAt timestamp
+   */
+  restore: protectedProcedure
+    .input(z.object({ projectId: z.string() }))
+    .handler(async ({ context, input }) => {
+      const userId = context.session.user.id;
+
+      // Fetch user role from database (admin plugin adds role column)
+      const userRecord = await db
+        .select({ role: user.role })
+        .from(user)
+        .where(eq(user.id, userId))
+        .limit(1);
+
+      if (userRecord.length === 0 || userRecord[0].role !== "admin") {
+        throw new ORPCError("FORBIDDEN", {
+          message: "System admin access required",
+        });
+      }
+
+      // Verify project exists and IS archived
+      const project = await db
+        .select({
+          id: projects.id,
+          key: projects.key,
+          name: projects.name,
+          deletedAt: projects.deletedAt,
+        })
+        .from(projects)
+        .where(eq(projects.id, input.projectId))
+        .limit(1);
+
+      if (project.length === 0) {
+        throw new ORPCError("NOT_FOUND", {
+          message: "Project not found",
+        });
+      }
+
+      if (project[0].deletedAt === null) {
+        throw new ORPCError("BAD_REQUEST", {
+          message: "Project is not archived",
+        });
+      }
+
+      // Restore: clear deletedAt timestamp
+      const [restored] = await db
+        .update(projects)
+        .set({ deletedAt: null, updatedAt: new Date() })
+        .where(eq(projects.id, input.projectId))
+        .returning({
+          id: projects.id,
+          key: projects.key,
+          name: projects.name,
+        });
+
+      log.info(
+        { projectId: input.projectId, userId: context.session.user.id },
+        "Project restored"
+      );
+
+      return restored;
     }),
 };

@@ -1,5 +1,5 @@
 import { PROJECT_CONSTRAINTS } from "@planner/api/lib/validation/project";
-import { Check, Eye, Loader2, Lock } from "lucide-react";
+import { Check, Eye, Loader2, Lock, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -50,6 +50,8 @@ export type OverviewTabProps = {
   isSaving?: boolean;
   saveSuccess?: boolean;
   isReadOnly?: boolean;
+  canDelete?: boolean;
+  onDelete?: () => void;
 };
 
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Form component with read-only mode requires branching logic
@@ -61,6 +63,8 @@ export function OverviewTab({
   isSaving = false,
   saveSuccess = false,
   isReadOnly = false,
+  canDelete = false,
+  onDelete,
 }: OverviewTabProps) {
   const [name, setName] = useState(initialName);
   const [description, setDescription] = useState(initialDescription);
@@ -272,6 +276,39 @@ export function OverviewTab({
           </form>
         </CardContent>
       </Card>
+
+      {/* Danger Zone - only visible to project owners */}
+      {canDelete ? (
+        <Card className="border-destructive/30">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-base text-destructive">
+              Danger Zone
+            </CardTitle>
+            <CardDescription>
+              Irreversible actions that affect your entire project.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="space-y-1">
+                <p className="font-medium text-sm">Delete this project</p>
+                <p className="text-muted-foreground text-xs">
+                  Archive this project. It can be restored within 30 days.
+                </p>
+              </div>
+              <Button
+                className="gap-2"
+                onClick={onDelete}
+                type="button"
+                variant="destructive"
+              >
+                <Trash2 className="size-4" />
+                Delete Project
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      ) : null}
     </div>
   );
 }

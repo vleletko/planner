@@ -26,6 +26,7 @@ const meta = {
   args: {
     isOpen: true,
     projectName: "My Project",
+    projectKey: "PROJ",
     impact: mockImpactData,
     onOpenChange: fn(),
     onConfirm: fn(),

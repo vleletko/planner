@@ -76,6 +76,7 @@ async function seedUser(
       name: userData.name,
       email: userData.email,
       emailVerified: userData.emailVerified ?? false,
+      role: userData.role ?? "user",
       createdAt: now,
       updatedAt: now,
     });
@@ -91,8 +92,11 @@ async function seedUser(
       updatedAt: now,
     });
 
-    const status = userData.emailVerified ? "✅" : "📧";
-    console.log(`  ${status} Created: ${userData.email}`);
+    const verifiedStatus = userData.emailVerified ? "✅" : "📧";
+    const roleStatus = userData.role === "admin" ? "👑" : "👤";
+    console.log(
+      `  ${verifiedStatus}${roleStatus} Created: ${userData.email} (role: ${userData.role ?? "user"})`
+    );
     return true;
   } catch (error) {
     console.error(`  ❌ Failed: ${userData.email}`, error);

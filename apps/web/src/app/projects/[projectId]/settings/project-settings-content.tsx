@@ -5,6 +5,7 @@ import { AlertCircle, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { type ReactNode, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import { DeleteProjectDialog } from "@/components/projects/delete-project-dialog";
 import type { InviteUserResult } from "@/components/projects/hooks/use-invite-user-search";
 import { InviteMemberDialog } from "@/components/projects/invite-member-dialog";
 import type {
@@ -30,6 +31,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import { authClient } from "@/lib/auth-client";
 import { orpc } from "@/utils/orpc";
 
 type ProjectSettingsContentProps = {
@@ -39,10 +41,18 @@ type ProjectSettingsContentProps = {
 export function ProjectSettingsContent({
   projectId,
 }: ProjectSettingsContentProps) {
+  const router = useRouter();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<ProjectSettingsTab>("overview");
   const [saveSuccess, setSaveSuccess] = useState(false);
   const successTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Get current user's system admin status
+  // Note: admin plugin adds role field to user at runtime, but type inference
+  // across module boundaries doesn't include it - use type assertion
+  const { data: session } = authClient.useSession();
+  const userRole = (session?.user as { role?: string } | undefined)?.role;
+  const isSystemAdmin = userRole === "admin";
 
   // Cleanup timeout on unmount to prevent memory leaks
   useEffect(
@@ -93,6 +103,7 @@ export function ProjectSettingsContent({
   );
   const [memberToRemove, setMemberToRemove] = useState<Member | null>(null);
   const [isTransferOpen, setIsTransferOpen] = useState(false);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 
   const inviteMutation = useMutation({
     mutationFn: (data: { userId: string; role: "admin" | "member" }) =>
@@ -163,6 +174,29 @@ export function ProjectSettingsContent({
     },
     onError: (err) => {
       toast.error(err.message || "Failed to transfer ownership");
+    },
+  });
+
+  // Delete project impact and mutation
+  const impactQueryOptions = orpc.projects.getImpact.queryOptions({
+    input: { projectId },
+  });
+
+  const { data: impactData, isLoading: isLoadingImpact } = useQuery({
+    ...impactQueryOptions,
+    enabled: isDeleteOpen,
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: () => orpc.projects.delete.call({ projectId }),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["projects"] });
+      toast.success("Project deleted successfully");
+      setIsDeleteOpen(false);
+      router.push("/projects");
+    },
+    onError: (err) => {
+      toast.error(err.message || "Failed to delete project");
     },
   });
 
@@ -301,86 +335,101 @@ export function ProjectSettingsContent({
   }
 
   return (
-    <ProjectSettingsLayout
-      activeTab={activeTab}
-      membersContent={
-        <div className="space-y-4">
-          {membersTabContent}
+    <>
+      <ProjectSettingsLayout
+        activeTab={activeTab}
+        membersContent={
+          <div className="space-y-4">
+            {membersTabContent}
 
-          <InviteMemberDialog
-            isOpen={isInviteOpen}
-            isSubmitting={inviteMutation.isPending}
-            onInvite={handleInvite}
-            onOpenChange={(open) => {
-              setIsInviteOpen(open);
-              if (!open) {
-                setInviteSubmitError(null);
-              }
-            }}
-            onSearchUser={handleInviteSearch}
-            searchQueryKeyPrefix={["invite-user-search", projectId]}
-            submitError={inviteSubmitError}
+            <InviteMemberDialog
+              isOpen={isInviteOpen}
+              isSubmitting={inviteMutation.isPending}
+              onInvite={handleInvite}
+              onOpenChange={(open) => {
+                setIsInviteOpen(open);
+                if (!open) {
+                  setInviteSubmitError(null);
+                }
+              }}
+              onSearchUser={handleInviteSearch}
+              searchQueryKeyPrefix={["invite-user-search", projectId]}
+              submitError={inviteSubmitError}
+            />
+
+            <AlertDialog
+              onOpenChange={(open) => {
+                if (!open) {
+                  setMemberToRemove(null);
+                }
+              }}
+              open={memberToRemove !== null}
+            >
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Remove member?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Remove {memberToRemove?.name ?? "this member"} from this
+                    project. They will immediately lose access.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel disabled={removeMutation.isPending}>
+                    Cancel
+                  </AlertDialogCancel>
+                  <AlertDialogAction
+                    disabled={removeMutation.isPending}
+                    onClick={() => {
+                      if (!memberToRemove) {
+                        return;
+                      }
+                      removeMutation.mutate(memberToRemove.id);
+                    }}
+                  >
+                    {removeMutation.isPending ? "Removing…" : "Remove"}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+
+            <TransferOwnershipDialog
+              currentMembers={transferableMembers}
+              isOpen={isTransferOpen}
+              isSubmitting={transferMutation.isPending}
+              onOpenChange={setIsTransferOpen}
+              onTransfer={(newOwnerId) => transferMutation.mutate(newOwnerId)}
+              projectName={project.name}
+            />
+          </div>
+        }
+        onTabChange={setActiveTab}
+        overviewContent={
+          <OverviewTab
+            canDelete={project.role === "owner" || isSystemAdmin}
+            initialDescription={project.description ?? ""}
+            initialName={project.name}
+            isReadOnly={isReadOnly}
+            isSaving={updateMutation.isPending}
+            onDelete={() => setIsDeleteOpen(true)}
+            onSave={handleSave}
+            projectKey={project.key}
+            saveSuccess={saveSuccess}
           />
+        }
+        projectName={project.name}
+      />
 
-          <AlertDialog
-            onOpenChange={(open) => {
-              if (!open) {
-                setMemberToRemove(null);
-              }
-            }}
-            open={memberToRemove !== null}
-          >
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Remove member?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Remove {memberToRemove?.name ?? "this member"} from this
-                  project. They will immediately lose access.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel disabled={removeMutation.isPending}>
-                  Cancel
-                </AlertDialogCancel>
-                <AlertDialogAction
-                  disabled={removeMutation.isPending}
-                  onClick={() => {
-                    if (!memberToRemove) {
-                      return;
-                    }
-                    removeMutation.mutate(memberToRemove.id);
-                  }}
-                >
-                  {removeMutation.isPending ? "Removing…" : "Remove"}
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-
-          <TransferOwnershipDialog
-            currentMembers={transferableMembers}
-            isOpen={isTransferOpen}
-            isSubmitting={transferMutation.isPending}
-            onOpenChange={setIsTransferOpen}
-            onTransfer={(newOwnerId) => transferMutation.mutate(newOwnerId)}
-            projectName={project.name}
-          />
-        </div>
-      }
-      onTabChange={setActiveTab}
-      overviewContent={
-        <OverviewTab
-          initialDescription={project.description ?? ""}
-          initialName={project.name}
-          isReadOnly={isReadOnly}
-          isSaving={updateMutation.isPending}
-          onSave={handleSave}
-          projectKey={project.key}
-          saveSuccess={saveSuccess}
-        />
-      }
-      projectName={project.name}
-    />
+      <DeleteProjectDialog
+        impact={impactData}
+        isLoadingImpact={isLoadingImpact}
+        isOpen={isDeleteOpen}
+        isSubmitting={deleteMutation.isPending}
+        onConfirm={() => deleteMutation.mutate()}
+        onOpenChange={setIsDeleteOpen}
+        projectKey={project.key}
+        projectName={project.name}
+      />
+    </>
   );
 }
 

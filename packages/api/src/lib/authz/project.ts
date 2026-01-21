@@ -1,6 +1,15 @@
 import { ORPCError } from "@orpc/server";
 
 export type ProjectRole = "owner" | "admin" | "member";
+export type UserRole = "user" | "admin";
+
+/**
+ * Check if a user has system admin privileges based on their role.
+ * System admins can perform any action across all projects.
+ */
+export function checkSystemAdmin(userRole: string | null | undefined): boolean {
+  return userRole === "admin";
+}
 
 export const PROJECT_PERMISSIONS = {
   PROJECT_READ: "project:read",
@@ -158,4 +167,107 @@ export function canProjectRole({
 
   const allowedRoles = PROJECT_PERMISSION_MATRIX[permission];
   return allowedRoles.includes(role);
+}
+
+/**
+ * Check if user has access to a project.
+ * System admins can access any project even if not a member.
+ *
+ * @param role - The user's project role, or null if not a member
+ * @param isSystemAdmin - Whether the user is a system admin
+ * @returns The effective role (actual role if member, synthetic "admin" for non-member system admins)
+ * @throws ORPCError FORBIDDEN if non-admin and not a member
+ */
+export function requireProjectAccess({
+  role,
+  isSystemAdmin,
+}: {
+  role: ProjectRole | null;
+  isSystemAdmin: boolean;
+}): ProjectRole {
+  if (isSystemAdmin) {
+    return role ?? "admin"; // Synthetic role for non-member system admins
+  }
+
+  if (!role) {
+    throw new ORPCError("FORBIDDEN", {
+      message: "You don't have access to this project. Contact project owner.",
+    });
+  }
+
+  return role;
+}
+
+// ============================================
+// PURE PERMISSION FUNCTIONS - SHARED BY BACKEND & FRONTEND
+// ============================================
+
+/**
+ * Check if user can view the project.
+ * System admins can view any project.
+ */
+export function canViewProject(
+  projectRole: ProjectRole | null,
+  systemRole: UserRole
+): boolean {
+  if (systemRole === "admin") {
+    return true;
+  }
+  return projectRole !== null;
+}
+
+/**
+ * Check if user can update project settings.
+ * Requires owner, admin, or system admin.
+ */
+export function canUpdateProject(
+  projectRole: ProjectRole | null,
+  systemRole: UserRole
+): boolean {
+  if (systemRole === "admin") {
+    return true;
+  }
+  return projectRole === "owner" || projectRole === "admin";
+}
+
+/**
+ * Check if user can manage project members (invite/remove/change role).
+ * Requires owner, admin, or system admin.
+ */
+export function canManageMembers(
+  projectRole: ProjectRole | null,
+  systemRole: UserRole
+): boolean {
+  if (systemRole === "admin") {
+    return true;
+  }
+  return projectRole === "owner" || projectRole === "admin";
+}
+
+/**
+ * Check if user can delete the project.
+ * Requires owner or system admin.
+ */
+export function canDeleteProject(
+  projectRole: ProjectRole | null,
+  systemRole: UserRole
+): boolean {
+  if (systemRole === "admin") {
+    return true;
+  }
+  return projectRole === "owner";
+}
+
+/**
+ * Check if user can transfer project ownership.
+ * Requires owner or system admin.
+ */
+export function canTransferOwnership(
+  projectRole: ProjectRole | null,
+  systemRole: UserRole
+): boolean {
+  if (systemRole === "admin") {
+    return true;
+  }
+  return projectRole === "owner";
 }

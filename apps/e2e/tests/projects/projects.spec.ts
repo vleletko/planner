@@ -310,10 +310,22 @@ async function createTestProject(
   };
 }
 
-async function deleteProject(page: Page, projectId: string): Promise<void> {
-  const res = await callRpc(page, "/api/rpc/projects/delete", { projectId });
-  if (!res.ok) {
-    throw new Error(`Failed to delete project: ${JSON.stringify(res.body)}`);
+/**
+ * Delete a project using admin credentials.
+ * Project deletion requires system admin role, so we create a fresh admin session.
+ */
+async function deleteProject(
+  browser: Browser,
+  projectId: string
+): Promise<void> {
+  const { context, page } = await newLoggedInPage(browser, adminUser);
+  try {
+    const res = await callRpc(page, "/api/rpc/projects/delete", { projectId });
+    if (!res.ok) {
+      throw new Error(`Failed to delete project: ${JSON.stringify(res.body)}`);
+    }
+  } finally {
+    await context.close();
   }
 }
 
@@ -330,8 +342,9 @@ test.describe("Project Ownership Transfer", () => {
   test.describe("UI Visibility", () => {
     test("owner can access transfer ownership from member dropdown", async ({
       authenticatedPage,
+      browser,
     }) => {
-      const { projectSettingsPage } = await createTestProject(
+      const { projectSettingsPage, projectId } = await createTestProject(
         authenticatedPage,
         { addDemoUserAs: "member" }
       );
@@ -341,10 +354,7 @@ test.describe("Project Ownership Transfer", () => {
       );
       await projectSettingsPage.closeTransferOwnershipDialog();
 
-      await deleteProject(
-        authenticatedPage,
-        await getProjectId(authenticatedPage)
-      );
+      await deleteProject(browser, projectId);
     });
 
     test("admin does not see transfer ownership button", async ({
@@ -396,7 +406,7 @@ test.describe("Project Ownership Transfer", () => {
       await demoContext.close();
 
       // Cleanup
-      await deleteProject(authenticatedPage, projectId);
+      await deleteProject(browser, projectId);
     });
 
     test("member does not see transfer ownership button", async ({
@@ -458,6 +468,7 @@ test.describe("Project Ownership Transfer", () => {
   test.describe("Dialog Behavior", () => {
     test("dropdown shows only non-owner members", async ({
       authenticatedPage,
+      browser,
     }) => {
       const { projectSettingsPage, projectId } = await createTestProject(
         authenticatedPage,
@@ -473,11 +484,12 @@ test.describe("Project Ownership Transfer", () => {
       );
       await projectSettingsPage.closeTransferOwnershipDialog();
 
-      await deleteProject(authenticatedPage, projectId);
+      await deleteProject(browser, projectId);
     });
 
     test("submit button disabled until checkbox checked", async ({
       authenticatedPage,
+      browser,
     }) => {
       const { projectSettingsPage, projectId } = await createTestProject(
         authenticatedPage,
@@ -494,11 +506,12 @@ test.describe("Project Ownership Transfer", () => {
       await projectSettingsPage.expectTransferSubmitButtonEnabled();
       await projectSettingsPage.closeTransferOwnershipDialog();
 
-      await deleteProject(authenticatedPage, projectId);
+      await deleteProject(browser, projectId);
     });
 
     test("cancel closes dialog without changes", async ({
       authenticatedPage,
+      browser,
     }) => {
       const { projectSettingsPage, projectId } = await createTestProject(
         authenticatedPage,
@@ -516,7 +529,7 @@ test.describe("Project Ownership Transfer", () => {
       await projectSettingsPage.expectMemberRole(testUser.email, "Owner");
       await projectSettingsPage.expectMemberRole(demoUser.email, "Member");
 
-      await deleteProject(authenticatedPage, projectId);
+      await deleteProject(browser, projectId);
     });
   });
 
@@ -561,8 +574,8 @@ test.describe("Project Ownership Transfer", () => {
         testUser.name
       );
 
-      // Cleanup (new owner must delete)
-      await deleteProject(newOwnerPage, projectId);
+      // Cleanup
+      await deleteProject(browser, projectId);
       await newOwnerContext.close();
     });
   });
@@ -570,6 +583,7 @@ test.describe("Project Ownership Transfer", () => {
   test.describe("Edge Cases", () => {
     test("owner-only project has no transferable members", async ({
       authenticatedPage,
+      browser,
     }) => {
       const { projectSettingsPage, projectId } =
         await createTestProject(authenticatedPage);
@@ -582,13 +596,14 @@ test.describe("Project Ownership Transfer", () => {
       expect(memberCount).toBe(1);
       await projectSettingsPage.expectMemberRole(testUser.email, "Owner");
 
-      await deleteProject(authenticatedPage, projectId);
+      await deleteProject(browser, projectId);
     });
   });
 
   test.describe("API Validation", () => {
     test("rejects transfer to self with BAD_REQUEST", async ({
       authenticatedPage,
+      browser,
     }) => {
       const { projectId } = await createTestProject(authenticatedPage, {
         addDemoUserAs: "member",
@@ -616,11 +631,12 @@ test.describe("Project Ownership Transfer", () => {
       expect(result.status).toBe(400);
       expect(readOrpcMessage(result.body)).toMatch(TRANSFER_TO_SELF_REGEX);
 
-      await deleteProject(authenticatedPage, projectId);
+      await deleteProject(browser, projectId);
     });
 
     test("rejects transfer to non-member with NOT_FOUND", async ({
       authenticatedPage,
+      browser,
     }) => {
       const { projectId } = await createTestProject(authenticatedPage);
 
@@ -639,7 +655,7 @@ test.describe("Project Ownership Transfer", () => {
         TRANSFER_TO_NON_MEMBER_REGEX
       );
 
-      await deleteProject(authenticatedPage, projectId);
+      await deleteProject(browser, projectId);
     });
 
     test("rejects non-owner caller with FORBIDDEN", async ({
@@ -668,7 +684,7 @@ test.describe("Project Ownership Transfer", () => {
       expect(readOrpcMessage(result.body)).toMatch(PERMISSION_DENIED_REGEX);
 
       await adminContext.close();
-      await deleteProject(authenticatedPage, projectId);
+      await deleteProject(browser, projectId);
     });
   });
 });
@@ -1426,5 +1442,570 @@ test.describe("Project Members", () => {
     expect(remove.ok).toBe(false);
     expect(remove.status).toBe(403);
     expect(readOrpcMessage(remove.body)).toMatch(PERMISSION_DENIED_REGEX);
+  });
+});
+
+// Additional patterns for project deletion tests
+const RESTORE_FORBIDDEN_REGEX = /admin/i;
+
+test.describe("Project Deletion", () => {
+  test.describe("UI Visibility", () => {
+    test("system admin sees Delete Project button in danger zone", async ({
+      browser,
+    }) => {
+      // Login as admin user (system admin)
+      const { context: adminContext, page: adminPage } = await newLoggedInPage(
+        browser,
+        adminUser
+      );
+
+      // Create a test project as admin
+      const projectsPage = new ProjectsPage(adminPage);
+      await projectsPage.goto();
+      await projectsPage.openCreateDialog();
+
+      const projectName = generateUniqueProjectName();
+      await projectsPage.fillProjectForm(projectName);
+      await projectsPage.waitForKeyValidation();
+      await projectsPage.submitCreateForm();
+      await projectsPage.expectCreateSuccess();
+
+      const projectSettingsPage = new ProjectSettingsPage(adminPage);
+      await projectSettingsPage.expectToBeOnSettingsPage();
+
+      // Admin should see danger zone and delete button
+      await projectSettingsPage.expectDangerZoneVisible();
+      await projectSettingsPage.expectDeleteProjectButtonVisible();
+
+      // Cleanup
+      const projectId = getProjectId(adminPage);
+      await deleteProject(browser, projectId);
+      await adminContext.close();
+    });
+
+    test("owner (non-admin) sees Delete Project button", async ({
+      authenticatedPage,
+    }) => {
+      // testUser is NOT a system admin, but IS owner of their projects
+      const { projectSettingsPage } =
+        await openFirstUserProjectSettings(authenticatedPage);
+
+      // Owner should see danger zone and delete button (owner can delete)
+      await projectSettingsPage.expectDangerZoneVisible();
+      await projectSettingsPage.expectDeleteProjectButtonVisible();
+    });
+
+    test("member does NOT see Delete Project button", async ({
+      authenticatedPage,
+    }) => {
+      const projectsPage = new ProjectsPage(authenticatedPage);
+      const projectSettingsPage = new ProjectSettingsPage(authenticatedPage);
+
+      // Get a project where test user is a member (not owner)
+      const memberProject = memberProjects[0];
+      if (!memberProject) {
+        throw new Error("No member projects found for test user");
+      }
+
+      await projectsPage.goto();
+      await projectsPage.clickProject(memberProject.name);
+      await projectSettingsPage.expectToBeOnSettingsPage();
+
+      // Member should NOT see danger zone or delete button
+      await projectSettingsPage.expectDangerZoneNotVisible();
+      await projectSettingsPage.expectDeleteProjectButtonNotVisible();
+    });
+  });
+
+  test.describe("Dialog Behavior", () => {
+    test("delete dialog shows impact summary", async ({ browser }) => {
+      const { context: adminContext, page: adminPage } = await newLoggedInPage(
+        browser,
+        adminUser
+      );
+
+      // Create a test project
+      const {
+        projectSettingsPage,
+        projectId,
+        projectName: _projectName,
+      } = await createTestProject(adminPage);
+
+      // Open delete dialog
+      await projectSettingsPage.openDeleteProjectDialog();
+
+      // Check impact summary is displayed
+      await projectSettingsPage.expectImpactSummaryVisible();
+
+      // Cleanup
+      await projectSettingsPage.closeDeleteDialog();
+      await deleteProject(browser, projectId);
+      await adminContext.close();
+    });
+
+    test("delete dialog requires exact project name match", async ({
+      browser,
+    }) => {
+      const { context: adminContext, page: adminPage } = await newLoggedInPage(
+        browser,
+        adminUser
+      );
+
+      // Create a test project
+      const { projectSettingsPage, projectId, projectName } =
+        await createTestProject(adminPage);
+
+      await projectSettingsPage.openDeleteProjectDialog();
+
+      // Initially button should be disabled
+      await projectSettingsPage.expectDeleteSubmitButtonDisabled();
+
+      // Enter exact name - button should enable
+      await projectSettingsPage.fillDeleteConfirmation(projectName);
+      await projectSettingsPage.expectDeleteSubmitButtonEnabled();
+
+      // Cleanup
+      await projectSettingsPage.closeDeleteDialog();
+      await deleteProject(browser, projectId);
+      await adminContext.close();
+    });
+
+    test("partial name match shows error, button stays disabled", async ({
+      browser,
+    }) => {
+      const { context: adminContext, page: adminPage } = await newLoggedInPage(
+        browser,
+        adminUser
+      );
+
+      // Create a test project with known name
+      const {
+        projectSettingsPage,
+        projectId,
+        projectName: _projectName,
+      } = await createTestProject(adminPage);
+
+      await projectSettingsPage.openDeleteProjectDialog();
+
+      // Enter wrong name (different case or substring)
+      await projectSettingsPage.fillDeleteConfirmation("Wrong Name");
+
+      // Should show mismatch error and button should be disabled
+      await projectSettingsPage.expectDeleteNameMismatchError();
+      await projectSettingsPage.expectDeleteSubmitButtonDisabled();
+
+      // Cleanup
+      await projectSettingsPage.closeDeleteDialog();
+      await deleteProject(browser, projectId);
+      await adminContext.close();
+    });
+
+    test("cancel button closes dialog without changes", async ({ browser }) => {
+      const { context: adminContext, page: adminPage } = await newLoggedInPage(
+        browser,
+        adminUser
+      );
+
+      const { projectSettingsPage, projectId, projectName } =
+        await createTestProject(adminPage);
+
+      await projectSettingsPage.openDeleteProjectDialog();
+      await projectSettingsPage.fillDeleteConfirmation(projectName);
+      await projectSettingsPage.expectDeleteSubmitButtonEnabled();
+
+      // Cancel
+      await projectSettingsPage.closeDeleteDialog();
+
+      // Project should still exist - danger zone should still be visible
+      await projectSettingsPage.expectDangerZoneVisible();
+
+      // Cleanup
+      await deleteProject(browser, projectId);
+      await adminContext.close();
+    });
+  });
+
+  test.describe("Happy Path Flow", () => {
+    test("admin deletes project → redirected to projects list + success toast", async ({
+      browser,
+    }) => {
+      const { context: adminContext, page: adminPage } = await newLoggedInPage(
+        browser,
+        adminUser
+      );
+
+      const { projectSettingsPage, projectName } =
+        await createTestProject(adminPage);
+
+      await projectSettingsPage.openDeleteProjectDialog();
+      await projectSettingsPage.fillDeleteConfirmation(projectName);
+      await projectSettingsPage.submitDeleteAndExpectSuccess();
+
+      // Should be redirected to projects list
+      const projectsPage = new ProjectsPage(adminPage);
+      await projectsPage.expectToBeOnProjectsPage();
+
+      await adminContext.close();
+    });
+
+    test("deleted project does not appear in Active filter", async ({
+      browser,
+    }) => {
+      const { context: adminContext, page: adminPage } = await newLoggedInPage(
+        browser,
+        adminUser
+      );
+
+      // Create and delete a project
+      const projectsPage = new ProjectsPage(adminPage);
+      await projectsPage.goto();
+      await projectsPage.openCreateDialog();
+
+      const projectName = generateUniqueProjectName();
+      await projectsPage.fillProjectForm(projectName);
+      await projectsPage.waitForKeyValidation();
+
+      // Get the auto-generated key before submitting
+      const keyInput = adminPage.getByLabel(PROJECT_KEY_LABEL_REGEX);
+      const projectKey = await keyInput.inputValue();
+
+      await projectsPage.submitCreateForm();
+      await projectsPage.expectCreateSuccess();
+
+      // Delete the project
+      const projectSettingsPage = new ProjectSettingsPage(adminPage);
+      await projectSettingsPage.openDeleteProjectDialog();
+      await projectSettingsPage.fillDeleteConfirmation(projectName);
+      await projectSettingsPage.submitDeleteAndExpectSuccess();
+
+      // Back on projects list with Active filter (default)
+      await projectsPage.expectToBeOnProjectsPage();
+      await projectsPage.expectProjectCardNotVisible(projectKey);
+
+      await adminContext.close();
+    });
+
+    test("admin can filter to show Archived projects", async ({ browser }) => {
+      const { context: adminContext, page: adminPage } = await newLoggedInPage(
+        browser,
+        adminUser
+      );
+
+      // Create and delete a project
+      const projectsPage = new ProjectsPage(adminPage);
+      await projectsPage.goto();
+      await projectsPage.openCreateDialog();
+
+      const projectName = generateUniqueProjectName();
+      await projectsPage.fillProjectForm(projectName);
+      await projectsPage.waitForKeyValidation();
+
+      const keyInput = adminPage.getByLabel(PROJECT_KEY_LABEL_REGEX);
+      const projectKey = await keyInput.inputValue();
+
+      await projectsPage.submitCreateForm();
+      await projectsPage.expectCreateSuccess();
+
+      const projectSettingsPage = new ProjectSettingsPage(adminPage);
+      await projectSettingsPage.openDeleteProjectDialog();
+      await projectSettingsPage.fillDeleteConfirmation(projectName);
+      await projectSettingsPage.submitDeleteAndExpectSuccess();
+
+      // Switch to Archived filter
+      await projectsPage.selectStatusFilter("archived");
+
+      // Deleted project should be visible with Archived badge
+      await projectsPage.expectProjectCardWithKey(projectKey);
+      await projectsPage.expectArchivedBadgeForProject(projectKey);
+
+      await adminContext.close();
+    });
+
+    test("admin can filter archived projects by name", async ({ browser }) => {
+      const { context: adminContext, page: adminPage } = await newLoggedInPage(
+        browser,
+        adminUser
+      );
+
+      // Create and delete a project
+      const projectsPage = new ProjectsPage(adminPage);
+      await projectsPage.goto();
+      await projectsPage.openCreateDialog();
+
+      const projectName = generateUniqueProjectName();
+      await projectsPage.fillProjectForm(projectName);
+      await projectsPage.waitForKeyValidation();
+
+      const keyInput = adminPage.getByLabel(PROJECT_KEY_LABEL_REGEX);
+      const projectKey = await keyInput.inputValue();
+
+      await projectsPage.submitCreateForm();
+      await projectsPage.expectCreateSuccess();
+
+      const projectSettingsPage = new ProjectSettingsPage(adminPage);
+      await projectSettingsPage.openDeleteProjectDialog();
+      await projectSettingsPage.fillDeleteConfirmation(projectName);
+      await projectSettingsPage.submitDeleteAndExpectSuccess();
+
+      // Switch to Archived filter and search by name
+      await projectsPage.selectStatusFilter("archived");
+      await projectsPage.fillSearchFilter(projectName.slice(0, 6)); // Use partial name
+
+      // Should find the archived project
+      await projectsPage.expectProjectCardWithKey(projectKey);
+
+      await adminContext.close();
+    });
+
+    test("admin can restore archived project", async ({ browser }) => {
+      const { context: adminContext, page: adminPage } = await newLoggedInPage(
+        browser,
+        adminUser
+      );
+
+      // Create and delete a project
+      const projectsPage = new ProjectsPage(adminPage);
+      await projectsPage.goto();
+      await projectsPage.openCreateDialog();
+
+      const projectName = generateUniqueProjectName();
+      await projectsPage.fillProjectForm(projectName);
+      await projectsPage.waitForKeyValidation();
+
+      const keyInput = adminPage.getByLabel(PROJECT_KEY_LABEL_REGEX);
+      const projectKey = await keyInput.inputValue();
+
+      await projectsPage.submitCreateForm();
+      await projectsPage.expectCreateSuccess();
+
+      const projectId = getProjectId(adminPage);
+
+      const projectSettingsPage = new ProjectSettingsPage(adminPage);
+      await projectSettingsPage.openDeleteProjectDialog();
+      await projectSettingsPage.fillDeleteConfirmation(projectName);
+      await projectSettingsPage.submitDeleteAndExpectSuccess();
+
+      // Switch to Archived filter
+      await projectsPage.selectStatusFilter("archived");
+      await projectsPage.expectProjectCardWithKey(projectKey);
+
+      // Restore the project
+      await projectsPage.restoreProject(projectKey);
+
+      // Switch back to Active filter - project should be there
+      await projectsPage.selectStatusFilter("active");
+      await projectsPage.expectProjectCardWithKey(projectKey);
+
+      // Cleanup
+      await deleteProject(browser, projectId);
+
+      await adminContext.close();
+    });
+  });
+
+  test.describe("API Validation", () => {
+    test("API rejects non-owner member with FORBIDDEN", async ({
+      authenticatedPage,
+    }) => {
+      // Get a project where test user is a member (not owner)
+      const memberProject = memberProjects[0];
+      if (!memberProject) {
+        throw new Error("No member projects found for test user");
+      }
+
+      // Navigate to the member project settings to get the project ID
+      const projectsPage = new ProjectsPage(authenticatedPage);
+      const projectSettingsPage = new ProjectSettingsPage(authenticatedPage);
+      await projectsPage.goto();
+      await projectsPage.clickProject(memberProject.name);
+      await projectSettingsPage.expectToBeOnSettingsPage();
+
+      const projectId = getProjectId(authenticatedPage);
+
+      // Try to delete as testUser (member but not owner)
+      const deleteResult = await callRpc(
+        authenticatedPage,
+        "/api/rpc/projects/delete",
+        { projectId }
+      );
+
+      expect(deleteResult.ok).toBe(false);
+      expect(deleteResult.status).toBe(403);
+      expect(readOrpcMessage(deleteResult.body)).toMatch(
+        PERMISSION_DENIED_REGEX
+      );
+    });
+
+    test("API rejects restore by non-admin with FORBIDDEN", async ({
+      authenticatedPage,
+      browser,
+    }) => {
+      // Admin creates and deletes a project
+      const { context: adminContext, page: adminPage } = await newLoggedInPage(
+        browser,
+        adminUser
+      );
+
+      const { projectId } = await createTestProject(adminPage);
+      await deleteProject(browser, projectId);
+
+      // testUser tries to restore (not system admin)
+      const restoreResult = await callRpc(
+        authenticatedPage,
+        "/api/rpc/projects/restore",
+        { projectId }
+      );
+
+      expect(restoreResult.ok).toBe(false);
+      expect(restoreResult.status).toBe(403);
+      expect(readOrpcMessage(restoreResult.body)).toMatch(
+        RESTORE_FORBIDDEN_REGEX
+      );
+
+      await adminContext.close();
+    });
+
+    test("API returns NOT_FOUND for accessing deleted project", async ({
+      browser,
+    }) => {
+      const { context: adminContext, page: adminPage } = await newLoggedInPage(
+        browser,
+        adminUser
+      );
+
+      const { projectId } = await createTestProject(adminPage);
+      await deleteProject(browser, projectId);
+
+      // Try to get the deleted project
+      const getResult = await callRpc(adminPage, "/api/rpc/projects/get", {
+        projectId,
+      });
+
+      expect(getResult.ok).toBe(false);
+      expect(getResult.status).toBe(404);
+
+      await adminContext.close();
+    });
+  });
+
+  test.describe("Filter Visibility", () => {
+    test("system admin sees status filter dropdown", async ({ browser }) => {
+      const { context: adminContext, page: adminPage } = await newLoggedInPage(
+        browser,
+        adminUser
+      );
+
+      const projectsPage = new ProjectsPage(adminPage);
+      await projectsPage.goto();
+      await projectsPage.expectToBeOnProjectsPage();
+      await projectsPage.expectStatusFilterVisible();
+
+      await adminContext.close();
+    });
+
+    test("non-admin user does NOT see status filter dropdown", async ({
+      authenticatedPage,
+    }) => {
+      const projectsPage = new ProjectsPage(authenticatedPage);
+      await projectsPage.goto();
+      await projectsPage.expectToBeOnProjectsPage();
+      await projectsPage.expectStatusFilterNotVisible();
+    });
+  });
+
+  test.describe("System Admin Full Access", () => {
+    test("system admin has full access to project they are NOT a member of", async ({
+      browser,
+    }) => {
+      // Create project as testUser (non-admin)
+      const { context: testContext, page: testPage } = await newLoggedInPage(
+        browser,
+        testUser
+      );
+      const { projectId, projectName } = await createTestProject(testPage);
+      await testContext.close();
+
+      // Login as adminUser who is NOT a member of this project
+      const { context: adminContext, page: adminPage } = await newLoggedInPage(
+        browser,
+        adminUser
+      );
+
+      // Navigate directly to the project settings
+      await adminPage.goto(`/projects/${projectId}/settings`);
+      const projectSettingsPage = new ProjectSettingsPage(adminPage);
+
+      // Can view settings
+      await projectSettingsPage.expectToBeOnSettingsPage();
+
+      // Can edit project
+      const editedName = `${projectName} (edited by admin)`;
+      await projectSettingsPage.fillProjectName(editedName);
+      await projectSettingsPage.saveAndExpectSuccess();
+
+      // Reload page to ensure the new name is reflected in the delete dialog
+      await adminPage.reload();
+      await projectSettingsPage.expectToBeOnSettingsPage();
+
+      // Can view and use delete functionality
+      await projectSettingsPage.expectDangerZoneVisible();
+      await projectSettingsPage.openDeleteProjectDialog();
+      await projectSettingsPage.expectImpactSummaryVisible();
+      await projectSettingsPage.fillDeleteConfirmation(editedName);
+      await projectSettingsPage.submitDeleteAndExpectSuccess();
+
+      // Should be redirected to projects list
+      const projectsPage = new ProjectsPage(adminPage);
+      await projectsPage.expectToBeOnProjectsPage();
+
+      await adminContext.close();
+    });
+
+    test("system admin can manage members of project they are NOT a member of", async ({
+      browser,
+    }) => {
+      // Create project as testUser (non-admin)
+      const { context: testContext, page: testPage } = await newLoggedInPage(
+        browser,
+        testUser
+      );
+      const { projectId } = await createTestProject(testPage);
+      await testContext.close();
+
+      // Login as adminUser who is NOT a member of this project
+      const { context: adminContext, page: adminPage } = await newLoggedInPage(
+        browser,
+        adminUser
+      );
+
+      // Navigate directly to the project settings
+      await adminPage.goto(`/projects/${projectId}/settings`);
+      const projectSettingsPage = new ProjectSettingsPage(adminPage);
+      await projectSettingsPage.expectToBeOnSettingsPage();
+
+      // Can view members tab
+      await projectSettingsPage.gotoMembersTab();
+      await expect(adminPage.getByText("Team Members")).toBeVisible({
+        timeout: 10_000,
+      });
+
+      // Can invite a new member (using demo user)
+      await projectSettingsPage.inviteMemberByEmailFragment(
+        "demo",
+        demoUser.email,
+        "member"
+      );
+      await projectSettingsPage.expectMemberRole(demoUser.email, "Member");
+
+      // Can remove the member (system admin can manage members)
+      await projectSettingsPage.removeMemberIfPresent(
+        demoUser.email,
+        demoUser.name
+      );
+
+      // Cleanup
+      await deleteProject(browser, projectId);
+      await adminContext.close();
+    });
   });
 });
