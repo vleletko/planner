@@ -5,6 +5,7 @@ import { createLogger } from "@planner/logger";
 import { type BetterAuthOptions, betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { nextCookies } from "better-auth/next-js";
+import { admin as adminPlugin } from "better-auth/plugins";
 
 const authLogger = createLogger("better-auth");
 
@@ -22,6 +23,7 @@ const authLogger = createLogger("better-auth");
  *
  * Plugins:
  * - nextCookies: Integrates with Next.js App Router for automatic session management
+ * - admin: Role-based admin access with "admin" and "user" roles (adds role column to user table)
  *
  * Environment Variables:
  * - BETTER_AUTH_SECRET: Secret key for session signing (required)
@@ -61,7 +63,8 @@ export const auth = betterAuth<BetterAuthOptions>({
     max: 500, // 50 requests per window
   },
   // Next.js integration for automatic session cookie management
-  plugins: [nextCookies()],
+  // Admin plugin for role-based access control (adds "role" column to user table)
+  plugins: [nextCookies(), adminPlugin()],
   // Route Better Auth logs to Pino for OpenTelemetry capture
   logger: {
     log: (level, message, ...args) => {

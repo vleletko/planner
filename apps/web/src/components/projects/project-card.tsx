@@ -1,5 +1,6 @@
-import { Calendar, Users } from "lucide-react";
+import { Archive, Calendar, Loader2, RotateCcw, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -20,6 +21,14 @@ export type ProjectCardProps = {
   createdAt: Date;
   role: ProjectRole;
   onClick?: () => void;
+  /** Whether the project is archived (soft-deleted) */
+  isArchived?: boolean;
+  /** When the project was archived - used to calculate days until permanent deletion */
+  deletedAt?: Date;
+  /** Callback when user clicks restore - only shown for archived projects */
+  onRestore?: () => void;
+  /** Whether restore is in progress */
+  isRestoring?: boolean;
 };
 
 const roleConfig: Record<
@@ -31,6 +40,101 @@ const roleConfig: Record<
   member: { variant: "outline", label: "Member" },
 };
 
+const ARCHIVE_RETENTION_DAYS = 30;
+
+/**
+ * Calculate days remaining until permanent deletion
+ */
+function getDaysUntilDeletion(deletedAt: Date): number {
+  const now = new Date();
+  const deletedTime = new Date(deletedAt).getTime();
+  const elapsedMs = now.getTime() - deletedTime;
+  const elapsedDays = Math.floor(elapsedMs / (1000 * 60 * 60 * 24));
+  return Math.max(0, ARCHIVE_RETENTION_DAYS - elapsedDays);
+}
+
+/** Role badge for active projects */
+function RoleBadge({ role }: { role: ProjectRole }) {
+  const { variant, label } = roleConfig[role];
+  return (
+    <Badge
+      className="shrink-0 font-medium text-[10px] uppercase tracking-wider"
+      variant={variant}
+    >
+      {label}
+    </Badge>
+  );
+}
+
+/** Archived badge for soft-deleted projects */
+function ArchivedBadge() {
+  return (
+    <Badge
+      className="gap-1 font-medium text-[10px] uppercase tracking-wider"
+      variant="outline"
+    >
+      <Archive className="size-3" />
+      Archived
+    </Badge>
+  );
+}
+
+/** Footer for archived projects showing days remaining and restore button */
+type ArchivedFooterProps = {
+  daysRemaining: number;
+  onRestore?: () => void;
+  isRestoring: boolean;
+};
+
+function ArchivedFooter({
+  daysRemaining,
+  onRestore,
+  isRestoring,
+}: ArchivedFooterProps) {
+  const isUrgent = daysRemaining <= 7;
+
+  const handleRestore = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onRestore?.();
+  };
+
+  const warningText =
+    daysRemaining === 0
+      ? "Permanent deletion imminent"
+      : `Permanently deleted in ${daysRemaining} day${daysRemaining === 1 ? "" : "s"}`;
+
+  return (
+    <div className="mt-3 flex items-center justify-between gap-2 border-muted border-t pt-3">
+      <span
+        className={cn(
+          "text-xs",
+          isUrgent
+            ? "font-medium text-amber-600 dark:text-amber-500"
+            : "text-muted-foreground"
+        )}
+      >
+        {warningText}
+      </span>
+      {onRestore ? (
+        <Button
+          className="gap-1.5"
+          disabled={isRestoring}
+          onClick={handleRestore}
+          size="sm"
+          variant="outline"
+        >
+          {isRestoring ? (
+            <Loader2 className="size-3.5 animate-spin" />
+          ) : (
+            <RotateCcw className="size-3.5" />
+          )}
+          {isRestoring ? "Restoring..." : "Restore"}
+        </Button>
+      ) : null}
+    </div>
+  );
+}
+
 export function ProjectCard({
   projectKey,
   name,
@@ -39,8 +143,12 @@ export function ProjectCard({
   createdAt,
   role,
   onClick,
+  isArchived = false,
+  deletedAt,
+  onRestore,
+  isRestoring = false,
 }: ProjectCardProps) {
-  const { variant, label } = roleConfig[role];
+  const daysRemaining = deletedAt ? getDaysUntilDeletion(deletedAt) : null;
 
   return (
     <Card
@@ -55,6 +163,10 @@ export function ProjectCard({
         "hover:before:bg-primary",
         onClick
           ? "cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          : null,
+        // Archived state: muted appearance
+        isArchived
+          ? "opacity-75 before:bg-muted-foreground/30 hover:opacity-100 hover:before:bg-muted-foreground/50"
           : null
       )}
       onClick={onClick}
@@ -78,12 +190,9 @@ export function ProjectCard({
               {name}
             </CardTitle>
           </div>
-          <Badge
-            className="shrink-0 font-medium text-[10px] uppercase tracking-wider"
-            variant={variant}
-          >
-            {label}
-          </Badge>
+          <div className="flex shrink-0 flex-col items-end gap-1">
+            {isArchived ? <ArchivedBadge /> : <RoleBadge role={role} />}
+          </div>
         </div>
         {description ? (
           <CardDescription className="line-clamp-2 text-sm leading-relaxed">
@@ -107,6 +216,15 @@ export function ProjectCard({
             </time>
           </div>
         </div>
+
+        {/* Archived project footer: days warning + restore button */}
+        {isArchived === true && daysRemaining !== null ? (
+          <ArchivedFooter
+            daysRemaining={daysRemaining}
+            isRestoring={isRestoring}
+            onRestore={onRestore}
+          />
+        ) : null}
       </CardContent>
     </Card>
   );

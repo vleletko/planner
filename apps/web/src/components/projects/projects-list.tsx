@@ -11,6 +11,8 @@ export type Project = {
   memberCount: number;
   createdAt: Date;
   role: ProjectRole;
+  /** When the project was archived (soft-deleted) */
+  deletedAt?: Date | null;
 };
 
 export type ProjectsListProps = {
@@ -18,6 +20,10 @@ export type ProjectsListProps = {
   isLoading?: boolean;
   onProjectClick?: (projectId: string) => void;
   onCreateProject?: () => void;
+  /** Callback when user clicks restore on archived project */
+  onRestore?: ((projectId: string) => void) | null;
+  /** Set of project IDs currently being restored */
+  restoringIds?: Set<string>;
 };
 
 export function ProjectsList({
@@ -25,6 +31,8 @@ export function ProjectsList({
   isLoading = false,
   onProjectClick,
   onCreateProject,
+  onRestore,
+  restoringIds,
 }: ProjectsListProps) {
   if (isLoading) {
     return <ProjectsListSkeleton />;
@@ -36,28 +44,38 @@ export function ProjectsList({
 
   return (
     <div className="flex flex-wrap justify-center gap-3 sm:gap-4">
-      {projects.map((project, index) => (
-        <div
-          className="fade-in slide-in-from-bottom-2 w-full animate-in fill-mode-both sm:w-[320px] md:w-[360px] lg:w-[380px]"
-          key={project.id}
-          style={{
-            animationDelay: `${index * 50}ms`,
-            animationDuration: "300ms",
-          }}
-        >
-          <ProjectCard
-            createdAt={project.createdAt}
-            description={project.description}
-            memberCount={project.memberCount}
-            name={project.name}
-            projectKey={project.key}
-            role={project.role}
-            {...(onProjectClick
-              ? { onClick: () => onProjectClick(project.id) }
-              : {})}
-          />
-        </div>
-      ))}
+      {projects.map((project, index) => {
+        const isArchived =
+          project.deletedAt !== null && project.deletedAt !== undefined;
+        return (
+          <div
+            className="fade-in slide-in-from-bottom-2 w-full animate-in fill-mode-both sm:w-[320px] md:w-[360px] lg:w-[380px]"
+            key={project.id}
+            style={{
+              animationDelay: `${index * 50}ms`,
+              animationDuration: "300ms",
+            }}
+          >
+            <ProjectCard
+              createdAt={project.createdAt}
+              deletedAt={project.deletedAt ?? undefined}
+              description={project.description}
+              isArchived={isArchived}
+              isRestoring={restoringIds?.has(project.id)}
+              memberCount={project.memberCount}
+              name={project.name}
+              projectKey={project.key}
+              role={project.role}
+              {...(!!onProjectClick && !isArchived
+                ? { onClick: () => onProjectClick(project.id) }
+                : {})}
+              {...(!!onRestore && isArchived
+                ? { onRestore: () => onRestore(project.id) }
+                : {})}
+            />
+          </div>
+        );
+      })}
     </div>
   );
 }

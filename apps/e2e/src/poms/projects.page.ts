@@ -15,6 +15,18 @@ const OPEN_PROJECT_PATTERN = /Open project/i;
 const CREATE_DIALOG_PATTERN = /create.*project/i;
 const KEY_TAKEN_PATTERN = /this key is already taken/i;
 
+// Filter patterns
+const SEARCH_PROJECTS_PATTERN = /search projects/i;
+const FILTER_BY_STATUS_PATTERN = /filter by status/i;
+const ARCHIVED_BADGE_PATTERN = /archived/i;
+const RESTORE_BUTTON_PATTERN = /^restore$/i;
+const RESTORED_TOAST_PATTERN = /restored/i;
+const CLEAR_SEARCH_PATTERN = /clear search/i;
+const STATUS_ACTIVE_PATTERN = /^active$/i;
+const STATUS_ARCHIVED_PATTERN = /^archived$/i;
+const STATUS_ALL_PATTERN = /^all$/i;
+const NO_PROJECTS_PATTERN = /no projects/i;
+
 /**
  * Page Object Model for the projects list page
  */
@@ -146,5 +158,90 @@ export class ProjectsPage extends BasePage {
         hasText: projectKey,
       });
     await card.click();
+  }
+
+  // Filter methods
+  async fillSearchFilter(query: string): Promise<void> {
+    const searchInput = this.page.getByPlaceholder(SEARCH_PROJECTS_PATTERN);
+    await searchInput.fill(query);
+    // Wait for debounce
+    await this.page.waitForTimeout(400);
+  }
+
+  async clearSearchFilter(): Promise<void> {
+    const clearButton = this.page.getByLabel(CLEAR_SEARCH_PATTERN);
+    if (await clearButton.isVisible()) {
+      await clearButton.click();
+    }
+  }
+
+  async selectStatusFilter(
+    status: "active" | "archived" | "all"
+  ): Promise<void> {
+    const statusSelect = this.page.getByLabel(FILTER_BY_STATUS_PATTERN);
+    await statusSelect.click();
+    // Map status to the option pattern
+    const optionMap: Record<string, RegExp> = {
+      active: STATUS_ACTIVE_PATTERN,
+      archived: STATUS_ARCHIVED_PATTERN,
+      all: STATUS_ALL_PATTERN,
+    };
+    await this.page.getByRole("option", { name: optionMap[status] }).click();
+    // Wait for list to update
+    await this.page.waitForTimeout(200);
+  }
+
+  async expectStatusFilterVisible(): Promise<void> {
+    await expect(this.page.getByLabel(FILTER_BY_STATUS_PATTERN)).toBeVisible();
+  }
+
+  async expectStatusFilterNotVisible(): Promise<void> {
+    await expect(
+      this.page.getByLabel(FILTER_BY_STATUS_PATTERN)
+    ).not.toBeVisible();
+  }
+
+  async expectProjectCardWithKey(projectKey: string): Promise<void> {
+    await expect(
+      this.page.getByText(projectKey, { exact: true }).first()
+    ).toBeVisible();
+  }
+
+  async expectProjectCardNotVisible(projectKey: string): Promise<void> {
+    await expect(
+      this.page.getByText(projectKey, { exact: true }).first()
+    ).not.toBeVisible();
+  }
+
+  async expectArchivedBadgeForProject(projectKey: string): Promise<void> {
+    // Find the card with the project key and verify it has an Archived badge
+    const card = this.page.locator('[data-slot="card"]', {
+      hasText: projectKey,
+    });
+    await expect(
+      card.getByText(ARCHIVED_BADGE_PATTERN, { exact: true })
+    ).toBeVisible();
+  }
+
+  async restoreProject(projectKey: string): Promise<void> {
+    // Find the card with the project key and click restore
+    const card = this.page.locator('[data-slot="card"]', {
+      hasText: projectKey,
+    });
+    await card.getByRole("button", { name: RESTORE_BUTTON_PATTERN }).click();
+    await this.expectSuccessToast(RESTORED_TOAST_PATTERN);
+  }
+
+  async expectRestoreButtonForProject(projectKey: string): Promise<void> {
+    const card = this.page.locator('[data-slot="card"]', {
+      hasText: projectKey,
+    });
+    await expect(
+      card.getByRole("button", { name: RESTORE_BUTTON_PATTERN })
+    ).toBeVisible();
+  }
+
+  async expectEmptyFilteredState(): Promise<void> {
+    await expect(this.page.getByText(NO_PROJECTS_PATTERN)).toBeVisible();
   }
 }

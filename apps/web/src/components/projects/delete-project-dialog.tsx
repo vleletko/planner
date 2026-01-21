@@ -13,24 +13,33 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 
+export type ProjectImpact = {
+  cardCount: number;
+  memberCount: number;
+  resourceCount: number;
+};
+
 export type DeleteProjectDialogProps = {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   projectName: string;
-  impact: { cardCount: number; memberCount: number; resourceCount: number };
+  projectKey: string;
+  impact?: ProjectImpact;
+  isLoadingImpact?: boolean;
   onConfirm?: () => void;
   isSubmitting?: boolean;
 };
 
 type ImpactSummaryProps = {
-  impact: DeleteProjectDialogProps["impact"];
+  impact?: ProjectImpact;
+  isLoading?: boolean;
 };
 
-function ImpactSummary({ impact }: ImpactSummaryProps) {
+function ImpactSummary({ impact, isLoading }: ImpactSummaryProps) {
   const metrics = [
-    { count: impact.cardCount, label: "cards" },
-    { count: impact.memberCount, label: "members" },
-    { count: impact.resourceCount, label: "resources" },
+    { count: impact?.cardCount ?? 0, label: "cards" },
+    { count: impact?.memberCount ?? 0, label: "members" },
+    { count: impact?.resourceCount ?? 0, label: "resources" },
   ];
 
   return (
@@ -47,16 +56,20 @@ function ImpactSummary({ impact }: ImpactSummaryProps) {
         {/* Warning text */}
         <p className="text-center font-medium text-muted-foreground text-sm">
           <AlertTriangle className="mr-1.5 mb-0.5 inline-block size-4 text-destructive/70" />
-          This will permanently delete
+          This will archive the following
         </p>
 
         {/* Metrics row */}
         <div className="mt-3 grid grid-cols-3 divide-x divide-destructive/15 sm:mt-4">
           {metrics.map(({ count, label }) => (
             <div className="flex flex-col items-center py-2" key={label}>
-              <span className="font-bold text-destructive text-xl tabular-nums tracking-tight sm:text-3xl">
-                {count}
-              </span>
+              {isLoading ? (
+                <Loader2 className="size-6 animate-spin text-muted-foreground sm:size-8" />
+              ) : (
+                <span className="font-bold text-destructive text-xl tabular-nums tracking-tight sm:text-3xl">
+                  {count}
+                </span>
+              )}
               <span className="mt-1 text-[10px] text-muted-foreground uppercase tracking-wide sm:text-xs">
                 {label}
               </span>
@@ -72,7 +85,9 @@ export function DeleteProjectDialog({
   isOpen,
   onOpenChange,
   projectName,
+  projectKey,
   impact,
+  isLoadingImpact = false,
   onConfirm,
   isSubmitting = false,
 }: DeleteProjectDialogProps) {
@@ -89,7 +104,7 @@ export function DeleteProjectDialog({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (confirmationText !== projectName || isSubmitting) {
+    if (confirmationText !== projectName || isSubmitting || isLoadingImpact) {
       return;
     }
 
@@ -97,11 +112,13 @@ export function DeleteProjectDialog({
   };
 
   // Validation: exact match, case-sensitive
-  const canSubmit = confirmationText === projectName && !isSubmitting;
+  const canSubmit =
+    confirmationText === projectName && !isSubmitting && !isLoadingImpact;
   const hasInput = confirmationText.length > 0;
   const isPartialMatch =
     hasInput && !canSubmit && projectName.startsWith(confirmationText);
-  const isMismatch = hasInput && !canSubmit && !isPartialMatch;
+  const isMismatch =
+    hasInput && !canSubmit && !isPartialMatch && !isLoadingImpact;
 
   return (
     <Dialog onOpenChange={handleOpenChange} open={isOpen}>
@@ -125,15 +142,37 @@ export function DeleteProjectDialog({
                   Delete Project
                 </DialogTitle>
                 <DialogDescription className="text-muted-foreground text-sm">
-                  This action cannot be undone.
+                  Archive{" "}
+                  <span className="font-semibold text-foreground">
+                    {projectName}
+                  </span>{" "}
+                  ({projectKey})
                 </DialogDescription>
               </div>
             </div>
           </DialogHeader>
 
           <div className="mt-5 space-y-5 sm:mt-6">
+            {/* Soft-delete info banner */}
+            <div
+              className={cn(
+                "relative rounded-lg border border-amber-500/30 bg-amber-500/5 p-4",
+                "before:absolute before:inset-y-0 before:left-0 before:w-1 before:rounded-l-lg before:bg-amber-500"
+              )}
+            >
+              <div className="pl-2">
+                <p className="font-semibold text-amber-700 text-sm dark:text-amber-500">
+                  Project will be archived for 30 days
+                </p>
+                <p className="mt-1 text-muted-foreground text-xs">
+                  During this period, a system administrator can restore it.
+                  After 30 days, the project will be permanently deleted.
+                </p>
+              </div>
+            </div>
+
             {/* Impact Summary */}
-            <ImpactSummary impact={impact} />
+            <ImpactSummary impact={impact} isLoading={isLoadingImpact} />
 
             {/* Name Confirmation Input */}
             <div className="space-y-2">

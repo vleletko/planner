@@ -153,3 +153,99 @@ export const Desktop: Story = {
     ),
   ],
 };
+
+// Helper to create dates relative to now
+function daysAgo(days: number): Date {
+  const date = new Date();
+  date.setDate(date.getDate() - days);
+  return date;
+}
+
+/**
+ * Archived project - shows "Archived" badge and muted appearance.
+ */
+export const Archived: Story = {
+  args: {
+    projectKey: mockProject.key,
+    ...mockProject,
+    isArchived: true,
+    deletedAt: daysAgo(5),
+    onRestore: fn(),
+  },
+};
+
+/**
+ * Archived project with urgent warning (< 7 days remaining).
+ */
+export const ArchivedUrgent: Story = {
+  args: {
+    projectKey: mockProject.key,
+    ...mockProject,
+    isArchived: true,
+    deletedAt: daysAgo(25), // 5 days remaining
+    onRestore: fn(),
+  },
+};
+
+/**
+ * Archived project with imminent deletion (0 days remaining).
+ */
+export const ArchivedImminent: Story = {
+  args: {
+    projectKey: mockProject.key,
+    ...mockProject,
+    isArchived: true,
+    deletedAt: daysAgo(30), // 0 days remaining
+    onRestore: fn(),
+  },
+};
+
+/**
+ * Archived project during restore operation.
+ */
+export const ArchivedRestoring: Story = {
+  args: {
+    projectKey: mockProject.key,
+    ...mockProject,
+    isArchived: true,
+    deletedAt: daysAgo(10),
+    onRestore: fn(),
+    isRestoring: true,
+  },
+};
+
+/**
+ * Archived project without restore callback (read-only view).
+ */
+export const ArchivedReadOnly: Story = {
+  args: {
+    projectKey: mockProject.key,
+    ...mockProject,
+    isArchived: true,
+    deletedAt: daysAgo(15),
+    onRestore: undefined,
+  },
+};
+
+/**
+ * Archived project on mobile viewport.
+ */
+export const ArchivedMobile: Story = {
+  args: {
+    projectKey: mockProject.key,
+    ...mockProject,
+    isArchived: true,
+    deletedAt: daysAgo(7),
+    onRestore: fn(),
+  },
+  globals: {
+    viewport: { value: "mobile1" },
+  },
+  decorators: [
+    (StoryFn) => (
+      <div className="w-[320px]">
+        <StoryFn />
+      </div>
+    ),
+  ],
+};

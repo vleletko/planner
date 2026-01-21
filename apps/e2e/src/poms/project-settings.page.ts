@@ -12,6 +12,17 @@ const SAVED_PATTERN = /saved|updated|success/i;
 const LOCKED_PATTERN = /locked/i;
 const UNSAVED_CHANGES_PATTERN = /unsaved changes/i;
 
+// Delete project patterns
+const DELETE_PROJECT_BUTTON_PATTERN = /delete project/i;
+const DELETE_DIALOG_PATTERN = /delete project/i;
+const DANGER_ZONE_PATTERN = /danger zone/i;
+const PROJECT_DELETED_PATTERN = /deleted successfully/i;
+const NAME_MISMATCH_PATTERN = /name doesn't match/i;
+const PROJECT_NAME_CONFIRMATION_PATTERN = /project name confirmation/i;
+const IMPACT_CARDS_PATTERN = /cards/i;
+const IMPACT_RESOURCES_PATTERN = /resources/i;
+const ARCHIVED_30_DAYS_PATTERN = /archived for 30 days/i;
+
 export const MEMBERS_TAB_PATTERN = /members/i;
 export const TEAM_MEMBERS_PATTERN = /team members/i;
 export const INVITE_MEMBER_BUTTON_PATTERN = /invite member/i;
@@ -445,5 +456,87 @@ export class ProjectSettingsPage extends BasePage {
     ).not.toBeVisible();
 
     await this.page.keyboard.press("Escape");
+  }
+
+  // Delete project methods
+  deleteProjectDialog(): Locator {
+    return this.page.getByRole("dialog", { name: DELETE_DIALOG_PATTERN });
+  }
+
+  async expectDangerZoneVisible(): Promise<void> {
+    await expect(this.page.getByText(DANGER_ZONE_PATTERN)).toBeVisible();
+  }
+
+  async expectDangerZoneNotVisible(): Promise<void> {
+    await expect(this.page.getByText(DANGER_ZONE_PATTERN)).not.toBeVisible();
+  }
+
+  async expectDeleteProjectButtonVisible(): Promise<void> {
+    await expect(
+      this.page.getByRole("button", { name: DELETE_PROJECT_BUTTON_PATTERN })
+    ).toBeVisible();
+  }
+
+  async expectDeleteProjectButtonNotVisible(): Promise<void> {
+    await expect(
+      this.page.getByRole("button", { name: DELETE_PROJECT_BUTTON_PATTERN })
+    ).not.toBeVisible();
+  }
+
+  async openDeleteProjectDialog(): Promise<void> {
+    await this.page
+      .getByRole("button", { name: DELETE_PROJECT_BUTTON_PATTERN })
+      .click();
+    await expect(this.deleteProjectDialog()).toBeVisible();
+  }
+
+  async fillDeleteConfirmation(text: string): Promise<void> {
+    const dialog = this.deleteProjectDialog();
+    await dialog.getByLabel(PROJECT_NAME_CONFIRMATION_PATTERN).fill(text);
+  }
+
+  async expectDeleteSubmitButtonDisabled(): Promise<void> {
+    const dialog = this.deleteProjectDialog();
+    await expect(
+      dialog.getByRole("button", { name: DELETE_PROJECT_BUTTON_PATTERN })
+    ).toBeDisabled();
+  }
+
+  async expectDeleteSubmitButtonEnabled(): Promise<void> {
+    const dialog = this.deleteProjectDialog();
+    await expect(
+      dialog.getByRole("button", { name: DELETE_PROJECT_BUTTON_PATTERN })
+    ).toBeEnabled();
+  }
+
+  async expectDeleteNameMismatchError(): Promise<void> {
+    const dialog = this.deleteProjectDialog();
+    await expect(dialog.getByText(NAME_MISMATCH_PATTERN)).toBeVisible();
+  }
+
+  async submitDeleteAndExpectSuccess(): Promise<void> {
+    const dialog = this.deleteProjectDialog();
+    await dialog
+      .getByRole("button", { name: DELETE_PROJECT_BUTTON_PATTERN })
+      .click();
+    await this.expectSuccessToast(PROJECT_DELETED_PATTERN);
+    await expect(dialog).not.toBeVisible();
+  }
+
+  async closeDeleteDialog(): Promise<void> {
+    const dialog = this.deleteProjectDialog();
+    await dialog.getByRole("button", { name: CANCEL_BUTTON_PATTERN }).click();
+    await expect(dialog).not.toBeVisible();
+  }
+
+  async expectImpactSummaryVisible(): Promise<void> {
+    const dialog = this.deleteProjectDialog();
+    // Verify the impact summary section is displayed with the three metric labels
+    await expect(dialog.getByText(IMPACT_CARDS_PATTERN)).toBeVisible();
+    // Note: members label would also match "Team Members" in dialog text,
+    // so we just check cards and resources which are unique
+    await expect(dialog.getByText(IMPACT_RESOURCES_PATTERN)).toBeVisible();
+    // Also verify the warning about 30 days is shown
+    await expect(dialog.getByText(ARCHIVED_30_DAYS_PATTERN)).toBeVisible();
   }
 }

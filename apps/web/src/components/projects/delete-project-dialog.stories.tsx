@@ -22,6 +22,7 @@ const meta = {
   args: {
     isOpen: true,
     projectName: "My Project",
+    projectKey: "PROJ",
     impact: mockImpactData,
     onOpenChange: fn(),
     onConfirm: fn(),
@@ -55,6 +56,17 @@ export const NameMismatch: Story = {
 export const LongProjectName: Story = {
   args: {
     projectName: "Enterprise Application Development Environment v2",
+    projectKey: "ENTAPP",
+  },
+};
+
+/**
+ * Loading impact state - shows loading spinners while fetching impact data.
+ */
+export const LoadingImpact: Story = {
+  args: {
+    impact: undefined,
+    isLoadingImpact: true,
   },
 };
 
