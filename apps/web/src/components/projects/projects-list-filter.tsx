@@ -92,7 +92,7 @@ export function ProjectsListFilter({
       <div className="relative flex-1 sm:max-w-xs">
         <Search
           aria-hidden="true"
-          className="-translate-y-1/2 pointer-events-none absolute top-1/2 left-3 size-4 text-muted-foreground"
+          className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
         />
         <Input
           aria-label="Search projects by name"
@@ -105,7 +105,7 @@ export function ProjectsListFilter({
         {localSearch.length > 0 ? (
           <Button
             aria-label="Clear search"
-            className="-translate-y-1/2 absolute top-1/2 right-1 size-7 text-muted-foreground hover:text-foreground"
+            className="absolute top-1/2 right-1 size-7 -translate-y-1/2 text-muted-foreground hover:text-foreground"
             onClick={handleClearSearch}
             size="icon"
             type="button"
