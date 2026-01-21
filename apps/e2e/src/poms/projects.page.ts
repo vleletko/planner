@@ -35,9 +35,12 @@ export class ProjectsPage extends BasePage {
 
   constructor(page: Page) {
     super(page);
-    this.createProjectButton = page.getByRole("button", {
-      name: CREATE_PROJECT_BUTTON_PATTERN,
-    });
+    // Use .first() to get the header button (not the empty state CTA button)
+    this.createProjectButton = page
+      .getByRole("button", {
+        name: CREATE_PROJECT_BUTTON_PATTERN,
+      })
+      .first();
   }
 
   async goto() {
