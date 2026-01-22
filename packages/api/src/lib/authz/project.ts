@@ -23,10 +23,9 @@ export const PROJECT_PERMISSIONS = {
   PROJECT_DELETE: "project:delete",
   PROJECT_ARCHIVE: "project:archive",
 
-  // Future project-scoped routers (Epic 3+)
-  STATUSES_MANAGE: "statuses:manage",
-  CARD_TYPES_MANAGE: "card-types:manage",
-  FIELDS_MANAGE: "fields:manage",
+  // Project-scoped routers (Epic 5+)
+  // Note: STATUSES_MANAGE, CARD_TYPES_MANAGE, FIELDS_MANAGE are NOT here
+  // These are global schema permissions managed at system admin level only
   CARDS_MANAGE: "cards:manage",
   RESOURCES_MANAGE: "resources:manage",
 } as const;
@@ -50,10 +49,9 @@ const PROJECT_PERMISSION_MATRIX: Record<
   [PROJECT_PERMISSIONS.PROJECT_DELETE]: ["owner"],
   [PROJECT_PERMISSIONS.PROJECT_ARCHIVE]: ["owner"],
 
-  // Member actions (future): everyone in the project can manage project-scoped resources.
-  [PROJECT_PERMISSIONS.STATUSES_MANAGE]: ["owner", "admin", "member"],
-  [PROJECT_PERMISSIONS.CARD_TYPES_MANAGE]: ["owner", "admin", "member"],
-  [PROJECT_PERMISSIONS.FIELDS_MANAGE]: ["owner", "admin", "member"],
+  // Member actions: everyone in the project can manage project-scoped resources.
+  // Note: STATUSES_MANAGE, CARD_TYPES_MANAGE, FIELDS_MANAGE are NOT here
+  // These are global schema permissions managed at system admin level only
   [PROJECT_PERMISSIONS.CARDS_MANAGE]: ["owner", "admin", "member"],
   [PROJECT_PERMISSIONS.RESOURCES_MANAGE]: ["owner", "admin", "member"],
 };
@@ -94,9 +92,8 @@ const PERMISSION_ACTION: Record<ProjectPermission, string> = {
   [PROJECT_PERMISSIONS.PROJECT_DELETE]: "delete this project",
   [PROJECT_PERMISSIONS.PROJECT_ARCHIVE]: "archive this project",
 
-  [PROJECT_PERMISSIONS.STATUSES_MANAGE]: "manage statuses",
-  [PROJECT_PERMISSIONS.CARD_TYPES_MANAGE]: "manage card types",
-  [PROJECT_PERMISSIONS.FIELDS_MANAGE]: "manage fields",
+  // Note: STATUSES_MANAGE, CARD_TYPES_MANAGE, FIELDS_MANAGE are NOT here
+  // These are global schema permissions managed at system admin level only
   [PROJECT_PERMISSIONS.CARDS_MANAGE]: "manage cards",
   [PROJECT_PERMISSIONS.RESOURCES_MANAGE]: "manage resources",
 };

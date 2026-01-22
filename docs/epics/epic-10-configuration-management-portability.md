@@ -46,7 +46,7 @@ So that I can back it up or reuse it in other projects.
 - All statuses (name, color, order)
 - All card types (name, key, color, icon)
 - All fields (type, name, config, validation rules, default values)
-- Field requirements matrix (field-status requirements)
+- Card type field configurations (which fields per card type + status, requirement level, display order)
 - Resource type configurations
 - Notification settings
 
@@ -160,7 +160,7 @@ So that I can quickly set up a new project with existing settings.
 
 **And** after successful import:
 - Statuses, card types, fields created
-- Field requirements matrix applied
+- Card type field configurations applied
 - Default values set
 - User prompted to fill credential placeholders (if any)
 
@@ -232,7 +232,7 @@ So that I can quickly create similar projects without manual reconfiguration.
 - All statuses with same names, colors, order
 - All card types with same structure
 - All fields with same configuration
-- Field requirement matrix
+- Card type field configurations
 - Default field values
 - Resource type definitions (if selected)
 - Notification settings (if selected)
@@ -291,9 +291,9 @@ So that I can identify and fix issues before they affect users.
 **Then** I see a validation report of my project configuration
 
 **And** health check validates:
-- All statuses are used in at least one field requirement
-- No orphaned fields (fields with no card type)
-- Field requirements make logical sense (no hidden → required jumps)
+- All statuses have at least one card type field configuration
+- No orphaned fields (fields not used by any card type)
+- Field configurations are complete for all card types
 - Resource references point to valid resource types
 - Conditional logic has no circular dependencies
 - Default values match field type constraints
@@ -306,13 +306,13 @@ So that I can identify and fix issues before they affect users.
 - Suggestions for improvement (info icon, var(--color-info-light) background)
 
 **And** warning examples:
-- "Status 'Blocked' has no field requirements defined"
-- "Field 'Priority' is hidden in all statuses"
+- "Status 'Blocked' has no card type field configurations"
+- "Field 'Priority' is not used by any card type"
 - "Resource type 'Website' is not used by any field"
 - "No default values set for any fields"
 
 **And** error examples:
-- "Field 'Description' is hidden in 'Backlog' but required in 'In Progress' (unreachable requirement)"
+- "Card type 'Bug' has no fields configured for status 'In Progress'"
 - "Circular conditional dependency: Field A → Field B → Field A"
 - "Default value for 'Priority' dropdown references non-existent option"
 - "Resource reference field allows deleted resource type"

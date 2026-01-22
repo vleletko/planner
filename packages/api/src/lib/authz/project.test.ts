@@ -66,18 +66,17 @@ describe("project authz permission matrix", () => {
     ).toBe(false);
   });
 
-  test("future project-scoped management requires at least member", () => {
+  test("project-scoped management requires at least member", () => {
     const memberRole: ProjectRole = "member";
 
-    const futurePermissions: ProjectPermission[] = [
-      PROJECT_PERMISSIONS.STATUSES_MANAGE,
-      PROJECT_PERMISSIONS.CARD_TYPES_MANAGE,
-      PROJECT_PERMISSIONS.FIELDS_MANAGE,
+    // Note: STATUSES_MANAGE, CARD_TYPES_MANAGE, FIELDS_MANAGE are NOT here
+    // These are global schema permissions managed at system admin level only
+    const projectScopedPermissions: ProjectPermission[] = [
       PROJECT_PERMISSIONS.CARDS_MANAGE,
       PROJECT_PERMISSIONS.RESOURCES_MANAGE,
     ];
 
-    for (const permission of futurePermissions) {
+    for (const permission of projectScopedPermissions) {
       expect(canProjectRole({ role: memberRole, permission })).toBe(true);
     }
   });

@@ -38,15 +38,16 @@ planner/
 │       │   │   │   └── rpc/[[...rest]]/route.ts  # ORPC handler
 │       │   │   ├── dashboard/            # Dashboard (existing)
 │       │   │   ├── login/                # Auth pages (existing)
+│       │   │   ├── admin/                     # System admin pages (Epic 3)
+│       │   │   │   ├── statuses/              # Global status management
+│       │   │   │   ├── card-types/            # Global card type config
+│       │   │   │   └── fields/                # Global field config
 │       │   │   └── projects/
 │       │   │       └── [projectId]/
 │       │   │           ├── page.tsx      # Project overview
 │       │   │           ├── board/
 │       │   │           │   └── page.tsx  # Kanban board (Epic 5, 7)
 │       │   │           └── settings/
-│       │   │               ├── statuses/      # Status management (Epic 3)
-│       │   │               ├── card-types/    # Card type config (Epic 3)
-│       │   │               ├── fields/        # Field config (Epic 3, 4)
 │       │   │               ├── resources/     # Resource management (Epic 6)
 │       │   │               └── notifications/ # Notification config (Epic 9)
 │       │   ├── components/
@@ -177,7 +178,7 @@ planner/
 |------|-----------|-----------------|-------------|--------------|
 | **Epic 1: Foundation** | Monorepo setup | N/A | N/A | Already complete (brownfield) |
 | **Epic 2: Project Management** | Project UI, settings | `projects`, `project_members` | `projects` | RBAC with owner/admin/member roles |
-| **Epic 3: Workflow Configuration** | Status/CardType/Field editors, Visual schema editor | `statuses`, `card_types`, `fields`, `field_status_requirements` | `statuses`, `cardTypes`, `fields` | Field type registry, JSONB config storage |
+| **Epic 3: Global Schema Configuration** | Status/CardType/Field editors (admin area), Card type field config | `statuses`, `card_types`, `fields`, `card_type_field_configs` | `statuses`, `cardTypes`, `fields` | Field type registry, JSONB config storage, System Admin only |
 | **Epic 4: Field Types & Validation** | Field components (11 types), Validation UI | `fields.config`, `fields.default_value` | `fields` router validation | Dual field type implementation, async validation jobs |
 | **Epic 5: Card Lifecycle** | Kanban board, Card detail, Transition dialog | `cards`, `card_field_values` | `cards` | Card validator orchestrator, optimistic updates, drag-drop |
 | **Epic 6: Resource Management** | Resource list/form, Validation status | `resources`, `resource_field_values` | `resources` | Resource validator registry, credential encryption, validation jobs |
@@ -397,24 +398,23 @@ fields {
 export class CardValidator {
   /**
    * Get validation schema for a card type at a specific status
-   * Determines which fields are required/optional/hidden
+   * Determines which fields are required/optional for this card type + status
    */
   async getSchema(cardTypeId: string, statusId: string): Promise<ValidationSchema> {
-    // Load field definitions for card type
-    const fields = await db.query.fields.findMany({
-      where: eq(fields.cardTypeId, cardTypeId)
-    })
-
-    // Load status requirements (required/optional/hidden per field)
-    const requirements = await db.query.fieldStatusRequirements.findMany({
+    // Load field configurations for this card type + status (includes field definitions)
+    const fieldConfigs = await db.query.cardTypeFieldConfigs.findMany({
       where: and(
-        eq(fieldStatusRequirements.statusId, statusId),
-        inArray(fieldStatusRequirements.fieldId, fields.map(f => f.id))
-      )
+        eq(cardTypeFieldConfigs.cardTypeId, cardTypeId),
+        eq(cardTypeFieldConfigs.statusId, statusId)
+      ),
+      with: {
+        field: true  // Join with fields table to get field definitions
+      },
+      orderBy: cardTypeFieldConfigs.displayOrder
     })
 
-    // Build schema from requirements
-    return buildSchema(fields, requirements)
+    // Build schema from field configurations
+    return buildSchema(fieldConfigs)
   }
 
   /**
@@ -647,10 +647,10 @@ These patterns ensure consistent implementation across all AI agents:
 ### Naming Conventions
 
 **Database:**
-- Tables: plural snake_case (`card_types`, `field_status_requirements`)
+- Tables: plural snake_case (`card_types`, `card_type_field_configs`)
 - Columns: snake_case (`card_type_id`, `default_value`, `created_at`)
 - Foreign keys: `{referenced_table_singular}_id` (e.g., `project_id`, `field_id`)
-- Junction tables: `{table1_singular}_{table2_singular}` (e.g., `field_status_requirements`)
+- Junction tables: `{table1}_{table2}` (e.g., `card_type_field_configs`)
 - Enums: singular snake_case (`field_type`, `resource_type`, `requirement`)
 
 **API (ORPC):**
@@ -868,9 +868,10 @@ log.debug({ schema }, 'Schema loaded')
 - ORPC context includes authenticated user
 
 **Authorization:**
-- Project-level: Check user is member via `project_members` table
-- Owner-only actions: Check `role = 'owner'` or `is_admin = true`
-- Admin-only: Check global `is_admin` flag on user
+- Global admin: System admins (`user.role === "admin"`) bypass all project-level checks
+- Project-scoped: Use centralized helpers in `packages/api/src/lib/authz/project.server.ts`
+- Role hierarchy: System Admin > Project Owner > Project Admin > Project Member
+- Permission checks: Use `requireProjectRole()`, `requireCanDelete()`, etc.
 
 **Resource Credentials:**
 - Encrypt at rest: Use `pgcrypto` or application-level encryption
@@ -928,7 +929,7 @@ project_members {
   id: uuid (pk)
   project_id: uuid (fk → projects.id)
   user_id: uuid (fk → user.id)
-  role: enum('owner', 'member')
+  role: enum('owner', 'admin', 'member')
   invited_by: uuid (fk → user.id)
   joined_at: timestamp
 
@@ -936,45 +937,54 @@ project_members {
 }
 ```
 
-**Workflow Configuration:**
+**Global Workflow Configuration (System Admin Only):**
 ```typescript
 statuses {
   id: uuid (pk)
-  project_id: uuid (fk → projects.id)
+  // No project_id - statuses are GLOBAL
   name: string
   color: string
   order: int
+  is_active: boolean
   created_at: timestamp
+  updated_at: timestamp
+  created_by: uuid (fk → user.id)
 }
 
 card_types {
   id: uuid (pk)
-  project_id: uuid (fk → projects.id)
+  // No project_id - card types are GLOBAL
   name: string
-  key: string  // e.g., "BUG", "FEAT"
+  key: string  // GLOBALLY unique (e.g., "BUG", "FEAT")
   color: string
   icon: string
+  is_active: boolean
   created_at: timestamp
+  updated_at: timestamp
+  created_by: uuid (fk → user.id)
 }
 
 fields {
   id: uuid (pk)
-  card_type_id: uuid (fk → card_types.id)
+  // NO card_type_id - fields are GLOBAL and reusable across card types
   name: string
   field_type: enum (FieldType)
   config: jsonb  // Type-specific validation config
   default_value: jsonb  // Default value for this field
-  order: int
   created_at: timestamp
+  updated_at: timestamp
+  created_by: uuid (fk → user.id)
 }
 
-field_status_requirements {
+card_type_field_configs {
   id: uuid (pk)
-  field_id: uuid (fk → fields.id)
+  card_type_id: uuid (fk → card_types.id)
   status_id: uuid (fk → statuses.id)
-  requirement: enum('required', 'optional', 'hidden')
+  field_id: uuid (fk → fields.id)
+  requirement: enum('required', 'optional')  // NO 'hidden' - fields are either on the card or not
+  display_order: int  // Order of field display for this card type + status
 
-  unique(field_id, status_id)
+  unique(card_type_id, status_id, field_id)
 }
 ```
 
@@ -1077,12 +1087,14 @@ notification_config {
 
 ### Key Relationships
 
-- Projects have many: Statuses, CardTypes, Cards, Members, Resources
-- CardTypes have many: Fields
-- Cards belong to: Project, CardType, Status, User (assignee)
+- **Global entities (System Admin only):** Statuses, CardTypes, Fields, FieldStatusRequirements
+- Projects have many: Cards, Members, Resources
+- CardTypes have many: Fields (global, not project-scoped)
+- Cards belong to: Project, CardType (global), Status (global), User (assignee)
 - Cards have many: FieldValues, Comments, ActivityLogs
 - Fields define: FieldType, Config, DefaultValue, StatusRequirements
 - Resources belong to: Project, have ResourceType, have validation status
+- All projects share the same global workflow schema
 
 ### Indexes
 
@@ -1091,7 +1103,8 @@ notification_config {
 CREATE INDEX idx_cards_project_status ON cards(project_id, status_id);
 CREATE INDEX idx_cards_title ON cards USING gin(to_tsvector('english', title));
 CREATE INDEX idx_card_field_values_card ON card_field_values(card_id);
-CREATE INDEX idx_fields_card_type ON fields(card_type_id);
+CREATE INDEX idx_card_type_field_configs_card_type ON card_type_field_configs(card_type_id);
+CREATE INDEX idx_card_type_field_configs_status ON card_type_field_configs(card_type_id, status_id);
 CREATE INDEX idx_project_members_user ON project_members(user_id);
 CREATE INDEX idx_resources_project ON resources(project_id);
 CREATE INDEX idx_comments_card ON comments(card_id);
@@ -1121,18 +1134,20 @@ type Context = {
 - `inviteUser(input: { projectId, userId })` → ProjectMember
 - `transferOwnership(input: { projectId, newOwnerId })` → Project
 
-**statuses router:**
-- `createStatus(input: { projectId, name, color, order })` → Status
-- `updateStatus(input: { statusId, name?, color?, order? })` → Status
+**statuses router (SYSTEM ADMIN ONLY):**
+- `createStatus(input: { name, color, order })` → Status
+- `updateStatus(input: { statusId, name?, color?, order?, isActive? })` → Status
 - `deleteStatus(input: { statusId })` → void (fails if cards exist)
-- `listStatuses(input: { projectId })` → Status[]
-- `reorderStatuses(input: { projectId, statusIds[] })` → Status[]
+- `listStatuses()` → Status[]  // All statuses (admin view)
+- `listActiveStatuses()` → Status[]  // Public read (active only)
+- `reorderStatuses(input: { statusIds[] })` → Status[]
 
-**cardTypes router:**
-- `createCardType(input: { projectId, name, key, color, icon })` → CardType
-- `updateCardType(input: { cardTypeId, name?, key?, color?, icon? })` → CardType
+**cardTypes router (SYSTEM ADMIN ONLY):**
+- `createCardType(input: { name, key, color, icon })` → CardType
+- `updateCardType(input: { cardTypeId, name?, key?, color?, icon?, isActive? })` → CardType
 - `deleteCardType(input: { cardTypeId })` → void (fails if cards exist)
-- `listCardTypes(input: { projectId })` → CardType[]
+- `listCardTypes()` → CardType[]  // All card types (admin view)
+- `listActiveCardTypes()` → CardType[]  // Public read (active only)
 
 **fields router:**
 - `createField(input: { cardTypeId, name, fieldType, config?, defaultValue?, order })` → Field
@@ -1191,9 +1206,11 @@ Standard ORPC error format:
 - User object in ORPC context
 
 **Authorization:**
-- Project-scoped: All operations check user is project member
-- Role-based: Owner can configure, members can use
-- Admin override: System admins can access all projects
+- Two-tier admin system:
+  - System Admin: Global role via Better Auth (`user.role = "admin"`), can access any project
+  - Project Admin: Project-scoped role (`project_members.role = "admin"`), elevated permissions within project
+- Project roles: owner (full control), admin (manage but not delete/transfer), member (read + cards)
+- See Permission Matrix section below for complete breakdown
 
 **Data Protection:**
 - Resource credentials encrypted at rest (pgcrypto or app-level)
@@ -1213,6 +1230,51 @@ Standard ORPC error format:
 **CSRF Protection:**
 - Built into Next.js + ORPC
 - Session cookies with SameSite=Lax
+
+### Authorization & Permission Matrix
+
+#### Role Definitions
+
+| Role | Scope | Definition | Source |
+|------|-------|------------|--------|
+| **System Admin** | Global | Full system access, can access any project | `user.role === "admin"` via Better Auth admin plugin |
+| **Project Owner** | Project | Creator or transferred owner, full project control | `project_members.role = "owner"` |
+| **Project Admin** | Project | Elevated member, can manage but not delete/transfer | `project_members.role = "admin"` |
+| **Project Member** | Project | Regular member, read access + card operations | `project_members.role = "member"` |
+
+#### Project Permission Matrix
+
+| Permission | System Admin | Owner | Admin | Member |
+|------------|:------------:|:-----:|:-----:|:------:|
+| PROJECT_READ | ✓ | ✓ | ✓ | ✓ |
+| PROJECT_UPDATE | ✓ | ✓ | ✓ | ✗ |
+| MEMBERS_INVITE | ✓ | ✓ | ✓ | ✗ |
+| MEMBERS_REMOVE | ✓ | ✓ | ✓ | ✗ |
+| MEMBERS_CHANGE_ROLE | ✓ | ✓ | ✓ | ✗ |
+| PROJECT_TRANSFER_OWNERSHIP | ✓ | ✓ | ✗ | ✗ |
+| PROJECT_DELETE | ✓ | ✓ | ✗ | ✗ |
+| PROJECT_ARCHIVE | ✓ | ✓ | ✗ | ✗ |
+| CARDS_MANAGE | ✓ | ✓ | ✓ | ✓ |
+| RESOURCES_MANAGE | ✓ | ✓ | ✓ | ✓ |
+
+#### Global Schema Permissions (System Admin Only)
+
+| Permission | System Admin | Regular User |
+|------------|:------------:|:------------:|
+| STATUSES_READ | ✓ | ✓ |
+| STATUSES_MANAGE | ✓ | ✗ |
+| CARD_TYPES_READ | ✓ | ✓ |
+| CARD_TYPES_MANAGE | ✓ | ✗ |
+| FIELDS_READ | ✓ | ✓ |
+| FIELDS_MANAGE | ✓ | ✗ |
+
+**Note:** Statuses, Card Types, Fields, and Field Requirements are GLOBAL entities managed exclusively by System Administrators. All projects share the same workflow schema.
+
+#### Implementation Reference
+
+- **Permission definitions**: `packages/api/src/lib/authz/project.ts`
+- **Server enforcement**: `packages/api/src/lib/authz/project.server.ts`
+- **Auth plugin**: `packages/auth/src/index.ts` (Better Auth admin plugin)
 
 ## Performance Considerations
 

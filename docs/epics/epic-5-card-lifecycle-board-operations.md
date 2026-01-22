@@ -125,7 +125,7 @@ So that I can update work items as they progress.
 - Edit button
 
 **And** read-only view shows:
-- All visible fields for current status (hidden fields not shown)
+- All fields configured for this card type + current status
 - Rich text fields rendered with formatting
 - File attachments with download links and thumbnails
 - User assignment with avatar and name
@@ -134,8 +134,8 @@ So that I can update work items as they progress.
 
 **And** when I click "Edit":
 - Fields become editable
-- Only fields visible for current status are shown
-- Required fields for current status marked with asterisk
+- Only fields configured for this card type + current status are shown
+- Required fields marked with asterisk
 - Validation rules apply as configured
 - "Save" and "Cancel" buttons appear
 

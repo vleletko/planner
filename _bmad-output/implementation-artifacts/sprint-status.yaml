@@ -28,11 +28,12 @@
 # - SM typically drafts next story ONLY after previous one is 'done' to incorporate learnings
 # - Dev moves story to 'review', dev reviews, then Dev moves to 'done'
 
-generated: 2025-11-11
+generated: 2026-01-22
 project: planner
 project_key: planner
 tracking_system: file-system
 story_location: "{project-root}/_bmad-output/implementation-artifacts"
+tech_debt_backlog: "{project-root}/_bmad-output/implementation-artifacts/tech-debt-backlog.md"
 
 development_status:
   epic-1: contexted
@@ -52,17 +53,17 @@ development_status:
   1b-4-error-handling-spans: done
   epic-1b-retrospective: done
 
-  epic-2: in-progress
+  epic-2: contexted
   2-0-epic-2-ux-design: done
   2-1-project-creation-and-basic-crud: done
   2-2-project-access-control-and-permissions: done
   2-3-user-invitation-system: done
   2-4-ownership-transfer: done
   2-5-project-deletion-with-safety-checks: done
-  epic-2-retrospective: optional
+  epic-2-retrospective: done
 
-  epic-3: backlog
-  3-1-status-management: backlog
+  epic-3: contexted
+  3-1-status-management: ready-for-dev
   3-2-card-type-management: backlog
   3-3-field-definition-and-basic-types: backlog
   3-4-field-requirement-configuration-per-status: backlog
@@ -132,3 +133,4 @@ development_status:
 retrospective_artifacts:
   epic-1: _bmad-output/implementation-artifacts/epic-1-retrospective-2025-12-07.md
   epic-1b: _bmad-output/implementation-artifacts/epic-1b-retrospective-2025-12-12.md
+  epic-2: _bmad-output/implementation-artifacts/epic-2-retrospective-2026-01-22.md

@@ -24,7 +24,7 @@ Built on: Next.js 16, React 19, ORPC, PostgreSQL, Drizzle ORM, Better-Auth
 
 ## Success Criteria
 
-- Project owners configure workflows in under 10 minutes
+- System administrators configure global workflows in under 10 minutes
 - 90% of transitions complete without validation errors
 - External validations succeed 95%+ of the time
 - Board loads in under 2 seconds with 1000+ cards
@@ -34,27 +34,34 @@ Built on: Next.js 16, React 19, ORPC, PostgreSQL, Drizzle ORM, Better-Auth
 
 ## Access Control
 
+**System Administrator (global role):**
+- Access all projects system-wide
+- Manage global workflow schema (statuses, card types, fields, field requirements)
+- Invite users to any project
+- Delete any project
+
 **Project Owner (creator):**
-- Configure project settings (statuses, card types, field requirements)
 - Invite users to project
 - Transfer ownership to another member
 - Full card permissions (create/edit/move)
 - Create and manage resources
+- View global workflow schema (read-only)
 
-**Admin:**
-- Access all projects system-wide
-- Configure any project
-- Invite users to any project
-- Delete any project
+**Project Admin:**
+- Invite users to project
+- Full card permissions (create/edit/move)
+- Create and manage resources
+- View global workflow schema (read-only)
 
 **Project Member:**
 - Create, edit, move cards
 - Create and manage resources
-- View project settings (read-only)
+- View global workflow schema (read-only)
 - Cannot invite users or configure project
 
 **Access rules:**
 - Users see only projects they're members of
+- Global workflow schema (statuses, card types, fields) is shared across all projects
 - Authentication via existing Better-Auth system
 
 ---
@@ -81,24 +88,28 @@ Built on: Next.js 16, React 19, ORPC, PostgreSQL, Drizzle ORM, Better-Auth
 
 ---
 
-### 2. Workflow Configuration
+### 2. Workflow Configuration (System Admin Only)
 
-**Status Management:**
+**Note:** All workflow configuration is GLOBAL and managed exclusively by System Administrators. All projects share the same workflow schema.
+
+**Status Management (System Admin Only):**
 - Create status with name and color
 - Reorder statuses via drag-and-drop
 - Edit status name and color
+- Activate/deactivate statuses
 - Delete status (only if no cards in that status)
-- Default statuses on project creation: Backlog, In Progress, Done
+- Default statuses provided by system: Backlog, In Progress, Done
 
-**Card Type Management:**
+**Card Type Management (System Admin Only):**
 - Create card type with name, key (e.g., "BUG"), color, and icon
 - Edit card type properties
+- Activate/deactivate card types
 - Delete card type (only if no cards of that type exist)
 - Card types define the structure and field requirements
 
-**Field Configuration:**
-- Define fields for each card type
-- Set field requirements per status (required, optional, hidden)
+**Field Configuration (System Admin Only):**
+- Define fields for each card type (global)
+- Set field requirements per status (required or optional)
 - Configure validation rules per field
 - Set default values for fields
 - Fields can be conditionally required based on other field values
@@ -580,14 +591,17 @@ async function validateDatabase(resource: DatabaseResource): Promise<ValidationR
 
 ## Data Model (High-Level)
 
+**Global Entities (System Admin Only):**
+- Status (global, not project-scoped)
+- CardType (global, not project-scoped)
+- Field (belongs to card type, global)
+- FieldStatusRequirement (field + status requirement, global)
+
 **Core Entities:**
 - User (from Better-Auth)
 - Project
 - ProjectMember (join table: user + project + role)
-- Status (belongs to project)
-- CardType (belongs to project)
-- Field (belongs to card type, includes default_value)
-- Card (belongs to project + has card type + has status)
+- Card (belongs to project + references global card type + references global status)
 - CardFieldValue (card + field + value)
 - Resource (belongs to project + has resource type)
 - ResourceFieldValue (resource + field + value)
@@ -597,9 +611,10 @@ async function validateDatabase(resource: DatabaseResource): Promise<ValidationR
 - UserTelegram (user + telegram chat_id)
 
 **Key Relationships:**
-- Project has many Statuses, CardTypes, Cards, Members, Resources
-- CardType has many Fields (with default values)
-- Card belongs to Project, CardType, Status, User (assignee)
+- **Global schema:** Statuses, CardTypes, Fields are system-wide (managed by System Admin)
+- Project has many Cards, Members, Resources
+- CardType has many Fields (with default values) - global
+- Card belongs to Project, references CardType (global), Status (global), User (assignee)
 - Card has many CardFieldValues, Comments, Activities
 - Card references Resources via ResourceReference field values
 - Resource belongs to Project, has ResourceType (enum/string), has validation_status
@@ -611,7 +626,7 @@ async function validateDatabase(resource: DatabaseResource): Promise<ValidationR
 
 - 10+ projects created in first month
 - 90%+ of transitions complete without errors
-- Average configuration time under 10 minutes
+- Average global schema configuration time under 10 minutes (by system admins)
 - User satisfaction: "helpful" vs "annoying" validation
 - Resource validation success rate: 95%+
 - System uptime: 99%+

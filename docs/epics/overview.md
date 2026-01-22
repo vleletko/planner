@@ -15,8 +15,8 @@ Establish application observability infrastructure using OpenTelemetry, providin
 **Epic 2: Project & Workspace Management**
 Enable users to create projects, invite team members, and manage access control with role-based permissions.
 
-**Epic 3: Workflow Configuration Engine**
-Allow project owners to define custom statuses, card types, and field structures through a visual schema editor.
+**Epic 3: Global Schema Configuration**
+Allow system administrators to define global statuses, card types, and field structures through a visual schema editor. All projects share the same workflow schema.
 
 **Epic 4: Field Types & Validation Framework**
 Support diverse field types (text, number, date, dropdown, file attachment, etc.) with comprehensive validation capabilities including synchronous, asynchronous, conditional, and custom validation.
