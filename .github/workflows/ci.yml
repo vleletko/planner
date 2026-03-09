@@ -108,7 +108,7 @@ jobs:
           fi
 
       - name: Build and push Docker image (web)
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: ./apps/web
           file: ./apps/web/Dockerfile
@@ -134,7 +134,7 @@ jobs:
             org.opencontainers.image.description=Database migrations and seeding
 
       - name: Build and push Docker image (migrate)
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: ./out-migrate
           file: ./apps/migrate/Dockerfile
